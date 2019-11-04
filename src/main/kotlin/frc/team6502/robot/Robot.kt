@@ -4,6 +4,9 @@ import edu.wpi.first.hal.FRCNetComm
 import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.TimedRobot
 
+/**
+ * Main robot class.
+ */
 class Robot : TimedRobot() {
 
     override fun robotInit() {
