@@ -2,6 +2,7 @@ package frc.team6502.robot
 
 import edu.wpi.first.hal.FRCNetComm
 import edu.wpi.first.hal.HAL
+import edu.wpi.first.hal.sim.DriverStationSim
 import edu.wpi.first.wpilibj.TimedRobot
 
 /**
@@ -13,12 +14,12 @@ class Robot : TimedRobot() {
         // report language as kotlin instead of assuming java because of JVM
         HAL.report(FRCNetComm.tResourceType.kResourceType_Language, 6)
 
-        // initialize RobotMap
-        RobotMap
+        // initialize RobotContainer and by extension subsystems
+        RobotContainer
     }
 
     override fun robotPeriodic() {
-
+        
     }
 
     override fun disabledInit() {

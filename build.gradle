@@ -47,6 +47,9 @@ dependencies {
 
     // We need to add the Kotlin stdlib in order to use most Kotlin language features.
     compile "org.jetbrains.kotlin:kotlin-stdlib"
+
+    simulation "edu.wpi.first.halsim:halsim_ds_nt:${wpi.wpilibVersion}:${wpi.platforms.desktop}@zip"
+    simulation "edu.wpi.first.halsim:halsim_ds_nt:${wpi.wpilibVersion}:${wpi.platforms.desktop}debug@zip"
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
