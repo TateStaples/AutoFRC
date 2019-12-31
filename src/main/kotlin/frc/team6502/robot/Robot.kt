@@ -12,7 +12,7 @@ class Robot : TimedRobot() {
 
     override fun robotInit() {
         // report language as kotlin instead of assuming java because of JVM
-        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, 6)
+        HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin)
 
         // initialize RobotContainer and by extension subsystems
         RobotContainer
