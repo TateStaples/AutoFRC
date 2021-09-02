@@ -1,4 +1,4 @@
-package frc.team6502.kyberlib.math
+package Utilities.math
 
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt

@@ -1,7 +1,7 @@
 package frc.team6502.kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.controller.PIDController
-import frc.team6502.kyberlib.math.invertIf
+import Utilities.math.invertIf
 import frc.team6502.kyberlib.math.units.extensions.Angle
 import frc.team6502.kyberlib.math.units.extensions.AngularVelocity
 import frc.team6502.kyberlib.math.units.extensions.rotations

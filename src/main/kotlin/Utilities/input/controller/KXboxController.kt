@@ -1,5 +1,6 @@
-package frc.team6502.kyberlib.input.controller
+package Utilities.input.controller
 
+import edu.wpi.first.wpilibj.GenericHID
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import frc.team6502.kyberlib.input.KAxis
 import frc.team6502.kyberlib.input.KController
@@ -34,4 +35,21 @@ class KXboxController(port: Int) : KController(port) {
     val leftDPad = Trigger(BooleanSupplier { DPad > 180 })  // 270
     val upDPad = Trigger(BooleanSupplier { DPad != 0 && (DPad < 90 || DPad > 270) })  // 0
     val downDPad = Trigger(BooleanSupplier { DPad in 91..269 })  // 180
+
+    var rumbleLeft = 0.0
+        set(value) {
+            joystick.setRumble(GenericHID.RumbleType.kLeftRumble, value)
+            field = value
+        }
+    var rumbleRight = 0.0
+        set(value) {
+            joystick.setRumble(GenericHID.RumbleType.kRightRumble, value)
+            field = value
+        }
+    var rumble: Double
+        get() = rumbleLeft.coerceAtLeast(rumbleRight)
+        set(value) {
+            rumbleLeft = value
+            rumbleRight = value
+        }
 }

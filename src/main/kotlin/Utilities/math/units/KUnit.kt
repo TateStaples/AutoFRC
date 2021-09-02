@@ -1,6 +1,6 @@
 package frc.team6502.kyberlib.math.units
 
-import frc.team6502.kyberlib.math.epsilonEquals
+import Utilities.math.epsilonEquals
 import kotlin.math.absoluteValue
 
 /*

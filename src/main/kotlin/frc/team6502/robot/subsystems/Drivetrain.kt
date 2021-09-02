@@ -1,85 +1,108 @@
 package frc.team6502.robot.subsystems
 
-import edu.wpi.first.wpilibj.SpeedControllerGroup
-import edu.wpi.first.wpilibj.drive.DifferentialDrive
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.DefaultDrive
-import edu.wpi.first.wpilibj.drive.MecanumDrive
-import edu.wpi.first.wpilibj.drive.Vector2d
-import edu.wpi.first.wpilibj.Spark
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
-import frc.team6502.robot.APrefrences
+import edu.wpi.first.wpilibj.controller.PIDController
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
+import edu.wpi.first.wpilibj.geometry.Rotation2d
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import frc.team6502.kyberlib.math.Differentiator
+import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
+import frc.team6502.kyberlib.math.units.extensions.radiansPerSecond
 
 object Drivetrain: SubsystemBase() {
-    val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    // motors
+    private val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+        restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
+        setSmartCurrentLimit(40)
     }
-    val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+        restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
+        setSmartCurrentLimit(40)
     }
-    val leftSide = SpeedControllerGroup(leftFront, leftBack)
-    val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-    }
-    val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-    }
-    val rightSide = SpeedControllerGroup(rightFront, rightBack)
-    val robotDrive = DifferentialDrive(leftSide, rightSide)
 
-    val succ = CANSparkMax(Constants.SUCC_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+        restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
+        setSmartCurrentLimit(40)
+        follow(leftFront)
     }
-    val shooterMotor = CANSparkMax(Constants.SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+        restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
+        setSmartCurrentLimit(40)
+        follow(rightFront)
     }
-    // val robotDrive = DifferentialDrive(leftSide,rightSide)
+
+    // controls
+    val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
+    val odometry = DifferentialDriveOdometry(Rotation2d())
+
+    val leftAccelCalculator = Differentiator()
+    val rightAccelCalculator = Differentiator()
+
+    private val leftFeedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_L, Constants.DRIVE_KV_L, Constants.DRIVE_KA_L)
+    private val rightFeedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_R, Constants.DRIVE_KV_R, Constants.DRIVE_KA_R)
+
+    private val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
+    private val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
 
     init {
         defaultCommand = DefaultDrive()
-        if (APrefrences.DebugMotors) {
-            robotDrive.toString()
+    }
+
+    fun drive (speeds: ChassisSpeeds) { drive(kinematics.toWheelSpeeds(speeds))}
+
+    fun drive(speeds: DifferentialDriveWheelSpeeds) {
+        val leftSpeed = speeds.leftMetersPerSecond
+        val rightSpeed = speeds.rightMetersPerSecond
+
+        val lPID = leftPID.calculate(leftFront.encoder.velocity, leftSpeed)
+        val lFF = leftFeedforward.calculate(leftSpeed, leftAccelCalculator.calculate(leftSpeed))
+        val rPID = rightPID.calculate(rightFront.encoder.velocity, rightSpeed)
+        val rFF = rightFeedforward.calculate(rightSpeed, rightAccelCalculator.calculate(rightSpeed))
+
+//        leftFront.setVoltage(lPID + lFF)
+//        rightFront.setVoltage(rPID + rFF)
+
+        leftFront.set(speeds.leftMetersPerSecond)
+        rightFront.set(speeds.rightMetersPerSecond)
+    }
+
+    fun logEncoders() {
+        val motors = arrayListOf(leftFront, leftBack, rightFront, rightBack)
+        val names = arrayListOf("Left Front", "Left Back", "Right Front", "Right Back")
+        for (info in motors.zip(names)) {
+            val motor = info.first
+            val encoder = motor.encoder
+            val name = info.second
+            SmartDashboard.putNumber("$name Position", encoder.position)
+            SmartDashboard.putNumber("$name Velocity", encoder.velocity)
+            SmartDashboard.putNumber("$name Voltage", motor.appliedOutput)
+            SmartDashboard.putNumber("$name Current", motor.outputCurrent)
+            SmartDashboard.putBoolean("$name Inverted", encoder.inverted)
         }
     }
 
-    var frontIsFront = 1
+    fun debug() {
+        SmartDashboard.putNumber("Left Error", leftPID.positionError)
+        SmartDashboard.putNumber("Right Error", rightPID.positionError)
 
-    fun switchFrontIsFront(){
-        frontIsFront*=-1
-    }
+        logEncoders()
 
-    fun drive ( speed: Vector2d, rotation:Double){
-        if (APrefrences.ControllerPositions) {
-            println("x: " + speed.x.toString() + " y: " + speed.y.toString())
-        }
-        var x = 0.0
-        var y = 0.0
-        var rot = 0.0
-        succ.inverted = true
-        if (APrefrences.Forward && APrefrences.Backward) {
-            x = speed.x
-        } else if (APrefrences.Forward) {
-            if (speed.x > 0) {
-                x = speed.x
-            }
-        }
-        if (APrefrences.Strafe) {
-            y = speed.y
-        }
-        if (APrefrences.Turning) {
-            rot = rotation
-        }
-
-        robotDrive.arcadeDrive(
-            -y,
-            rot
-        )
     }
 
 }
