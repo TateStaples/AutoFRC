@@ -23,15 +23,14 @@ class DefaultDrive: CommandBase() {
     }
 
     override fun execute() {
-/*
-        SmartDashboard.putNumber("Y AXIS:" , OI.controllerLY)
-        SmartDashboard.putNumber("X AXIS:" , OI.controllerLX)
+//        SmartDashboard.putNumber("Y AXIS:" , OI.controllerLY)
+//        SmartDashboard.putNumber("X AXIS:" , OI.controllerLX)
         try {
-            Shuffleboard.getTab("Test").addNumber("Y") { OI.controllerLY }
-            Shuffleboard.getTab("Test").addNumber("X") { OI.controllerLX }
+            SmartDashboard.putNumber("y", OI.controllerLY)
+            SmartDashboard.putNumber("x", OI.controllerLX)
         } catch (e: Exception) {
             e.printStackTrace()
-        }*/
+        }
         var control = Vector2d(
             OI.controllerLY * APrefrences.GeneralSpeed,// * Drivetrain.frontIsFront,// * Constants.MAX_SPEED * OI.controllerThrottle,
             OI.controllerLX * APrefrences.GeneralSpeed// * Drivetrain.frontIsFront// * Constants.MAX_SPEED * OI.controllerThrottle

@@ -15,19 +15,23 @@ import frc.team6502.robot.APrefrences
 object Drivetrain: SubsystemBase() {
     val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
     }
     val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
     }
     val leftSide = SpeedControllerGroup(leftFront, leftBack)
     val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
     }
     val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         idleMode = CANSparkMax.IdleMode.kBrake
+        inverted = false
     }
     val rightSide = SpeedControllerGroup(rightFront, rightBack)
-    val robotDrive = MecanumDrive(leftFront, leftBack, rightFront, rightBack)
+    val robotDrive = DifferentialDrive(leftSide, rightSide)
 
     val succ = CANSparkMax(Constants.SUCC_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         idleMode = CANSparkMax.IdleMode.kBrake
@@ -38,12 +42,7 @@ object Drivetrain: SubsystemBase() {
     // val robotDrive = DifferentialDrive(leftSide,rightSide)
 
     init {
-        this.defaultCommand = DefaultDrive()
-//        val motorList = [leftFront, leftBack, rightFront, rightBack]
-        leftFront.inverted = false
-        leftBack.inverted = false
-        rightFront.inverted = false
-        rightBack.inverted = false
+        defaultCommand = DefaultDrive()
         if (APrefrences.DebugMotors) {
             robotDrive.toString()
         }
@@ -54,9 +53,6 @@ object Drivetrain: SubsystemBase() {
     fun switchFrontIsFront(){
         frontIsFront*=-1
     }
-//    fun ToggleBoost(){
-//        Boost = !Boost
-//    }
 
     fun drive ( speed: Vector2d, rotation:Double){
         if (APrefrences.ControllerPositions) {
@@ -80,9 +76,8 @@ object Drivetrain: SubsystemBase() {
             rot = rotation
         }
 
-        robotDrive.driveCartesian(
+        robotDrive.arcadeDrive(
             -y,
-            -x,
             rot
         )
     }

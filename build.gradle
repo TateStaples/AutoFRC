@@ -1,3 +1,5 @@
+import edu.wpi.first.gradlerio.GradleRIOPlugin
+
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.4.21"
     id "java"
@@ -41,6 +43,11 @@ deploy {
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
 
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {url 'https://jitpack.io'}
+}
 
 dependencies {
     implementation wpi.deps.wpilib()
@@ -52,7 +59,7 @@ dependencies {
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.21"
 
 
     // Enable simulation gui support. Must check the box in vscode to enable support
@@ -76,5 +83,5 @@ sim {
 // knows where to look for our Robot Class.
 jar {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
+    manifest GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
 }

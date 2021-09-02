@@ -4,6 +4,9 @@ import edu.wpi.first.hal.FRCNetComm
 import edu.wpi.first.hal.HAL
 //import edu.wpi.first.hal.sim.DriverStationSim
 import edu.wpi.first.wpilibj.TimedRobot
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj2.command.CommandScheduler
 
 /**
  * Main robot class.
@@ -19,7 +22,7 @@ class Robot : TimedRobot() {
     }
 
     override fun robotPeriodic() {
-        
+        CommandScheduler.getInstance().run()
     }
 
     override fun disabledInit() {
