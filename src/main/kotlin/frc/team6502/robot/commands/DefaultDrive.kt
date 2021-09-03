@@ -17,13 +17,14 @@ class DefaultDrive: CommandBase() {
     }
 
     override fun execute() {
+//        Drivetrain.odometry.update(RobotContainer.gyro.getRotation2d(), Drivetrain.leftFront)
         val turn = RobotContainer.controller.rightX
         val forward = RobotContainer.controller.leftY
 
         SmartDashboard.putNumber("y", forward.value)
         SmartDashboard.putNumber("x", turn.value)
 
-        val speeds = ChassisSpeeds(0.0, forward.value, turn.value)
+        val speeds = ChassisSpeeds(forward.value, 0.0, turn.value)
         Drivetrain.drive(speeds)
     }
 

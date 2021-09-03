@@ -12,34 +12,37 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.kyberlib.math.Differentiator
 import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
 import frc.team6502.kyberlib.math.units.extensions.radiansPerSecond
+import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.commands.AutoDrive
 
 object Drivetrain: SubsystemBase() {
     // motors
-    private val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
     }
-    private val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
     }
 
-    private val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
         follow(leftFront)
     }
-    private val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
@@ -49,20 +52,26 @@ object Drivetrain: SubsystemBase() {
 
     // controls
     val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
-    val odometry = DifferentialDriveOdometry(Rotation2d())
 
     val leftAccelCalculator = Differentiator()
     val rightAccelCalculator = Differentiator()
 
-    private val leftFeedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_L, Constants.DRIVE_KV_L, Constants.DRIVE_KA_L)
-    private val rightFeedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_R, Constants.DRIVE_KV_R, Constants.DRIVE_KA_R)
+    val feedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_L, Constants.DRIVE_KV_L, Constants.DRIVE_KA_L)
 
-    private val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
-    private val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
+    val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
+    val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
 
     init {
-        defaultCommand = DefaultDrive()
+        if (Constants.AUTO) defaultCommand = AutoDrive() else DefaultDrive()
     }
+
+    // public vars
+    val leftVel
+        get() = leftFront.encoder.velocity
+    val rightVel
+        get() = rightFront.encoder.velocity
+    val wheelSpeeds
+        get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
 
     fun drive (speeds: ChassisSpeeds) { drive(kinematics.toWheelSpeeds(speeds))}
 
@@ -71,15 +80,21 @@ object Drivetrain: SubsystemBase() {
         val rightSpeed = speeds.rightMetersPerSecond
 
         val lPID = leftPID.calculate(leftFront.encoder.velocity, leftSpeed)
-        val lFF = leftFeedforward.calculate(leftSpeed, leftAccelCalculator.calculate(leftSpeed))
+        val lFF = feedforward.calculate(leftSpeed, leftAccelCalculator.calculate(leftSpeed))
         val rPID = rightPID.calculate(rightFront.encoder.velocity, rightSpeed)
-        val rFF = rightFeedforward.calculate(rightSpeed, rightAccelCalculator.calculate(rightSpeed))
+        val rFF = feedforward.calculate(rightSpeed, rightAccelCalculator.calculate(rightSpeed))
+        if (Constants.DEBUG) {
+            debug()
+        }
+//        drive(lPID + lFF, rPID + rFF)
 
-//        leftFront.setVoltage(lPID + lFF)
-//        rightFront.setVoltage(rPID + rFF)
+        leftFront.set(leftSpeed)
+        rightFront.set(rightSpeed)
+    }
 
-        leftFront.set(speeds.leftMetersPerSecond)
-        rightFront.set(speeds.rightMetersPerSecond)
+    fun drive(leftVolts: Double, rightVolts: Double) {
+        leftFront.setVoltage(leftVolts)
+        rightFront.setVoltage(rightVolts)
     }
 
     fun logEncoders() {
@@ -100,6 +115,7 @@ object Drivetrain: SubsystemBase() {
     fun debug() {
         SmartDashboard.putNumber("Left Error", leftPID.positionError)
         SmartDashboard.putNumber("Right Error", rightPID.positionError)
+//        leftPID.initSendable()
 
         logEncoders()
 
