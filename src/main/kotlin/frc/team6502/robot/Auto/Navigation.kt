@@ -1,4 +1,4 @@
-package frc.team6502.robot
+package frc.team6502.robot.Auto
 
 import edu.wpi.first.wpilibj.controller.RamseteController
 import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator
@@ -18,20 +18,19 @@ import edu.wpi.first.wpiutil.math.numbers.*
 import frc.team6502.kyberlib.math.units.extensions.feet
 import frc.team6502.kyberlib.math.units.extensions.meters
 import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
+import frc.team6502.robot.Constants
 import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 
-// TODO: put charaterize stuff on github
+// TODO: put characterize stuff from last year on github
 /**
  * A Subsystem to manage and update the Robots position
  * @param initialPose the pose of the robot when Navigation begins
  * @author TateStaples
  */
 class Navigation(initialPose: Pose2d) : SubsystemBase() {
-
-    private val fieldImgPath: String = TODO("get image for field")
-    val field = Field2d()  // TODO extend this class and add obstacles and goals
-    private val fieldTraj = field.getObject("traj")
+    val field = KField2d()  // TODO extend this class and add obstacles and goals
+    val fieldTraj = field.getObject("traj")
     private val trajectoryQueue: Queue<Trajectory> = LinkedList() // should I make this into seperate class
 
     /**
@@ -65,7 +64,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * A object with restrictions on how the robot will move
      */
     private val pathingConfig =
-        TrajectoryConfig(3.0.metersPerSecond.value, 3.0.metersPerSecond.value).apply { // TODO: mess with this
+        TrajectoryConfig(3.0.metersPerSecond.value, 3.0).apply { // TODO: mess with this
             setKinematics(Drivetrain.kinematics)
         }
 
@@ -74,7 +73,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      *
      * @param waypoints list of Translation2d that the robot should go through
      */
-    private fun trajectory(waypoints: List<Translation2d>): Trajectory? {
+    fun trajectory(waypoints: List<Translation2d>): Trajectory {
         return TrajectoryGenerator.generateTrajectory(
             pose,
             waypoints,
@@ -99,7 +98,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             Drivetrain.leftPID,
             Drivetrain.rightPID,
             // RamseteCommand passes volts to the callback
-            Drivetrain::drive,
+            Drivetrain::driveVolts,
             Drivetrain
         )
     }
@@ -130,7 +129,12 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         set(value) = estimator.resetPosition(value, heading)
     val position  // the estimated location of the robot
         get() = pose.translation
-    val currentTrajectory: Nothing = TODO()
+    var currentTrajectory: Trajectory? = null
+        set(value) {
+            if (value != null)
+                fieldTraj.setTrajectory(value!!)
+            field = value
+        }
 
     // speed
     val leftVel  // how fast the left side of the robot is going

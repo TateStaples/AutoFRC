@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.RamseteCommand
 import frc.team6502.kyberlib.math.units.extensions.feet
+import frc.team6502.robot.Auto.Navigation
 import frc.team6502.robot.subsystems.Drivetrain
 
 
@@ -60,7 +61,7 @@ class Robot : TimedRobot() {
         field.getObject("traj").setTrajectory(trajectory)
         val ramseteCommand = RamseteCommand(
             trajectory,
-            Drivetrain::pose,
+            RobotContainer.navigation::pose,
             RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
             Drivetrain.feedforward,
             Drivetrain.kinematics,
@@ -68,17 +69,17 @@ class Robot : TimedRobot() {
             Drivetrain.leftPID,
             Drivetrain.rightPID,
             // RamseteCommand passes volts to the callback
-            Drivetrain::drive,
+            Drivetrain::driveVolts,
             Drivetrain
         )
 
-        Drivetrain.pose = trajectory.initialPose
+        RobotContainer.navigation.pose = trajectory.initialPose
 
-        ramseteCommand.andThen(Runnable{ Drivetrain.drive(0.0, 0.0) })
+        ramseteCommand.andThen(Runnable{ Drivetrain.driveVolts(0.0, 0.0) })
     }
 
     override fun autonomousPeriodic() {
-        field.robotPose = Drivetrain.odometry.poseMeters
+        field.robotPose = RobotContainer.navigation.pose
     }
 
     override fun teleopInit() {

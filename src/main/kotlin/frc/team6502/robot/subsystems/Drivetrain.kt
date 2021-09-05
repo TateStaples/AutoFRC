@@ -86,13 +86,13 @@ object Drivetrain: SubsystemBase() {
         if (Constants.DEBUG) {
             debug()
         }
-//        drive(lPID + lFF, rPID + rFF)
+//        driveVo(lPID + lFF, rPID + rFF)
 
         leftFront.set(leftSpeed)
         rightFront.set(rightSpeed)
     }
 
-    fun drive(leftVolts: Double, rightVolts: Double) {
+    fun driveVolts(leftVolts: Double, rightVolts: Double) {
         leftFront.setVoltage(leftVolts)
         rightFront.setVoltage(rightVolts)
     }

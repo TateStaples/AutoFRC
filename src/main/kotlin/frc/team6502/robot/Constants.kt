@@ -44,6 +44,6 @@ object Constants{
     val WHEEL_RADIUS = 0.3.meters
     const val DRIVE_GEAR_RATIO = 1.0 / 10.0
 
-    const val RAMSETE_BETA = 0.7  // TODO I have no idea if this is right
+    const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
     const val RAMSETE_ZETA = 0.1
 }
