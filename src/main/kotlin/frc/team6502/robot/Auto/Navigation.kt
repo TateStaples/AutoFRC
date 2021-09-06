@@ -29,9 +29,17 @@ import java.util.*
  * @author TateStaples
  */
 class Navigation(initialPose: Pose2d) : SubsystemBase() {
+    companion object Test {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val n = Navigation(Pose2d(2.0, 2.0, Rotation2d(0.0)))
+            SmartDashboard.putNumber("test", 1.5)
+        }
+    }
     val field = KField2d()  // TODO extend this class and add obstacles and goals
     val fieldTraj = field.getObject("traj")
     private val trajectoryQueue: Queue<Trajectory> = LinkedList() // should I make this into seperate class
+    val currentGoal: Goal? = null
 
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
@@ -39,32 +47,18 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     private var estimator = DifferentialDrivePoseEstimator(  // TODO: think of going back to mecanum
         heading, initialPose,
         // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
-        MatBuilder(N5.instance, N1.instance).fill(
-            0.02,
-            0.02,
-            0.01,
-            0.02,
-            0.02
-        ),
+        MatBuilder(N5.instance, N1.instance).fill(0.02, 0.02, 0.01, 0.02, 0.02),
         // Local measurement standard deviations. Left encoder, right encoder, gyro.
-        MatBuilder(N3.instance, N1.instance).fill(
-            0.02,
-            0.02,
-            0.01
-        ),
+        MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01),
         // Global measurement standard deviations. X, Y, and theta.
-        MatBuilder(N3.instance, N1.instance).fill(
-            0.1,
-            0.1,
-            0.01
-        )
+        MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01)
     )
 
     /**
      * A object with restrictions on how the robot will move
      */
     private val pathingConfig =
-        TrajectoryConfig(3.0.metersPerSecond.value, 3.0).apply { // TODO: mess with this
+        TrajectoryConfig(1.0, 1.0).apply { // TODO: mess with this
             setKinematics(Drivetrain.kinematics)
         }
 
@@ -87,7 +81,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      *
      * @param trajectory path for the robot to follow
      */
-    private fun ramsete(trajectory: Trajectory): RamseteCommand {
+    fun ramsete(trajectory: Trajectory): RamseteCommand {
         return RamseteCommand(
             trajectory,
             this::pose,
@@ -116,7 +110,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         update()
         field.robotPose = pose
         if (Constants.DEBUG) {  // TODO: figure out what goes here
-
+            SmartDashboard.putString("Goal", currentGoal?.name)
         }
     }
 
@@ -126,13 +120,16 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         get() = Rotation2d(0.0) //RobotContainer.gyro
     var pose  // the location and direction of the robot
         get() = estimator.estimatedPosition
-        set(value) = estimator.resetPosition(value, heading)
+        set(value) {
+            estimator.resetPosition(value, heading)
+            this.field.robotPose = value
+        }
     val position  // the estimated location of the robot
         get() = pose.translation
     var currentTrajectory: Trajectory? = null
         set(value) {
             if (value != null)
-                fieldTraj.setTrajectory(value!!)
+                fieldTraj.setTrajectory(value)
             field = value
         }
 
