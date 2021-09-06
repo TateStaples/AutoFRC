@@ -8,13 +8,13 @@ import com.revrobotics.CANSparkMaxLowLevel
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.geometry.Rotation2d
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.geometry.Translation2d
+import edu.wpi.first.wpilibj.kinematics.*
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.kyberlib.math.Differentiator
+import frc.team6502.kyberlib.math.units.extensions.inches
+import frc.team6502.kyberlib.math.units.extensions.meters
 import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
 import frc.team6502.kyberlib.math.units.extensions.radiansPerSecond
 import frc.team6502.robot.RobotContainer
@@ -53,8 +53,17 @@ object Drivetrain : SubsystemBase() {
         follow(rightFront)
     }
 
+    // motors positions TODO these are wrong
+    private val robotWidth = 8.686.inches
+    private val robotLength = 5.75.inches
+    private val frontLeftPosition = Translation2d(-robotWidth.meters, robotLength.meters)
+    private val frontRightPosition = Translation2d(robotWidth.meters, robotLength.meters)
+    private val backLeftPosition = Translation2d(-robotWidth.meters, -robotLength.meters)
+    private val backRightPosition = Translation2d(robotWidth.meters, -robotLength.meters)
+
     // controls
-    val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
+    val difKinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
+    val mecKinematics = MecanumDriveKinematics(frontLeftPosition, frontRightPosition, backLeftPosition, backRightPosition)
 
     /**
      * Keep real time calculation of the acceleration of each side of drivetrain
@@ -75,18 +84,37 @@ object Drivetrain : SubsystemBase() {
     }
 
     // public vars
-    val leftVel  // TODO figure this out better
+    val leftFrontVel
         get() = leftFront.encoder.velocity
-    val rightVel
+    val rightFrontVel
         get() = rightFront.encoder.velocity
-    val wheelSpeeds
+    val leftBackVel
+        get() = leftBack.encoder.velocity
+    val rightBackVel
+        get() = rightBack.encoder.velocity
+    val leftVel // TODO figure this out better
+        get() = leftFrontVel
+    val rightVel
+        get() = rightFrontVel
+    var difWheelSpeeds
         get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
+        set(value) {drive(value)}
+    var mecWheelSpeeds
+        get() = MecanumDriveWheelSpeeds(leftFrontVel, rightFrontVel, leftBackVel, rightBackVel)
+        set(value) {drive(value)}
+    var chassisSpeeds
+        get() = if (Constants.MECANUM) mecKinematics.toChassisSpeeds(mecWheelSpeeds)
+                else difKinematics.toChassisSpeeds(difWheelSpeeds)
+        set(value) {drive(value)}
 
     /**
      * Drive the robot in a specific direction
      * @param speeds the velocity you want the robot to start moving
      */
-    fun drive (speeds: ChassisSpeeds) { drive(kinematics.toWheelSpeeds(speeds))}
+    fun drive (speeds: ChassisSpeeds) {
+        if (Constants.MECANUM) drive(mecKinematics.toWheelSpeeds(speeds))
+        else drive(difKinematics.toWheelSpeeds(speeds))
+    }
 
     /**
      * Drive the robot with specific wheel speeds
@@ -110,6 +138,14 @@ object Drivetrain : SubsystemBase() {
     }
 
     /**
+     * Drive a Mecanum robot at specific speeds
+     * @param speeds the wheel speeds to move the Mecanum robot
+     */
+    fun drive(speeds: MecanumDriveWheelSpeeds) {  // TODO
+
+    }
+
+    /**
      * Low level drive call.
      * Applies voltage directly to each side
      * @param leftVolts Double representing voltage to apply to the two left motors
@@ -118,6 +154,20 @@ object Drivetrain : SubsystemBase() {
     fun driveVolts(leftVolts: Double, rightVolts: Double) {
         leftFront.setVoltage(leftVolts)
         rightFront.setVoltage(rightVolts)
+    }
+
+    /**
+     * Low level call to set each individual motor voltage
+     * @param lf voltage for left front motor
+     * @param lb voltage for left back motor
+     * @param rf voltage for right front motor
+     * @param rb voltage for right back motor
+     */
+    fun driveAllVolts(lf: Double, lb: Double, rf: Double, rb: Double) {
+        leftFront.setVoltage(lf)
+        rightFront.setVoltage(rf)
+        leftBack.setVoltage(lb)
+        rightBack.setVoltage(rb)
     }
 
     /**
