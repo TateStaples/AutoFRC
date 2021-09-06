@@ -37,7 +37,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             SmartDashboard.putNumber("test", 1.5)
         }
     }
-    val field = KField2d()  // TODO extend this class and add obstacles and goals
+    val field = KField2d()
     val fieldTraj = field.getObject("traj")
     private val trajectoryQueue: Queue<Trajectory> = LinkedList() // should I make this into seperate class
     val currentGoal: Goal? = null
@@ -45,7 +45,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
      */
-    private val difEstimator = DifferentialDrivePoseEstimator(  // TODO: think of going back to mecanum
+    private val difEstimator = DifferentialDrivePoseEstimator(
         heading, initialPose,
         // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N5.instance, N1.instance).fill(0.02, 0.02, 0.01, 0.02, 0.02),
@@ -79,10 +79,12 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * @param waypoints list of Translation2d that the robot should go through
      */
     fun trajectory(waypoints: List<Translation2d>): Trajectory {
+        val finalDelta = waypoints.last().minus(waypoints[waypoints.size-2])
+        val finalRotation = Rotation2d(finalDelta.x, finalDelta.y)
         return TrajectoryGenerator.generateTrajectory(
             pose,
             waypoints,
-            Pose2d(waypoints.last(), heading), // TODO figure out how to not set heading
+            Pose2d(waypoints.last(), finalRotation), // TODO figure out how to not set heading
             pathingConfig
         )
     }
