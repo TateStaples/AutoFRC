@@ -16,12 +16,10 @@ import edu.wpi.first.wpilibj2.command.RamseteCommand
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.numbers.*
-import frc.team6502.kyberlib.math.units.extensions.degrees
 import frc.team6502.kyberlib.math.units.extensions.feet
 import frc.team6502.kyberlib.math.units.extensions.meters
 import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
 import frc.team6502.robot.Constants
-import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 
@@ -86,7 +84,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         return TrajectoryGenerator.generateTrajectory(
             pose,
             waypoints,
-            Pose2d(waypoints.last(), finalRotation),
+            Pose2d(waypoints.last(), finalRotation), // TODO figure out how to not set heading
             pathingConfig
         )
     }
@@ -125,16 +123,15 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     override fun periodic() {
         update()
         field.robotPose = pose
-        if (Constants.DEBUG) {
+        if (Constants.DEBUG) {  // TODO: figure out what goes here
             SmartDashboard.putString("Goal", currentGoal?.name)
         }
     }
 
     // ----- public variables ----- //
     // location
-    var heading  // what direction the robot is facing
-        get() = Rotation2d(RobotContainer.gyro.fusedHeading.degrees.value)
-        set(value) {RobotContainer.gyro.fusedHeading = value.degrees}
+    val heading  // what direction the robot is facing
+        get() = Rotation2d(0.0) // TODO RobotContainer.gyro
     var pose  // the location and direction of the robot
         get() = if (Constants.MECANUM) mecEstimator.estimatedPosition else difEstimator.estimatedPosition
         set(value) {
