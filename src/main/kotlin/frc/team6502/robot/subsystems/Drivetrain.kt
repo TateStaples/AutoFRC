@@ -5,13 +5,17 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.DefaultDrive
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
+import edu.wpi.first.wpilibj.controller.HolonomicDriveController
 import edu.wpi.first.wpilibj.controller.PIDController
+import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.*
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj.trajectory.Trajectory
+import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import frc.team6502.kyberlib.math.Differentiator
 import frc.team6502.kyberlib.math.units.extensions.inches
 import frc.team6502.kyberlib.math.units.extensions.meters
@@ -26,27 +30,27 @@ import kotlin.math.PI
  */
 object Drivetrain : SubsystemBase() {
     // motors
-    val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
     }
-    val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
     }
 
-    val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
         if (!Constants.MECANUM) follow(leftFront)
     }
-    val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
+    private val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
@@ -88,8 +92,8 @@ object Drivetrain : SubsystemBase() {
     /**
      * Keep real time calculation of the acceleration of each side of drivetrain
      */
-    val leftAccelCalculator = Differentiator()
-    val rightAccelCalculator = Differentiator()
+    private val leftAccelCalculator = Differentiator()
+    private val rightAccelCalculator = Differentiator()
 
     /**
      * A forward projection of how much voltage to apply to get desired velocity and acceleration
@@ -98,7 +102,9 @@ object Drivetrain : SubsystemBase() {
 
     val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
     val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
+    private val rotationPID = ProfiledPIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D, TrapezoidProfile.Constraints(1.0, 1.0))
 
+    private val mecController = HolonomicDriveController(leftPID, rightPID, rotationPID)
     /**
      * Setup the default command for the system
      */
@@ -127,7 +133,7 @@ object Drivetrain : SubsystemBase() {
     var mecWheelSpeeds
         get() = MecanumDriveWheelSpeeds(leftFrontVel, rightFrontVel, leftBackVel, rightBackVel)
         set(value) {drive(value)}
-    var chassisSpeeds
+    var chassisSpeeds: ChassisSpeeds
         get() = if (Constants.MECANUM) mecKinematics.toChassisSpeeds(mecWheelSpeeds)
                 else difKinematics.toChassisSpeeds(difWheelSpeeds)
         set(value) {drive(value)}
@@ -171,6 +177,15 @@ object Drivetrain : SubsystemBase() {
         leftBack.set(speeds.rearLeftMetersPerSecond)
         rightFront.set(speeds.frontRightMetersPerSecond)
         rightBack.set(speeds.rearRightMetersPerSecond)
+    }
+
+    /**
+     * Prototyped use of Holonomic Drive Controller - no idea if any of this works
+     */
+    fun driveTo(state: Trajectory.State) {
+        if (Constants.MECANUM){
+            mecController.calculate(RobotContainer.navigation.pose, state, RobotContainer.navigation.heading)
+        }
     }
 
     /**
