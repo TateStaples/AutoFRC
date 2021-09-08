@@ -1,6 +1,7 @@
 package frc.team6502.robot
 
 import Utilities.input.controller.KXboxController
+import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
@@ -18,6 +19,8 @@ object RobotContainer {
      * Also does some pathing.
      */
     val navigation = Navigation(Pose2d(0.0, 0.0, Rotation2d(0.0)))
+
+    val gyro = PigeonIMU(Constants.PIGEON_PORT)
 
     /**
      * The main user input device of robot
