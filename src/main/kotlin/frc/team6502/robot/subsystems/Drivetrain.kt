@@ -19,7 +19,6 @@ import frc.team6502.kyberlib.math.units.extensions.metersPerSecond
 import frc.team6502.kyberlib.math.units.extensions.radiansPerSecond
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.AutoDrive
-import kotlin.math.PI
 
 /**
  * Holds the motors and controllers in charge of moving the robot chassis
@@ -44,33 +43,17 @@ object Drivetrain : SubsystemBase() {
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
-        if (!Constants.MECANUM) follow(leftFront)
+        follow(leftFront)
     }
     val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
         inverted = false
         setSmartCurrentLimit(40)
-        if (!Constants.MECANUM) follow(rightFront)
-    }
-    private val motors = arrayListOf(leftFront, leftBack, rightFront, rightBack)
-
-    /**
-     * Configure all the encoders with proper gear ratios
-     */
-    init {
-        for (motor in motors)
-            motor.encoder.apply {
-                velocityConversionFactor = Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
-                positionConversionFactor = (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
-            }
+        follow(rightFront)
     }
 
-    // motors positions
-    /**
-     * Location of each of the wheels relative to the center of the robot.
-     * Important for mecanum control
-     */
+    // motors positions TODO these are wrong
     private val robotWidth = 8.686.inches
     private val robotLength = 5.75.inches
     private val frontLeftPosition = Translation2d(-robotWidth.meters, robotLength.meters)
@@ -79,9 +62,6 @@ object Drivetrain : SubsystemBase() {
     private val backRightPosition = Translation2d(robotWidth.meters, -robotLength.meters)
 
     // controls
-    /**
-     * Do important math specific to your chassis
-     */
     val difKinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
     val mecKinematics = MecanumDriveKinematics(frontLeftPosition, frontRightPosition, backLeftPosition, backRightPosition)
 
@@ -99,16 +79,11 @@ object Drivetrain : SubsystemBase() {
     val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
     val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
 
-    /**
-     * Setup the default command for the system
-     */
     init {
         if (Constants.AUTO) defaultCommand = AutoDrive() else DefaultDrive()
     }
 
-    /**
-     * A list of important variables the rest of the code needs easy access to
-     */
+    // public vars
     val leftFrontVel
         get() = leftFront.encoder.velocity
     val rightFrontVel
@@ -166,11 +141,8 @@ object Drivetrain : SubsystemBase() {
      * Drive a Mecanum robot at specific speeds
      * @param speeds the wheel speeds to move the Mecanum robot
      */
-    fun drive(speeds: MecanumDriveWheelSpeeds) {
-        leftFront.set(speeds.frontLeftMetersPerSecond)
-        leftBack.set(speeds.rearLeftMetersPerSecond)
-        rightFront.set(speeds.frontRightMetersPerSecond)
-        rightBack.set(speeds.rearRightMetersPerSecond)
+    fun drive(speeds: MecanumDriveWheelSpeeds) {  // TODO
+
     }
 
     /**
@@ -204,6 +176,7 @@ object Drivetrain : SubsystemBase() {
      * Values: Position, Velocity, Voltage, Current, inverted
      */
     private fun logEncoders() {
+        val motors = arrayListOf(leftFront, leftBack, rightFront, rightBack)
         val names = arrayListOf("Left Front", "Left Back", "Right Front", "Right Back")
         for (info in motors.zip(names)) {
             val motor = info.first
