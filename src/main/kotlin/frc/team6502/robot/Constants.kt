@@ -36,10 +36,6 @@ object Constants{
     const val DRIVE_KV_L = 0.0
     const val DRIVE_KA_L = 0.0
 
-    const val DRIVE_KS_R = 0.0
-    const val DRIVE_KV_R = 0.0
-    const val DRIVE_KA_R = 0.0
-
     // drivetrain setup TODO none of this is right
     const val TRACK_WIDTH = 0.3
     val WHEEL_RADIUS = 0.3.meters
