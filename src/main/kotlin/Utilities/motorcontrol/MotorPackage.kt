@@ -7,10 +7,8 @@ import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import frc.team6502.kyberlib.math.Differentiator
 import frc.team6502.kyberlib.motorcontrol.KMotorController
 
-class MotorPackage(val motor: CANSparkMax, val pid: PIDController, val ff: SimpleMotorFeedforward) {
+class MotorPackage(val motor:CANSparkMax, val pid: PIDController, val ff: SimpleMotorFeedforward, val encoder: CANEncoder) {
     val acceleration = Differentiator()
-
-    val encoder = motor.encoder
 
     var speed
         get() = encoder.velocity

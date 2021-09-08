@@ -20,10 +20,7 @@ import frc.team6502.kyberlib.math.units.extensions.radiansPerSecond
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.AutoDrive
 
-/**
- * Holds the motors and controllers in charge of moving the robot chassis
- */
-object Drivetrain : SubsystemBase() {
+object Drivetrain: SubsystemBase() {
     // motors
     val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
@@ -56,15 +53,9 @@ object Drivetrain : SubsystemBase() {
     // controls
     val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
 
-    /**
-     * Keep real time calculation of the acceleration of each side of drivetrain
-     */
     val leftAccelCalculator = Differentiator()
     val rightAccelCalculator = Differentiator()
 
-    /**
-     * A forward projection of how much voltage to apply to get desired velocity and acceleration
-     */
     val feedforward = SimpleMotorFeedforward(Constants.DRIVE_KS_L, Constants.DRIVE_KV_L, Constants.DRIVE_KA_L)
 
     val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
@@ -75,23 +66,15 @@ object Drivetrain : SubsystemBase() {
     }
 
     // public vars
-    val leftVel  // TODO figure this out better
+    val leftVel
         get() = leftFront.encoder.velocity
     val rightVel
         get() = rightFront.encoder.velocity
     val wheelSpeeds
         get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
 
-    /**
-     * Drive the robot in a specific direction
-     * @param speeds the velocity you want the robot to start moving
-     */
     fun drive (speeds: ChassisSpeeds) { drive(kinematics.toWheelSpeeds(speeds))}
 
-    /**
-     * Drive the robot with specific wheel speeds
-     * @param speeds DifferentialDriveWheelsSpeeds that have instruction for how fast each side should go
-     */
     fun drive(speeds: DifferentialDriveWheelSpeeds) {
         val leftSpeed = speeds.leftMetersPerSecond
         val rightSpeed = speeds.rightMetersPerSecond
@@ -109,23 +92,12 @@ object Drivetrain : SubsystemBase() {
         rightFront.set(rightSpeed)
     }
 
-    /**
-     * Low level drive call.
-     * Applies voltage directly to each side
-     * @param leftVolts Double representing voltage to apply to the two left motors
-     * @param rightVolts Double representing voltage to apply to the two right motors
-     */
     fun driveVolts(leftVolts: Double, rightVolts: Double) {
         leftFront.setVoltage(leftVolts)
         rightFront.setVoltage(rightVolts)
     }
 
-    /**
-     * Display the important values of all the encoders.
-     *
-     * Values: Position, Velocity, Voltage, Current, inverted
-     */
-    private fun logEncoders() {
+    fun logEncoders() {
         val motors = arrayListOf(leftFront, leftBack, rightFront, rightBack)
         val names = arrayListOf("Left Front", "Left Back", "Right Front", "Right Back")
         for (info in motors.zip(names)) {
@@ -140,10 +112,7 @@ object Drivetrain : SubsystemBase() {
         }
     }
 
-    /**
-     * Log important debugging values
-     */
-    private fun debug() {
+    fun debug() {
         SmartDashboard.putNumber("Left Error", leftPID.positionError)
         SmartDashboard.putNumber("Right Error", rightPID.positionError)
 //        leftPID.initSendable()

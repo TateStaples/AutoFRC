@@ -6,23 +6,18 @@ import frc.team6502.robot.subsystems.Drivetrain
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import frc.team6502.robot.RobotContainer
 
-/**
- * The default drive command. Systemically takes user important and applies normal PIDF manipulations to make it happen
- * @property Drivetrain required subsystem for this command
- */
 class DefaultDrive: CommandBase() {
+
+
     init {
         addRequirements(Drivetrain)
     }
-
     override fun initialize() {
 
     }
 
-    /**
-     * Execute part of the drive loop. Get controller values and apply the information.
-     */
     override fun execute() {
+//        Drivetrain.odometry.update(RobotContainer.gyro.getRotation2d(), Drivetrain.leftFront)
         val turn = RobotContainer.controller.rightX
         val forward = RobotContainer.controller.leftY
 
