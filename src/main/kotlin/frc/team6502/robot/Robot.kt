@@ -21,7 +21,7 @@ import frc.team6502.robot.subsystems.Drivetrain
 
 
 /**
- * Main robot class.
+ * Main robot class. Runs the main control loops
  */
 class Robot : TimedRobot() {
 

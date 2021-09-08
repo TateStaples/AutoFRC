@@ -4,5 +4,5 @@ import edu.wpi.first.wpilibj.Joystick
 
 abstract class KController(port: Int = 0) {
 
-    val joystick = Joystick(port)
+    protected val joystick = Joystick(port)
 }

@@ -3,9 +3,8 @@ package frc.team6502.robot
 import frc.team6502.kyberlib.math.units.extensions.meters
 
 /**
- * Define any constants in this file.
+ * This file holds all important constants throughout the project
  */
-
 object Constants{
     const val DEBUG = false
     const val AUTO = false
