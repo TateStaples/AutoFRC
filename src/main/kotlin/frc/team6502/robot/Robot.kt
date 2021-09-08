@@ -25,6 +25,8 @@ import frc.team6502.robot.subsystems.Drivetrain
  */
 class Robot : TimedRobot() {
 
+    val field = Field2d()
+
     override fun robotInit() {
         // report language as kotlin instead of assuming java because of JVM
         HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin)
@@ -46,15 +48,38 @@ class Robot : TimedRobot() {
     }
 
     override fun autonomousInit() {
-        val trajectory = RobotContainer.navigation.trajectory(arrayListOf(Translation2d(3.0, 0.0)))
-        RobotContainer.navigation.currentTrajectory = trajectory
-        val ramseteCommand = RobotContainer.navigation.ramsete(trajectory)
+        val trajectory = TrajectoryGenerator.generateTrajectory(
+            Pose2d(0.0, 0.0, Rotation2d(0.0)),
+            listOf(Translation2d(1.0, 1.0), Translation2d(2.0, -1.0)),
+            Pose2d(3.0, 0.0, Rotation2d(0.0)),
+            TrajectoryConfig(3.0.feet.value, 3.0.feet.value).apply {
+                setKinematics(Drivetrain.kinematics)
+            }
+        )
+
+        SmartDashboard.putData("Field", field)  // TODO get an image for this
+        field.getObject("traj").setTrajectory(trajectory)
+        val ramseteCommand = RamseteCommand(
+            trajectory,
+            RobotContainer.navigation::pose,
+            RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
+            Drivetrain.feedforward,
+            Drivetrain.kinematics,
+            Drivetrain::wheelSpeeds,
+            Drivetrain.leftPID,
+            Drivetrain.rightPID,
+            // RamseteCommand passes volts to the callback
+            Drivetrain::driveVolts,
+            Drivetrain
+        )
+
+        RobotContainer.navigation.pose = trajectory.initialPose
 
         ramseteCommand.andThen(Runnable{ Drivetrain.driveVolts(0.0, 0.0) })
     }
 
     override fun autonomousPeriodic() {
-
+        field.robotPose = RobotContainer.navigation.pose
     }
 
     override fun teleopInit() {

@@ -2,7 +2,6 @@ package frc.team6502.robot.Auto
 
 import edu.wpi.first.wpilibj.controller.RamseteController
 import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator
-import edu.wpi.first.wpilibj.estimator.MecanumDrivePoseEstimator
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
@@ -45,7 +44,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
      */
-    private val difEstimator = DifferentialDrivePoseEstimator(  // TODO: think of going back to mecanum
+    private var estimator = DifferentialDrivePoseEstimator(  // TODO: think of going back to mecanum
         heading, initialPose,
         // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N5.instance, N1.instance).fill(0.02, 0.02, 0.01, 0.02, 0.02),
@@ -54,23 +53,13 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         // Global measurement standard deviations. X, Y, and theta.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01)
     )
-    private val mecEstimator = MecanumDrivePoseEstimator(
-        heading, initialPose, Drivetrain.mecKinematics,
-        // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
-        MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01),
-        // Local measurement standard deviations. gyro.
-        MatBuilder(N1.instance, N1.instance).fill(0.02),
-        // Global measurement standard deviations. X, Y, and theta.
-        MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01)
-    )
-
 
     /**
      * A object with restrictions on how the robot will move
      */
     private val pathingConfig =
         TrajectoryConfig(1.0, 1.0).apply { // TODO: mess with this
-            if (Constants.MECANUM) setKinematics(Drivetrain.mecKinematics) else setKinematics(Drivetrain.difKinematics)
+            setKinematics(Drivetrain.kinematics)
         }
 
     /**
@@ -93,14 +82,13 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * @param trajectory path for the robot to follow
      */
     fun ramsete(trajectory: Trajectory): RamseteCommand {
-        // TODO i think you don't need ramsete for mecanum
         return RamseteCommand(
             trajectory,
             this::pose,
             RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
             Drivetrain.feedforward,
-            Drivetrain.difKinematics,
-            Drivetrain::difWheelSpeeds,
+            Drivetrain.kinematics,
+            Drivetrain::wheelSpeeds,
             Drivetrain.leftPID,
             Drivetrain.rightPID,
             // RamseteCommand passes volts to the callback
@@ -129,12 +117,11 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     // ----- public variables ----- //
     // location
     val heading  // what direction the robot is facing
-        get() = Rotation2d(0.0) // TODO RobotContainer.gyro
+        get() = Rotation2d(0.0) //RobotContainer.gyro
     var pose  // the location and direction of the robot
-        get() = if (Constants.MECANUM) mecEstimator.estimatedPosition else difEstimator.estimatedPosition
+        get() = estimator.estimatedPosition
         set(value) {
-            if (Constants.MECANUM) mecEstimator.resetPosition(value, heading)
-            else difEstimator.resetPosition(value, heading)
+            estimator.resetPosition(value, heading)
             this.field.robotPose = value
         }
     val position  // the estimated location of the robot
@@ -146,12 +133,21 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             field = value
         }
 
+    // speed
+    val leftVel  // how fast the left side of the robot is going
+        get() = Drivetrain.leftFront.encoder.velocity
+    val rightVel  // how fast the right side of the robot is going
+        get() = Drivetrain.rightFront.encoder.velocity
+    val wheelSpeeds  // combines wheel speeds
+        get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
+    val chassisVel  // general velocity of the robot
+        get() = Drivetrain.kinematics.toChassisSpeeds(wheelSpeeds)
+
     /**
      * Update position based on estimated motion
      */
     private fun update() {  // estimate motion
-        if (Constants.AUTO) mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
-        else difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftVel, Drivetrain.rightVel)
+        estimator.update(heading, wheelSpeeds, leftVel.meters.value, rightVel.meters.value)
     }
 
     /**
@@ -161,7 +157,16 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * @param time the time of the detection
      */
     fun update(globalPosition: Pose2d, time: Double) {  // apply global position update
-        if (Constants.MECANUM) mecEstimator.addVisionMeasurement(globalPosition, time)
-        else difEstimator.addVisionMeasurement(globalPosition, time)
+        estimator.addVisionMeasurement(globalPosition, time)
     }
+
+    // a demo trajectory to follow
+    val demo = TrajectoryGenerator.generateTrajectory(
+        Pose2d(0.0, 0.0, Rotation2d(0.0)),
+        listOf(Translation2d(1.0, 1.0), Translation2d(2.0, -1.0)),
+        Pose2d(3.0, 0.0, Rotation2d(0.0)),
+        TrajectoryConfig(3.0.feet.value, 3.0.feet.value).apply {
+            setKinematics(Drivetrain.kinematics)
+        }
+    )
 }

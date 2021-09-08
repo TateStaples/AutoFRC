@@ -17,9 +17,9 @@ import kotlin.random.Random
  * @author TateStaples
  */
 object PathPlanner {
-    val field = RobotContainer.navigation.field
+    val field = KField2d() //RobotContainer.navigation.field
     val tree = Tree()
-    val random = Random(4)//Timer.getFPGATimestamp().toInt())
+    val random = Random(3)//Timer.getFPGATimestamp().toInt())
 
     var minGoalDistance = 0.5.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path

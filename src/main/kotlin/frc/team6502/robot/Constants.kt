@@ -8,8 +8,6 @@ import frc.team6502.kyberlib.math.units.extensions.meters
 object Constants{
     const val DEBUG = false
     const val AUTO = false
-    const val MECANUM = false
-
     // ------ PORTS ------ //
 
     // drive ports
