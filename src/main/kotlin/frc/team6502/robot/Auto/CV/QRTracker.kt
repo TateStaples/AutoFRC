@@ -8,6 +8,9 @@ import frc.team6502.kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
 import org.opencv.core.Mat
 import org.opencv.objdetect.QRCodeDetector
+import java.awt.image.DataBufferByte
+import java.io.File
+import javax.imageio.ImageIO
 import kotlin.math.tan
 
 
@@ -55,5 +58,14 @@ object QRTracker {
 //        Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY)
 //        outputStream.putFrame(output)
     }
+
+    val exampleImage: Mat
+        get() {
+            val bufferedImage = ImageIO.read(File("QR-code.png"))
+            val pixels = (bufferedImage.raster.dataBuffer as DataBufferByte).data
+            val source = Mat()
+            source.put(0, 0, pixels)
+            return source
+        }
 
 }

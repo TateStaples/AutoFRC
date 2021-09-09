@@ -10,7 +10,12 @@ import frc.team6502.kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
 import org.opencv.core.Mat
 
+
 object Camera {
+    val matrix = Mat()  // represent rotation and stuff
+    val distorsion = Mat() // represents camera distorsion
+
+
     private val executables = ArrayList<() -> Unit>()
     const val width = 640
     const val height = 480
@@ -58,9 +63,41 @@ object Camera {
             cvSink.grabFrame(source)
             currentImageTime = Timer.getFPGATimestamp()
             outputStream.putFrame(source)
-            return source
+            val mat = Mat()
+            source.copyTo(mat)
+            return mat
         }
 
     var currentImageTime = Timer.getFPGATimestamp()
+
+    fun matToArray(mat: Mat): Array<DoubleArray> {
+        val array = Array(mat.height()) { DoubleArray(mat.width())
+        }
+        for (i in 0 until mat.height()) {
+            for (j in 0 until mat.width()) {
+                array[i][j] = mat.get(i, j)[0]
+            }
+        }
+        return array
+    }
+
+    fun arrayToMat(array: Array<DoubleArray>): Mat {
+        val rows = array.size
+        val cols = array[0].size
+        val matObject = Mat()
+        for (row in 0..rows) {
+            for (col in 0..cols)
+                matObject.put(row, col, array[row][col])
+        }
+        return matObject
+    }
+
+    fun arrayToMat(array: DoubleArray): Mat {
+        val matObject = Mat()
+        matObject.put(0, 0, *array)  // idk if this works
+        return matObject
+
+    }
+
 
 }
