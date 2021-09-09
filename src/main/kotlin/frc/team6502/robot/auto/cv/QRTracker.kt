@@ -1,10 +1,11 @@
-package frc.team6502.robot.auto.CV
+package frc.team6502.robot.auto.cv
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
+import org.bytedeco.javacpp.opencv_objdetect
 import org.opencv.core.Mat
 import org.opencv.objdetect.QRCodeDetector
 import java.awt.image.DataBufferByte
@@ -31,7 +32,8 @@ object QRTracker {
         val image = Camera.currentImage
         val time = Camera.currentImageTime
         if (image.empty()) return
-        val message = tracker.detectAndDecode(Camera.currentImage, points)
+        tracker.detect(Camera.currentImage, points)
+        val message = "Error: you havent set this up yet"
         if (!locationMap.contains(message)) {
             println("Unknown QR code Found: $message, $points")
             return

@@ -1,4 +1,4 @@
-package frc.team6502.robot.auto.CV
+package frc.team6502.robot.auto.cv
 
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.wpilibj.Timer
@@ -12,9 +12,9 @@ import org.opencv.core.Mat
 
 
 object Camera {
-    val matrix = Mat()  // represent rotation and stuff
-    val distorsion = Mat() // represents camera distorsion
-
+    val matrix = Mat()  // represent rotation and stuff (this should be getter method because depends on fused heading)
+    val distortion = Mat() // represents camera distortion
+    val cameraOffset = Translation2d(0.0, 0.0)  // how far off the camera is from the center of the robot (shouldn't be super important)
 
     private val executables = ArrayList<() -> Unit>()
     const val width = 640
