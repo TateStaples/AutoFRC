@@ -1,6 +1,6 @@
 package frc.team6502.robot
 
-import frc.team6502.kyberlib.math.units.extensions.meters
+import kyberlib.math.units.extensions.meters
 
 /**
  * This file holds all important constants throughout the project

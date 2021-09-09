@@ -1,11 +1,11 @@
 package frc.team6502.robot
 
-import Utilities.input.controller.KXboxController
+import kyberlib.input.controller.KXboxController
 import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
-import frc.team6502.robot.Auto.Navigation
-import frc.team6502.robot.Auto.pathing.PathPlanner
+import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.subsystems.Drivetrain
 import kotlin.math.PI
 
