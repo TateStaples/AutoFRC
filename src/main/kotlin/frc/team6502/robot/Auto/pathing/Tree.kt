@@ -3,19 +3,17 @@ package frc.team6502.robot.Auto
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import frc.team6502.kyberlib.math.units.extensions.degrees
 import frc.team6502.kyberlib.math.units.extensions.radians
+import frc.team6502.robot.Auto.pathing.PathPlanner
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.geom.AffineTransform
 import java.awt.geom.Ellipse2D
 import java.util.function.Predicate
 import javax.swing.JFrame
 import javax.swing.JPanel
 import kotlin.math.atan
 import kotlin.math.sqrt
-import kotlin.properties.Delegates
 import kotlin.random.Random
 
 
@@ -218,7 +216,7 @@ class Tree {
      * Prune the tree with updated obstacle information
      */
     fun pruneBlocked() {
-        prune {PathPlanner.field.inField(it.position)}
+        prune { PathPlanner.field.inField(it.position)}
     }
 
     /**

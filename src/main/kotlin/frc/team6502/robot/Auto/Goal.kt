@@ -2,6 +2,7 @@ package frc.team6502.robot.Auto
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj2.command.Command
+import frc.team6502.robot.Auto.pathing.PathPlanner
 import frc.team6502.robot.RobotContainer
 
 /**

@@ -1,10 +1,12 @@
-package frc.team6502.robot.Auto
+package frc.team6502.robot.Auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import frc.team6502.kyberlib.math.units.extensions.feet
+import frc.team6502.robot.Auto.Node
+import frc.team6502.robot.Auto.Tree
 import frc.team6502.robot.RobotContainer
 import kotlin.math.cos
 import kotlin.math.sin
