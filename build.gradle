@@ -60,6 +60,7 @@ dependencies {
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.21"
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2'
 
 
     // Enable simulation gui support. Must check the box in vscode to enable support
