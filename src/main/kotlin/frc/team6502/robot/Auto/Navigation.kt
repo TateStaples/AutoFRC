@@ -133,7 +133,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
     // ----- public variables ----- //
     // location
     var heading  // what direction the robot is facing
-        get() = Rotation2d(RobotContainer.gyro.fusedHeading.degrees.value)
+        get() =RobotContainer.gyro.fusedHeading.degrees
         set(value) {RobotContainer.gyro.fusedHeading = value.degrees}
     var pose  // the location and direction of the robot
         get() = if (Constants.MECANUM) mecEstimator.estimatedPosition else difEstimator.estimatedPosition

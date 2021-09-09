@@ -129,7 +129,7 @@ abstract class KMotorController : KBasicMotorController() {
                 logError("Cannot get position without a configured encoder")
                 return 0.rotations
             }
-            return readPosition() / gearRatio
+            return (readPosition().value / gearRatio).radians
         }
         set(value) {
             positionSetpoint = value
