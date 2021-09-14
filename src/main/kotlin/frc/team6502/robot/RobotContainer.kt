@@ -4,6 +4,7 @@ import kyberlib.input.controller.KXboxController
 import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.subsystems.Drivetrain
@@ -43,6 +44,10 @@ object RobotContainer {
         // initialize subsystems here:
         Drivetrain
         PathPlanner
+
+        SmartDashboard.putBoolean("AUTO", Constants.AUTO)
+        SmartDashboard.putBoolean("DEBUG", Constants.DEBUG)
+        SmartDashboard.putBoolean("MECANUM", Constants.MECANUM)
     }
 
 }

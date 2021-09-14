@@ -18,6 +18,7 @@ import kyberlib.math.units.extensions.degrees
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.math.units.string
 import java.util.*
 
 // TODO: put characterize stuff from last year on github
@@ -121,7 +122,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         update()
         field.robotPose = pose
         if (Constants.DEBUG) {
-            SmartDashboard.putString("Goal", currentGoal?.name)
+            SmartDashboard.putNumber("gyro", heading.degrees)
         }
     }
 
@@ -150,8 +151,12 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * Update position based on estimated motion
      */
     private fun update() {  // estimate motion
-        if (Constants.AUTO) mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
-        else difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftVel, Drivetrain.rightVel)
+        val pose2d: Pose2d
+        if (Constants.MECANUM) pose2d = mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
+        else pose2d = difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftVel, Drivetrain.rightVel)
+
+        if (Constants.DEBUG)
+            SmartDashboard.putString("pose", pose2d.string)
     }
 
     /**
@@ -161,6 +166,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * @param time the time of the detection
      */
     fun update(globalPosition: Pose2d, time: Double) {  // apply global position update
+        SmartDashboard.putString("global pose", globalPosition.string)
         if (Constants.MECANUM) mecEstimator.addVisionMeasurement(globalPosition, time)
         else difEstimator.addVisionMeasurement(globalPosition, time)
     }
