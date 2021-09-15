@@ -36,10 +36,10 @@ object PathPlanner {
      * @param pose2d the pose that you want the robot to get to
      * @return a trajectory that will track your robot to the goal target
      */
-    fun pathTo(pose2d: Pose2d): Trajectory {
+    fun pathTo(position: Translation2d): Trajectory {
         if (tree.nodeCount > 0)
             tree.pruneInformed()
-        loadTree(pose2d.translation, RobotContainer.navigation.position)
+        loadTree(position, RobotContainer.navigation.position)
         // TODO: figure out how to maintain rotation information
         return treeToTrajectory()
     }
@@ -52,7 +52,7 @@ object PathPlanner {
     fun updateTrajectory(trajectory: Trajectory): Trajectory {
         tree.pruneBlocked()
         if (tree.vertices.contains(endNode!!)) return trajectory
-        return pathTo(trajectory.states.last().poseMeters)
+        return pathTo(trajectory.states.last().poseMeters.translation)
     }
 
     /**

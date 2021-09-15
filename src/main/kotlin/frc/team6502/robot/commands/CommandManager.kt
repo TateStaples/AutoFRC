@@ -1,34 +1,70 @@
 package frc.team6502.robot.auto
 
+import edu.wpi.first.wpilibj.controller.RamseteController
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
-import frc.team6502.robot.commands.DefaultDrive
 import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 import kotlin.collections.ArrayList
 
-class Test : CommandBase()
-class Test2 : CommandBase()
 
 object CommandManager : Command {
-    private val queue = LinkedList<Command>()
+    private val queue = LinkedList<Command>()  // change to list by Subsystem
 
     private var activeCommand: Command? = null
         set(value) {
             value?.initialize()
             field = value
         }
+    /**
+     * Generate a command to follow a designated trajectory
+     *
+     * @param trajectory path for the robot to follow
+     */
+    fun ramsete(trajectory: Trajectory): RamseteCommand {
+        return RamseteCommand(
+            trajectory,
+            RobotContainer.navigation::pose,
+            RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
+            Drivetrain.feedforward,
+            Drivetrain.difKinematics,
+            Drivetrain::difWheelSpeeds,
+            Drivetrain.leftPID,
+            Drivetrain.rightPID,
+            // RamseteCommand passes volts to the callback
+            Drivetrain::driveVolts,
+            Drivetrain
+        )
+    }
+    /**
+     * Generate a command to follow a designated trajectory
+     * @param trajectory path for the robot to follow
+     */
+    fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
+        return MecanumControllerCommand(trajectory, {RobotContainer.navigation.pose}, Drivetrain.mecKinematics,
+            Drivetrain.leftPID, Drivetrain.rightPID, Drivetrain.rotationPID,
+            Constants.velocity.value,
+            Drivetrain::drive,
+            Drivetrain
+        )
+    }
 
+    /**
+     * Drivetrain invariant method to get follow trajectory command
+     */
+    fun follow(trajectory: Trajectory): Command {
+        return if (Constants.MECANUM) mecCommand(trajectory)
+        else ramsete(trajectory)
+    }
     /**
      * Adds args trajectories to queue
      * @param trajectories list of trajectories to add to the queue. Will follow these trajectories one at a time
      */
     fun enqueue(vararg trajectories: Trajectory) {
         for (trajectory in trajectories) {
-            if (Constants.MECANUM) queue.add(RobotContainer.navigation.mecCommand(trajectory))
-            else queue.add(RobotContainer.navigation.ramsete(trajectory))
+            queue.add(follow(trajectory))
         }
     }
     /**
@@ -46,8 +82,7 @@ object CommandManager : Command {
     fun queueInsert(vararg trajectories: Trajectory, index: Int = 0) {
         val commands = arrayListOf<Command>()
         for (trajectory in trajectories) {
-            if (Constants.MECANUM) commands.add(RobotContainer.navigation.mecCommand(trajectory))
-            else commands.add(RobotContainer.navigation.ramsete(trajectory))
+            commands.add(follow(trajectory))
         }
         queueInsert(*commands.toTypedArray(), index = index)
     }

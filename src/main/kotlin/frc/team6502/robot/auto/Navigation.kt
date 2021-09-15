@@ -73,36 +73,6 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
 
     fun trajectory(vararg waypoints: Translation2d): Trajectory = trajectory(waypoints.toList())
 
-    /**
-     * Generate a command to follow a designated trajectory
-     *
-     * @param trajectory path for the robot to follow
-     */
-    fun ramsete(trajectory: Trajectory): RamseteCommand {
-        return RamseteCommand(
-            trajectory,
-            this::pose,
-            RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
-            Drivetrain.feedforward,
-            Drivetrain.difKinematics,
-            Drivetrain::difWheelSpeeds,
-            Drivetrain.leftPID,
-            Drivetrain.rightPID,
-            // RamseteCommand passes volts to the callback
-            Drivetrain::driveVolts,
-            Drivetrain
-        )
-    }
-
-    fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
-        return MecanumControllerCommand(trajectory, {pose}, Drivetrain.mecKinematics,
-            Drivetrain.leftPID, Drivetrain.rightPID, Drivetrain.rotationPID,
-            Constants.velocity.value,
-            Drivetrain::drive,
-            Drivetrain
-        )
-    }
-
     init {
         SmartDashboard.putData("Field", field)
     }
