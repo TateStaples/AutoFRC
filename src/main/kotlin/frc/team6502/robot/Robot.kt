@@ -1,10 +1,7 @@
 package frc.team6502.robot
 
-import edu.wpi.first.hal.FRCNetComm
-import edu.wpi.first.hal.HAL
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import edu.wpi.first.wpilibj2.command.CommandScheduler
-import frc.team6502.robot.subsystems.Drivetrain
+import frc.team6502.robot.auto.CommandManager
 import kyberlib.command.KRobot
 
 
@@ -31,11 +28,8 @@ class Robot : KRobot() {
     }
 
     override fun autonomousInit() {
-        val trajectory = RobotContainer.navigation.trajectory(arrayListOf(Translation2d(3.0, 0.0)))
-        RobotContainer.navigation.currentTrajectory = trajectory
-        val ramseteCommand = RobotContainer.navigation.ramsete(trajectory)
-
-        ramseteCommand.andThen(Runnable{ Drivetrain.driveVolts(0.0, 0.0) })
+        val trajectory = RobotContainer.navigation.trajectory(Translation2d(3.0, 0.0))
+        CommandManager.enqueue(trajectory)
     }
 
     override fun autonomousPeriodic() {

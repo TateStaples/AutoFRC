@@ -20,6 +20,7 @@ import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.string
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
@@ -30,9 +31,6 @@ import java.util.*
 class Navigation(initialPose: Pose2d) : SubsystemBase() {
     val field = KField2d()
     val fieldTraj: FieldObject2d = field.getObject("traj")
-    private val trajectoryQueue: Queue<Trajectory> = LinkedList() // should I make this into seperate class
-    val currentGoal: Goal? = null
-
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
      */
@@ -48,7 +46,6 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         MatBuilder(N1.instance, N1.instance).fill(0.02), // Local measurement standard deviations. gyro.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01) // Global measurement standard deviations. X, Y, and theta.
     )
-
 
     /**
      * A object with restrictions on how the robot will move
@@ -73,6 +70,8 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             pathingConfig
         )
     }
+
+    fun trajectory(vararg waypoints: Translation2d): Trajectory = trajectory(waypoints.toList())
 
     /**
      * Generate a command to follow a designated trajectory
@@ -135,17 +134,6 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         }
     val position  // the estimated location of the robot
         get() = pose.translation
-    var currentTrajectory: Trajectory? = null
-        set(value) {
-            if (value != null)
-                fieldTraj.setTrajectory(value)
-            field = value
-        }
-    var activeCommand: Command
-        get() = CommandScheduler.getInstance().requiring(Drivetrain)
-        set(value) {
-            value.execute()
-        }
 
     /**
      * Update position based on estimated motion
@@ -158,7 +146,6 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         if (Constants.DEBUG)
             SmartDashboard.putString("pose", pose2d.string)
     }
-
     /**
      * Update position based on a different position guess
      *

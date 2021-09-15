@@ -80,7 +80,7 @@ class Node {
     }
 
     override fun toString(): String {
-        return "($position) -- ($nodeLengthFromRoot, ${parent?.nodeLengthFromRoot})"
+        return "node($position)"
 //        return hashCode().toString()
     }
 }

@@ -1,15 +1,20 @@
-package frc.team6502.robot.commands
+package frc.team6502.robot.auto
 
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.commands.DefaultDrive
 import java.util.*
+import kotlin.collections.ArrayList
 
-class CommandManager : CommandBase() {
+class Test : CommandBase()
+class Test2 : CommandBase()
+
+object CommandManager : Command {
     private val queue = LinkedList<Command>()
 
-    var activeCommand: Command? = null
+    private var activeCommand: Command? = null
         set(value) {
             value?.initialize()
             field = value
@@ -74,6 +79,23 @@ class CommandManager : CommandBase() {
      * Creates command to run commands together
      */
     fun combine(vararg commands: Command) = ParallelCommandGroup(*commands)
+
+    fun index(commandType: Class<Command>): List<Int> {
+        val indices = ArrayList<Int>()
+        for ((index, command) in queue.withIndex()) {
+            if (command.javaClass == commandType) indices.add(index)
+        }
+        return indices
+    }
+    /**
+     * Check if two commands are the same
+     * @return boolean of whether they are the same
+     */
+    private fun compare(command1: Command, command2: Command): Boolean {
+        if (command1.javaClass != command2.javaClass) return false
+        if (command1 is RamseteCommand || command1 is MecanumControllerCommand) return false
+        return true
+    }
     /**
      * Run the active command.
      * Also check if the command is done.
@@ -88,4 +110,12 @@ class CommandManager : CommandBase() {
     }
 
     override fun isFinished(): Boolean = false
+
+    override fun getRequirements(): MutableSet<Subsystem> {
+        val set = mutableSetOf<Subsystem>()
+        activeCommand?.let { set.addAll(it.requirements) }
+        for (command in queue)
+            set.addAll(command.requirements)
+        return set
+    }
 }

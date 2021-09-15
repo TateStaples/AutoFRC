@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import frc.team6502.robot.commands.CommandManager
+import frc.team6502.robot.auto.CommandManager
 import kotlin.math.PI
 
 /**
@@ -101,7 +101,8 @@ object Drivetrain : SubsystemBase() {
      * Setup the default command for the system
      */
     init {
-        if (Constants.AUTO) defaultCommand = CommandManager() else DefaultDrive()
+        defaultCommand = CommandManager
+        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
     }
 
     /**
@@ -154,7 +155,7 @@ object Drivetrain : SubsystemBase() {
         if (Constants.DEBUG) {
             debug()
         }
-//        driveVo(lPID + lFF, rPID + rFF)
+//        driveVolts(lPID + lFF, rPID + rFF)
 
         leftFront.set(leftSpeed)
         rightFront.set(rightSpeed)

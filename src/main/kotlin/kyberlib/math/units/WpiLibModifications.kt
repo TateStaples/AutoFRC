@@ -3,9 +3,9 @@ package kyberlib.math.units
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import kyberlib.math.units.extensions.Angle
-import kyberlib.math.units.extensions.Length
-import kyberlib.math.units.extensions.meters
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
+import kyberlib.math.units.extensions.*
+import kotlin.math.sqrt
 
 val Pose2d.string: String
     get() = "pose(${this.x}, ${this.y}, ${this.rotation.degrees}"
@@ -16,3 +16,6 @@ val Translation2d.string: String
 
 fun Translation2d(x: Length, y:Length): Translation2d = Translation2d(x.meters, y.meters)
 fun Translation2d(x: Length, rotation: Rotation2d): Translation2d = Translation2d(x.meters, rotation)
+
+val ChassisSpeeds.speed: LinearVelocity
+        get() = sqrt(vxMetersPerSecond * vxMetersPerSecond + vyMetersPerSecond * vyMetersPerSecond).metersPerSecond
