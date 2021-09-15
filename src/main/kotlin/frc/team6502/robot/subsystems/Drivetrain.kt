@@ -19,6 +19,9 @@ import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.AutoDrive
+import kyberlib.math.units.Pose2d
+import kyberlib.math.units.Translation2d
+import kyberlib.math.units.extensions.degrees
 import kotlin.math.PI
 
 /**
@@ -98,9 +101,8 @@ object Drivetrain : SubsystemBase() {
 
     val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
     val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
-    private val rotationPID = ProfiledPIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D, TrapezoidProfile.Constraints(1.0, 1.0))
+    val rotationPID = ProfiledPIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D, TrapezoidProfile.Constraints(1.0, 1.0))
 
-    private val mecController = HolonomicDriveController(leftPID, rightPID, rotationPID)
     /**
      * Setup the default command for the system
      */
@@ -173,15 +175,6 @@ object Drivetrain : SubsystemBase() {
         leftBack.set(speeds.rearLeftMetersPerSecond)
         rightFront.set(speeds.frontRightMetersPerSecond)
         rightBack.set(speeds.rearRightMetersPerSecond)
-    }
-
-    /**
-     * Prototyped use of Holonomic Drive Controller - no idea if any of this works
-     */
-    fun driveTo(state: Trajectory.State) {
-        if (Constants.MECANUM){
-            mecController.calculate(RobotContainer.navigation.pose, state, RobotContainer.navigation.heading)
-        }
     }
 
     /**
