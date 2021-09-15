@@ -26,7 +26,7 @@ class Limelight(private val table: String = "limelight") {
     /**
      * Is the camera currently detecting an object?
      */
-    val valid
+    val targetFound
         get() = tbl.getEntry("tv").getDouble(0.0) != 0.0
 
     /**

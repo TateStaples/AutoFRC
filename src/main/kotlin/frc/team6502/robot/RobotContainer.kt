@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.vision.Limelight
 import kotlin.math.PI
 
 /**
@@ -21,6 +22,11 @@ object RobotContainer {
     val navigation = Navigation(Pose2d(0.0, 0.0, Rotation2d(0.0)))
 
     val gyro = PigeonIMU(Constants.PIGEON_PORT)
+
+    val limelight = Limelight().apply {
+        driverMode = true
+
+    }
 
     /**
      * The main user input device of robot

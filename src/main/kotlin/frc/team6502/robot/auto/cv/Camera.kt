@@ -1,20 +1,35 @@
 package frc.team6502.robot.auto.cv
 
+import edu.wpi.cscore.HttpCamera
+import edu.wpi.cscore.MjpegServer
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kyberlib.math.units.extensions.Distance
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
+import kyberlib.math.units.Translation2d
+import kyberlib.math.units.extensions.feet
+import kyberlib.vision.Limelight
 import org.opencv.core.Mat
 
 
 object Camera {
+    private const val url = "http://10.65.02.11:5800"  // http://10.TE.AM.11:5800
+    private val lime = Limelight().apply { driverMode = true }
+    private val video = HttpCamera("limelight", "$url/stream.mjpg")
+
+    init {
+        Shuffleboard.getTab("Limelight feed").add(video)
+        CameraServer.getInstance().addCamera(video)
+    }
     val matrix = Mat()  // represent rotation and stuff (this should be getter method because depends on fused heading)
     val distortion = Mat() // represents camera distortion
-    val cameraOffset = Translation2d(0.0, 0.0)  // how far off the camera is from the center of the robot (shouldn't be super important)
+    val cameraOffset = Translation2d(0.feet, 0.feet)  // how far off the camera is from the center of the robot (shouldn't be super important)
 
     private val executables = ArrayList<() -> Unit>()
     const val width = 640
@@ -23,7 +38,7 @@ object Camera {
     val hFOV = 90.0.degrees
     val vFOV = 90.0.degrees
 
-    private val camera = CameraServer.getInstance().startAutomaticCapture()
+//    private val camera = CameraServer.getInstance().startAutomaticCapture()
     private val cvSink = CameraServer.getInstance().video
     private val outputStream = CameraServer.getInstance().putVideo("Video", 640, 480)
 
