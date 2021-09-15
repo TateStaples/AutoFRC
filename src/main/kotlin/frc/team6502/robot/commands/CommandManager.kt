@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.DefaultDrive
+import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -101,7 +102,10 @@ object CommandManager : Command {
      * Also check if the command is done.
      */
     override fun execute() {
-        if (activeCommand == null && queue.isEmpty()) return
+        if (activeCommand == null && queue.isEmpty()) {
+            Drivetrain.driveAllVolts(0.0, 0.0, 0.0, 0.0)
+            return
+        }
         if (activeCommand == null) activeCommand = next()
         activeCommand!!.execute()
         if (activeCommand!!.isFinished) {
