@@ -68,7 +68,7 @@ object Camera {
         // these will be circular coordinates
         val hTheta = hPercent * hFOV.degrees
 //        val vTheta = vPercent * vFOV.degrees
-        val delta = Translation2d(dis.meters, hTheta.degrees.plus(cameraRotation))  // TODO no idea if this works at all
+        val delta = Translation2d(dis, hTheta.degrees.plus(cameraRotation))  // TODO no idea if this works at all
         val currentPos = detectedPosition.minus(delta) // this doesnt work
         return currentPos
     }

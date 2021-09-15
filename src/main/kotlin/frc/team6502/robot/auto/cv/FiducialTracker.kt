@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.RobotContainer
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import kyberlib.math.units.extensions.radians
 import org.opencv.aruco.Aruco
 import org.opencv.aruco.Board
 import org.opencv.calib3d.Calib3d.Rodrigues
@@ -17,7 +16,7 @@ import org.opencv.imgcodecs.Imgcodecs.imwrite
 
 object FiducialTracker {
     val map = mapOf(
-        1 to Pose2d(0.0, 0.0, 0.radians)  // change to 3d points
+        1 to Translation2d(0.0, 0.0)  // change to 3d points
     )
 
     val width = 10.inches  // marker size
@@ -89,10 +88,11 @@ object FiducialTracker {
                 doubleArrayOf(r[2, 0][0], r[2, 1][0], r[0, 2][0], translation[0, 0][0]),
                 doubleArrayOf(0.0, 0.0, 0.0, 1.0)
             )
+            // https://docs.opencv.org/3.4/d5/dae/tutorial_aruco_detection.html
             val extrinsic = Camera.arrayToMat(extrinsicVals)
             val extrinsicInv = extrinsic.inv()
             val worldPos = doubleArrayOf(extrinsicInv[0,3][0], extrinsicInv[1,3][0], extrinsicInv[2,3][0])
-            val location = Translation2d(worldPos[0], worldPos[1])
+            val location = Translation2d(worldPos[0], worldPos[1]).plus(map[id])
             println("camera update took ${Timer.getFPGATimestamp() - time} seconds")
             RobotContainer.navigation.update(Pose2d(location, RobotContainer.navigation.heading), time)
         }
