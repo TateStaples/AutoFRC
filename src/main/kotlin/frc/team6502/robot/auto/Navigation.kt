@@ -6,12 +6,12 @@ import edu.wpi.first.wpilibj.estimator.MecanumDrivePoseEstimator
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
-import edu.wpi.first.wpilibj2.command.RamseteCommand
-import edu.wpi.first.wpilibj2.command.SubsystemBase
+import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.numbers.*
 import kyberlib.math.units.extensions.degrees
@@ -29,7 +29,7 @@ import java.util.*
  */
 class Navigation(initialPose: Pose2d) : SubsystemBase() {
     val field = KField2d()
-    val fieldTraj = field.getObject("traj")
+    val fieldTraj: FieldObject2d = field.getObject("traj")
     private val trajectoryQueue: Queue<Trajectory> = LinkedList() // should I make this into seperate class
     val currentGoal: Goal? = null
 
@@ -54,7 +54,7 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * A object with restrictions on how the robot will move
      */
     private val pathingConfig =
-        TrajectoryConfig(1.0, 1.0).apply { // TODO: mess with this
+        TrajectoryConfig(Constants.velocity.value, Constants.acceleration.value).apply {
             if (Constants.MECANUM) setKinematics(Drivetrain.mecKinematics) else setKinematics(Drivetrain.difKinematics)
         }
 
@@ -80,7 +80,6 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      * @param trajectory path for the robot to follow
      */
     fun ramsete(trajectory: Trajectory): RamseteCommand {
-        // TODO i think you don't need ramsete for mecanum
         return RamseteCommand(
             trajectory,
             this::pose,
@@ -92,6 +91,15 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             Drivetrain.rightPID,
             // RamseteCommand passes volts to the callback
             Drivetrain::driveVolts,
+            Drivetrain
+        )
+    }
+
+    fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
+        return MecanumControllerCommand(trajectory, {pose}, Drivetrain.mecKinematics,
+            Drivetrain.leftPID, Drivetrain.rightPID, Drivetrain.rotationPID,
+            Constants.velocity.value,
+            Drivetrain::drive,
             Drivetrain
         )
     }
@@ -132,6 +140,11 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             if (value != null)
                 fieldTraj.setTrajectory(value)
             field = value
+        }
+    var activeCommand: Command
+        get() = CommandScheduler.getInstance().requiring(Drivetrain)
+        set(value) {
+            value.execute()
         }
 
     /**

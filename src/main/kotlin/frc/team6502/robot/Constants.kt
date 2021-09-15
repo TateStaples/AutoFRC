@@ -1,6 +1,8 @@
 package frc.team6502.robot
 
+import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
+import kyberlib.math.units.extensions.metersPerSecond
 
 /**
  * This file holds all important constants throughout the project
@@ -38,9 +40,13 @@ object Constants{
 
     // drivetrain setup TODO none of this is right
     const val TRACK_WIDTH = 0.3
-    val WHEEL_RADIUS = 0.3.meters
-    const val DRIVE_GEAR_RATIO = 1.0 / 10.0
+    val WHEEL_RADIUS = 4.inches
+    const val DRIVE_GEAR_RATIO = 1.0
 
     const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
     const val RAMSETE_ZETA = 0.1
+
+    // TODO: mess with this
+    val acceleration = 1.metersPerSecond
+    val velocity = 1.metersPerSecond
 }
