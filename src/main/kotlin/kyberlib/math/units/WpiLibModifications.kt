@@ -1,6 +1,7 @@
 package kyberlib.math.units
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
+import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import kyberlib.math.units.extensions.Angle
 import kyberlib.math.units.extensions.Length
@@ -14,3 +15,4 @@ val Translation2d.string: String
     get() = "pos(${this.x}, ${this.y}"
 
 fun Translation2d(x: Length, y:Length): Translation2d = Translation2d(x.meters, y.meters)
+fun Translation2d(x: Length, rotation: Rotation2d): Translation2d = Translation2d(x.meters, rotation)
