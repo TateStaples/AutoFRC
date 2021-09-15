@@ -5,23 +5,17 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.DefaultDrive
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
-import edu.wpi.first.wpilibj.controller.HolonomicDriveController
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import frc.team6502.robot.RobotContainer
-import frc.team6502.robot.commands.AutoDrive
-import kyberlib.math.units.Pose2d
-import kyberlib.math.units.Translation2d
-import kyberlib.math.units.extensions.degrees
+import frc.team6502.robot.commands.CommandManager
 import kotlin.math.PI
 
 /**
@@ -107,7 +101,7 @@ object Drivetrain : SubsystemBase() {
      * Setup the default command for the system
      */
     init {
-        if (Constants.AUTO) defaultCommand = AutoDrive() else DefaultDrive()
+        if (Constants.AUTO) defaultCommand = CommandManager() else DefaultDrive()
     }
 
     /**
