@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import frc.team6502.robot.auto.CommandManager
+import frc.team6502.robot.commands.CommandManager
 import kotlin.math.PI
 
 /**

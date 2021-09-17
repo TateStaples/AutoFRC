@@ -1,4 +1,4 @@
-package frc.team6502.robot.auto
+package frc.team6502.robot.commands
 
 import edu.wpi.first.wpilibj.controller.RamseteController
 import edu.wpi.first.wpilibj.trajectory.Trajectory
@@ -9,7 +9,10 @@ import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 import kotlin.collections.ArrayList
 
-
+/**
+ * The main auto command manager.
+ * Allows scheduling when to do what.
+ */
 object CommandManager : Command {
     private val queue = LinkedList<Command>()  // change to list by Subsystem
 
@@ -23,7 +26,7 @@ object CommandManager : Command {
      *
      * @param trajectory path for the robot to follow
      */
-    fun ramsete(trajectory: Trajectory): RamseteCommand {
+    private fun ramsete(trajectory: Trajectory): RamseteCommand {
         return RamseteCommand(
             trajectory,
             RobotContainer.navigation::pose,
@@ -42,7 +45,7 @@ object CommandManager : Command {
      * Generate a command to follow a designated trajectory
      * @param trajectory path for the robot to follow
      */
-    fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
+    private fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
         return MecanumControllerCommand(trajectory, {RobotContainer.navigation.pose}, Drivetrain.mecKinematics,
             Drivetrain.leftPID, Drivetrain.rightPID, Drivetrain.rotationPID,
             Constants.velocity.value,
@@ -115,7 +118,14 @@ object CommandManager : Command {
      * Creates command to run commands together
      */
     fun combine(vararg commands: Command) = ParallelCommandGroup(*commands)
+    /**
+     * Creates command to run commands in sequence
+     */
+    fun sequence(vararg commands: Command) = SequentialCommandGroup(*commands)
 
+    /**
+     * Get the list of indices that match a certain command type
+     */
     fun index(commandType: Class<Command>): List<Int> {
         val indices = ArrayList<Int>()
         for ((index, command) in queue.withIndex()) {
@@ -131,6 +141,10 @@ object CommandManager : Command {
         if (command1.javaClass != command2.javaClass) return false
         if (command1 is RamseteCommand || command1 is MecanumControllerCommand) return false
         return true
+    }
+
+    private fun describe(command: Command): String {
+        return command.javaClass.simpleName
     }
     /**
      * Run the active command.
