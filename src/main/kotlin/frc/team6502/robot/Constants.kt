@@ -8,9 +8,9 @@ import kyberlib.math.units.extensions.metersPerSecond
  * This file holds all important constants throughout the project
  */
 object Constants{
-    const val DEBUG = false
+    const val DEBUG = true
     const val AUTO = false
-    const val MECANUM = false
+    const val MECANUM = true
 
     // ------ PORTS ------ //
 
@@ -21,7 +21,7 @@ object Constants{
     const val RIGHT_BACK_ID = 2
 
     // navigation TODO set up and figure out
-    const val PIGEON_PORT = 8
+    const val PIGEON_PORT = 6
 
     // shooter ports
     const val INTAKE_ID = 5
@@ -40,8 +40,8 @@ object Constants{
 
     // drivetrain setup TODO none of this is right
     const val TRACK_WIDTH = 0.3
-    val WHEEL_RADIUS = 4.inches
-    const val DRIVE_GEAR_RATIO = 1.0
+    val WHEEL_RADIUS = 2.inches
+    const val DRIVE_GEAR_RATIO = 1.0 / 100.0
 
     const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
     const val RAMSETE_ZETA = 0.1
