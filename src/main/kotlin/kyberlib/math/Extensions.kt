@@ -1,5 +1,7 @@
 package kyberlib.math
 
+import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -12,4 +14,8 @@ fun Int.invertIf(condition: () -> Boolean) = this * if (condition()) -1 else 1
 
 infix fun Double.epsilonEquals(value: Double): Boolean {
     return (this - value).absoluteValue < 0.00001
+}
+
+fun Double.round(decimals: Int): Double {
+    return BigDecimal(this).setScale(decimals, RoundingMode.HALF_EVEN).toDouble()
 }
