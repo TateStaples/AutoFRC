@@ -165,7 +165,7 @@ object CommandManager : Command {
     override fun isFinished(): Boolean = false
 
     override fun getRequirements(): MutableSet<Subsystem> {
-        val set = mutableSetOf<Subsystem>()
+        val set = mutableSetOf<Subsystem>(Drivetrain)
         activeCommand?.let { set.addAll(it.requirements) }
         for (command in queue)
             set.addAll(command.requirements)
