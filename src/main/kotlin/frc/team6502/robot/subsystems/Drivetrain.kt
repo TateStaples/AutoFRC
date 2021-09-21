@@ -12,10 +12,14 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
+import frc.team6502.robot.RobotContainer
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import frc.team6502.robot.commands.CommandManager
+import kyberlib.math.round
+import kyberlib.math.units.extensions.degrees
+import kyberlib.math.units.string
 import kotlin.math.PI
 
 /**
@@ -32,7 +36,7 @@ object Drivetrain : SubsystemBase() {
     private val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
+        inverted = true
         setSmartCurrentLimit(40)
     }
 
@@ -46,11 +50,11 @@ object Drivetrain : SubsystemBase() {
     private val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
+        inverted = true
         setSmartCurrentLimit(40)
         if (!Constants.MECANUM) follow(rightFront)
     }
-    private val motors = arrayListOf(leftFront, leftBack, rightFront, rightBack)
+    private val motors = arrayOf(leftFront, leftBack, rightFront, rightBack)
 
     /**
      * Configure all the encoders with proper gear ratios
@@ -58,7 +62,7 @@ object Drivetrain : SubsystemBase() {
     init {
         for (motor in motors)
             motor.encoder.apply {
-                velocityConversionFactor = Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
+                velocityConversionFactor = Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 81.4  // no reason but testing
                 positionConversionFactor = (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
             }
     }
@@ -101,9 +105,11 @@ object Drivetrain : SubsystemBase() {
      * Setup the default command for the system
      */
     init {
-        defaultCommand = CommandManager
-        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
+//        defaultCommand = CommandManager  // this needs to require Drivetrain
+//        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
+        defaultCommand = DefaultDrive()
     }
+    val odometry = MecanumDriveOdometry(mecKinematics, RobotContainer.gyro.fusedHeading.degrees)
 
     /**
      * A list of important variables the rest of the code needs easy access to
@@ -136,6 +142,7 @@ object Drivetrain : SubsystemBase() {
      * @param speeds the velocity you want the robot to start moving
      */
     fun drive (speeds: ChassisSpeeds) {
+        if (Constants.DEBUG) debug()
         if (Constants.MECANUM) drive(mecKinematics.toWheelSpeeds(speeds))
         else drive(difKinematics.toWheelSpeeds(speeds))
     }
@@ -160,6 +167,7 @@ object Drivetrain : SubsystemBase() {
         leftFront.set(leftSpeed)
         rightFront.set(rightSpeed)
     }
+
 
     /**
      * Drive a Mecanum robot at specific speeds
