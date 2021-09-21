@@ -1,5 +1,6 @@
 package frc.team6502.robot
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.metersPerSecond
@@ -9,16 +10,20 @@ import kyberlib.math.units.extensions.metersPerSecond
  */
 object Constants{
     const val DEBUG = true
-    const val AUTO = false
+    var AUTO = false
+        set(value) {
+            field = value
+            SmartDashboard.putBoolean("AUTO", value)
+        }
     const val MECANUM = true
 
     // ------ PORTS ------ //
 
     // drive ports
-    const val LEFT_FRONT_ID = 1
-    const val LEFT_BACK_ID = 4
-    const val RIGHT_FRONT_ID = 3
-    const val RIGHT_BACK_ID = 2
+    const val LEFT_FRONT_ID = 2
+    const val LEFT_BACK_ID = 3
+    const val RIGHT_FRONT_ID = 4
+    const val RIGHT_BACK_ID = 1
 
     // navigation TODO set up and figure out
     const val PIGEON_PORT = 6
@@ -41,7 +46,7 @@ object Constants{
     // drivetrain setup TODO none of this is right
     const val TRACK_WIDTH = 0.3
     val WHEEL_RADIUS = 2.inches
-    const val DRIVE_GEAR_RATIO = 1.0 / 100.0
+    const val DRIVE_GEAR_RATIO = 1.0 / 20.0
 
     const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
     const val RAMSETE_ZETA = 0.1
