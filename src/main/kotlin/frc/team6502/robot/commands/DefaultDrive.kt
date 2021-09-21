@@ -25,11 +25,12 @@ class DefaultDrive: CommandBase() {
     override fun execute() {
         val turn = RobotContainer.controller.rightX
         val forward = RobotContainer.controller.leftY
+        val strafe = RobotContainer.controller.leftX
 
         SmartDashboard.putNumber("y", forward.value)
         SmartDashboard.putNumber("x", turn.value)
 
-        val speeds = ChassisSpeeds(forward.value, 0.0, turn.value)
+        val speeds = ChassisSpeeds(forward.value / 3, strafe.value / 3, turn.value / 3)
         Drivetrain.drive(speeds)
     }
 
