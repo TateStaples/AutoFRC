@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team6502.robot.subsystems.Drivetrain
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
+import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 
 /**
@@ -30,9 +31,9 @@ class DefaultDrive: CommandBase() {
         SmartDashboard.putNumber("y", forward.value)
         SmartDashboard.putNumber("x", turn.value)
 
-        val speeds = ChassisSpeeds(forward.value / 3, strafe.value / 3, turn.value / 3)
+        val speeds = ChassisSpeeds(forward.value / 10, strafe.value / 10, turn.value / 10)
         Drivetrain.drive(speeds)
     }
 
-    override fun isFinished() = false
+    override fun isFinished() = Constants.AUTO
 }
