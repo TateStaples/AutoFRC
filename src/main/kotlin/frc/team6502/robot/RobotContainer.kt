@@ -3,7 +3,6 @@ package frc.team6502.robot
 import kyberlib.input.controller.KXboxController
 import com.ctre.phoenix.sensors.PigeonIMU
 import edu.wpi.first.wpilibj.geometry.Pose2d
-import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.auto.pathing.PathPlanner
@@ -15,13 +14,12 @@ import kotlin.math.PI
  * Contains all Robot subsystems and sensors
  */
 object RobotContainer {
+    val gyro = PigeonIMU(Constants.PIGEON_PORT)
     /**
      * The location manager of the robot. Tracks location and odometry updates.
      * Also does some pathing.
      */
     val navigation = Navigation(Pose2d(0.0, 0.0, 0.degrees))
-
-    val gyro = PigeonIMU(Constants.PIGEON_PORT)
 
     /**
      * The main user input device of robot
