@@ -109,7 +109,6 @@ object Drivetrain : SubsystemBase() {
 //        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
         defaultCommand = DefaultDrive()
     }
-    val odometry = MecanumDriveOdometry(mecKinematics, RobotContainer.gyro.fusedHeading.degrees)
 
     /**
      * A list of important variables the rest of the code needs easy access to
