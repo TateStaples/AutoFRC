@@ -1,6 +1,5 @@
 package frc.team6502.robot.auto
 
-import edu.wpi.first.wpilibj.controller.RamseteController
 import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator
 import edu.wpi.first.wpilibj.estimator.MecanumDrivePoseEstimator
 import edu.wpi.first.wpilibj.geometry.Pose2d
@@ -19,8 +18,6 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.string
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
@@ -60,18 +57,19 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
      *
      * @param waypoints list of Translation2d that the robot should go through
      */
-    fun trajectory(waypoints: List<Translation2d>): Trajectory {
-        val finalDelta = waypoints.last().minus(waypoints[waypoints.size-2])
+    fun trajectory(waypoints: MutableList<Translation2d>): Trajectory {
+        val endpoint = waypoints.removeLast()
+        val finalDelta = endpoint.minus(waypoints.last())
         val finalRotation = Rotation2d(finalDelta.x, finalDelta.y)
         return TrajectoryGenerator.generateTrajectory(
             pose,
             waypoints,
-            Pose2d(waypoints.last(), finalRotation),
+            Pose2d(endpoint, finalRotation),
             pathingConfig
         )
     }
 
-    fun trajectory(vararg waypoints: Translation2d): Trajectory = trajectory(waypoints.toList())
+    fun trajectory(vararg waypoints: Translation2d): Trajectory = trajectory(waypoints.toMutableList())
 
     init {
         SmartDashboard.putData("Field", field)
