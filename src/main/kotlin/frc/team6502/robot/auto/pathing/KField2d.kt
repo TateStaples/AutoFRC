@@ -1,4 +1,4 @@
-package frc.team6502.robot.auto
+package frc.team6502.robot.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
@@ -14,8 +14,8 @@ import kyberlib.math.units.extensions.meters
 class KField2d : Field2d() {
     val obstacles = ArrayList<Obstacle>()
     private val goals = ArrayList<Goal>()
-    val width = 10.0.meters.value
-    val height = 10.0.meters.value
+    val width = 4.3569128.meters.value
+    val height = 2.8275026.meters.value
 
     /**
      * Checks if a position is not obstructed
