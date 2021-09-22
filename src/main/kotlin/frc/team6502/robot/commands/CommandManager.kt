@@ -16,7 +16,7 @@ import kotlin.collections.ArrayList
 object CommandManager : Command {
     private val queue = LinkedList<Command>()  // change to list by Subsystem
 
-    private var activeCommand: Command? = null
+    var activeCommand: Command? = null
         set(value) {
             value?.initialize()
             field = value
@@ -137,7 +137,7 @@ object CommandManager : Command {
      * Check if two commands are the same
      * @return boolean of whether they are the same
      */
-    private fun compare(command1: Command, command2: Command): Boolean {
+    fun compare(command1: Command, command2: Command): Boolean {
         if (command1.javaClass != command2.javaClass) return false
         if (command1 is RamseteCommand || command1 is MecanumControllerCommand) return false
         return true
