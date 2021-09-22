@@ -4,9 +4,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.math.units.extensions.feet
-import frc.team6502.robot.auto.Node
-import frc.team6502.robot.auto.Tree
-import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.RobotContainer  // test edit
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -18,7 +16,7 @@ import kotlin.random.Random
  * @author TateStaples
  */
 object PathPlanner {
-    val field = RobotContainer.navigation.field
+    val field = RobotContainer.navigation.field // test edit
     val tree = Tree()
     private val random = Random(4)//Timer.getFPGATimestamp().toInt())
 
@@ -28,7 +26,8 @@ object PathPlanner {
     val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
         get() = endNode?.let { tree.trace(it) }
 
-    val treeDepth = 800  // how many nodes the tree should create
+    val explorationDepth = 5000  // how many nodes to create before giving up finding target
+    val optimizationDepth = 100  // how many nodes to dedicate to optimization
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
@@ -38,7 +37,7 @@ object PathPlanner {
     fun pathTo(position: Translation2d): Trajectory {
         if (tree.nodeCount > 0)
             tree.pruneInformed()
-        loadTree(position, RobotContainer.navigation.position)
+        loadTree(position, RobotContainer.navigation.position)  // test edit
         // TODO: figure out how to maintain rotation information
         return treeToTrajectory()
     }
@@ -61,7 +60,7 @@ object PathPlanner {
     private fun treeToTrajectory(): Trajectory {
         val positions = ArrayList<Translation2d>()
         for (node in path!!) positions.add(node.position)
-        return RobotContainer.navigation.trajectory(positions)
+        return RobotContainer.navigation.trajectory(positions)  // test edit
     }
 
     /**
@@ -71,30 +70,38 @@ object PathPlanner {
         // look @ BIT*
         // current version is Informed RRT*
         pathFound = false
+        Information.setup(startPosition, endPosition)
         tree.addNode(Node(startPosition))  // TODO: this may cause errors when loading tree several times
-        for (i in tree.nodeCount..treeDepth) {
-            val point = if (pathFound) informedPoint() else randomPoint()
-            val nearest = tree.nearestNode(point)!!  // asserts not null
-            var delta = point.minus(nearest.position)
-            val magnitude = delta.getDistance(Translation2d(0.0, 0.0))
-            if (magnitude > tree.maxBranchLength) {
-                delta = delta.times(tree.maxBranchLength/magnitude)  // resize the vector
-            }
-            val new = nearest.position.plus(delta)
-            if (!field.inField(new)) {
-                continue
-            }
-            val node = Node(new, nearest)
-            tree.addNode(node)
-            tree.optimize(node)
-            val endDis = new.getDistance(endPosition)
-            if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
-                pathFound = true
-                endNode = node
-//                break
-            }
+        for (i in tree.nodeCount..explorationDepth) {
+            if (pathFound) break
+            val point = randomPoint()
+            addPoint(point)
         }
+        for (i in tree.vertices.count { it.informed }..optimizationDepth)
+            addPoint(informedPoint())
+    }
 
+    private fun addPoint(point: Translation2d) {
+        val nearest = tree.nearestNode(point)!!  // asserts not null
+        var delta = point.minus(nearest.position)
+        val magnitude = delta.getDistance(Translation2d(0.0, 0.0))
+        if (magnitude > tree.maxBranchLength) {
+            delta = delta.times(tree.maxBranchLength/magnitude)  // resize the vector
+        }
+        val new = nearest.position.plus(delta)
+        if (!field.inField(new)) {
+            return
+        }
+        val node = Node(new, nearest)
+        tree.addNode(node)
+        tree.optimize(node)
+        val endDis = new.getDistance(Information.endPosition)
+        if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
+            pathFound = true
+            endNode = node
+            Information.update()
+            println("path found")
+        }
     }
 
     /**
@@ -115,24 +122,10 @@ object PathPlanner {
      * Modified random sample that chooses from inside an oval.
      * This is done because once a rough path is found, no nodes outside the oval can improve the path
      */
-    fun informedPoint(): Translation2d {
-        // TODO: store these variables somewhere
-        val startPosition = path!!.last().position
-        val endPosition = path!!.first().position
-        val center = startPosition.plus(endPosition).div(2.0)  // average
-        val currentPathLength = path!![0].pathLengthFromRoot
-        val dis = startPosition.getDistance(endPosition)
-        val width = currentPathLength
-        val height = sqrt(currentPathLength * currentPathLength - dis * dis)
-        val shifted = endPosition.minus(startPosition)
-        val rotation = Rotation2d(shifted.x, shifted.y)
-
+    private fun informedPoint(): Translation2d {
         val theta = random.nextDouble(2*Math.PI)
         val rho = random.nextDouble(1.0)
-        val x = cos(theta) * width/2 * rho
-        val y = sin(theta) * height/2 * rho
-        val point = Translation2d(x, y).rotateBy(rotation).plus(center)
-        return point
+        return Information.get(rho, theta)
     }
 
     /**
@@ -143,4 +136,39 @@ object PathPlanner {
         tree.draw()
     }
 
+    /**
+     * Information regard what sample of points can be used to further optimize the current path
+     */
+    object Information {
+        lateinit var startPosition: Translation2d
+        lateinit var endPosition: Translation2d
+        lateinit var center: Translation2d
+        var currentPathLength = 0.0
+        var dis = 0.0
+        var width = currentPathLength
+        var height = 0.0
+        lateinit var shifted: Translation2d
+        lateinit var rotation: Rotation2d
+
+        fun setup(startPosition: Translation2d, endPosition: Translation2d) {
+            this.startPosition = startPosition
+            this.endPosition = endPosition
+            center = startPosition.plus(endPosition).div(2.0)  // average
+            dis = startPosition.getDistance(endPosition)
+            shifted = endPosition.minus(startPosition)
+            rotation = Rotation2d(shifted.x, shifted.y)
+        }
+
+        fun update() {
+            currentPathLength = path!![0].pathLengthFromRoot
+            width = currentPathLength
+            height = sqrt(currentPathLength * currentPathLength - dis * dis)
+        }
+
+        fun get(rho: Double, theta: Double): Translation2d {
+            val x = cos(theta) * width/2 * rho
+            val y = sin(theta) * height/2 * rho
+            return Translation2d(x, y).rotateBy(rotation).plus(center)
+        }
+    }
 }
