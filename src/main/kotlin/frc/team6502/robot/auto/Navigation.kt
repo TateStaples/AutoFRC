@@ -16,6 +16,7 @@ import edu.wpi.first.wpiutil.math.numbers.*
 import kyberlib.math.units.extensions.degrees
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.auto.pathing.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.string
 
