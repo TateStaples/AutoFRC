@@ -51,7 +51,7 @@ object Constants{
     const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
     const val RAMSETE_ZETA = 0.1
 
-    // TODO: mess with this
+    // TODO: mess with this - these are max values
     val acceleration = 1.metersPerSecond
     val velocity = 1.metersPerSecond
 }
