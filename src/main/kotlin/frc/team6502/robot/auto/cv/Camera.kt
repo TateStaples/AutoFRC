@@ -1,18 +1,15 @@
 package frc.team6502.robot.auto.cv
 
 import edu.wpi.cscore.HttpCamera
-import edu.wpi.cscore.MjpegServer
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import kyberlib.math.units.extensions.Distance
-import kyberlib.math.units.extensions.degrees
-import kyberlib.math.units.extensions.meters
 import frc.team6502.robot.RobotContainer
 import kyberlib.math.units.Translation2d
+import kyberlib.math.units.extensions.Distance
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
 import kyberlib.vision.Limelight
 import org.opencv.core.Mat
