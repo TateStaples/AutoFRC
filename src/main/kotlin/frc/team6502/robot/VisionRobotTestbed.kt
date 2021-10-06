@@ -9,6 +9,7 @@ import kyberlib.command.KRobot
 import kyberlib.vision.Limelight
 import org.opencv.core.Mat
 import org.opencv.core.Size
+import org.opencv.videoio.VideoCapture
 import org.opencv.videoio.VideoWriter
 
 class VisionRobotTestbed : KRobot() {
@@ -32,15 +33,34 @@ class VisionRobotTestbed : KRobot() {
     val fourcc = VideoWriter.fourcc('a', 'v', 'c', '1')
     val save = "example.mp4"
     val writer = VideoWriter()
+    val cap = VideoCapture(0)
     override fun autonomousInit() {
         writer.open(save, fourcc, 20.0, size)
     }
     override fun autonomousPeriodic() {
-        CameraServer.getInstance().video.grabFrame(frame)
+//        CameraServer.getInstance().video.grabFrame(frame)
+        cap.read(frame)
         writer.write(frame)
     }
 
     override fun teleopInit() {
         writer.release()
+    }
+
+    object Test {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val frame = Mat()
+            val size =  Size(320.0, 240.0)
+            val fourcc = VideoWriter.fourcc('a', 'v', 'c', '1')
+            val save = "example.mp4"
+            val writer = VideoWriter()
+            val cap = VideoCapture(0)
+            writer.open(save, fourcc, 20.0, size)
+            while (true) {
+                cap.read(frame)
+                writer.write(frame)
+            }
+        }
     }
 }
