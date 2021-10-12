@@ -1,114 +1,38 @@
-package frc.team6502.kyberlib.motorcontrol.swerve
+package kyberlib.motorcontrol.swerve
 
-//import sun.jvm.hotspot.oops.CellTypeState.value
-/**
-class SwerveModule (drive: MotorPackage, turn: MotorPackage){
+import edu.wpi.first.wpilibj.geometry.Rotation2d
+import edu.wpi.first.wpilibj.geometry.Translation2d
+import edu.wpi.first.wpilibj.kinematics.SwerveModuleState
+import frc.team6502.kyberlib.motorcontrol.KMotorController
+import kyberlib.math.units.extensions.degrees
+import kyberlib.math.units.extensions.k
+import kyberlib.math.units.extensions.metersPerSecond
 
-
-    /**
-     * Setting turn motor power
-     * @param p value from -1 to 1
-     */
-    fun setTurnPower(p: Double) {
-        this.turn.changeControlMode(TalonControlMode.PercentVbus)
-        this.turn.set(p)
-    }
-
-    /**
-     * Setting drive motor power
-     * @param p value from -1 to 1
-     */
-    fun setDrivePower(p: Double) {
-        drive.set(p)
-    }
-
-    /**
-     * Getting the turn encoder position
-     * @return turn encoder postition
-     */
-    fun getTurnEncPos(): Double {
-        return turn.getEncPosition()
-    }
-
-    /**
-     * Thank you CD ozrien for this!!!
-     * @return
-     */
-    fun getAbsPos(): Double {
-        return (turn.getPulseWidthPosition() and 0xFFF) / 4095.0
-    }
-
-    /**
-     * Lets reset the turn encoder position to 0
-     */
-    fun restTurnEnc() {
-        this.turn.setEncPosition(0)
-    }
-
-    fun setEncPos(d: Int) {
-        turn.setEncPosition(d)
-    }
-
-    /**
-     * Is electrical good? Probably not.... Is the turn encoder connected?
-     * @return true if the encoder is connected
-     */
-    fun isTurnEncConnected(): Boolean {
-        return turn.isSensorPresent(FeedbackDevice.CtreMagEncoder_Relative) === FeedbackDeviceStatus.FeedbackStatusPresent
-    }
-
-    fun getTurnRotations(): Int {
-        return (turn.getEncPosition() / FULL_ROTATION)
-    }
-
-    fun getTurnLocation(): Double {
-        return turn.getEncPosition() % FULL_ROTATION / FULL_ROTATION
-    }
-
-    fun setTurnPIDToSetPoint(setpoint: Double) {
-        turn.changeControlMode(TalonControlMode.Position)
-        turn.set(setpoint)
-    }
-
-    /**
-     * Set turn to pos from 0 to 1 using PID
-     * @param setLoc location to set to
-     */
-    fun setTurnLocation(loc: Double) {
-        turn.changeControlMode(TalonControlMode.Position)
-        var base: Double = getTurnRotations() * FULL_ROTATION
-        if (getTurnEncPos() >= 0) {
-            if (base + loc * FULL_ROTATION - getTurnEncPos() < -FULL_ROTATION / 2) {
-                base += FULL_ROTATION
-            } else if (base + loc * FULL_ROTATION - getTurnEncPos() > FULL_ROTATION / 2) {
-                base -= FULL_ROTATION
-            }
-            turn.set(loc * FULL_ROTATION + base)
-        } else {
-            if (base - (1 - loc) * FULL_ROTATION - getTurnEncPos() < -FULL_ROTATION / 2) {
-                base += FULL_ROTATION
-            } else if (base - (1 - loc) * FULL_ROTATION - getTurnEncPos() > FULL_ROTATION / 2) {
-                base -= FULL_ROTATION
-            }
-            turn.set(base - (1 - loc) * FULL_ROTATION)
+open class SwerveModule (val location: Translation2d, val driveMotor: KMotorController, val turnMotor: KMotorController) {
+    // turn controls
+    private var rotation
+        get() = turnMotor.position.normalized
+        set(value) {
+            turnMotor.positionSetpoint = value  // TODO: No idea if this works
         }
-    }
 
-    fun getError(): Double {
-        return turn.getError()
-    }
+    // drive info
+    private var speed
+        get() = driveMotor.linearVelocity
+        set(value) {driveMotor.linearVelocity = value}
+    private var driveVoltage
+        get() = driveMotor.voltage
+        set(value) {driveMotor.voltage = value}
 
-    fun stopBoth() {
-        setDrivePower(0.0)
-        setTurnPower(0.0)
-    }
+    // general info vars
+    var state
+        get() = SwerveModuleState(speed.metersPerSecond, rotation)
+        set(value) {
+            val optimized = SwerveModuleState.optimize(value, rotation)
+            rotation = optimized.angle.k
+            speed = optimized.speedMetersPerSecond.metersPerSecond
+        }
 
-    fun stopDrive() {
-        setDrivePower(0.0)
-    }
-
-    fun setBreakMode(b: Boolean) {
-        drive.enableBrakeMode(b)
-    }
+    val breakState
+        get() = SwerveModuleState(0.0, Rotation2d(location.x, location.y).rotateBy(90.degrees))
 }
- */

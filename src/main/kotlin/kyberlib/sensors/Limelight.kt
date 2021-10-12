@@ -1,4 +1,4 @@
-package kyberlib.vision
+package kyberlib.sensors
 
 import edu.wpi.first.networktables.NetworkTableInstance
 

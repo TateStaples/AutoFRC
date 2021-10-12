@@ -11,6 +11,7 @@ typealias Angle = KRotation
 class KRotation(val value: Double) : Rotation2d(value) {
     val rotations
         get() = value / AngleConversions.rotationsToRadians
+    val normalized = ((rotations - rotations.toInt()) * rotations).radians // TODO check if this works at all
 
     fun encoderAngle(cpr: Int) = (value / AngleConversions.rotationsToRadians) * (cpr * 4)
     fun toCircumference(radius: Length) = Length(value * radius.value)
@@ -19,6 +20,9 @@ class KRotation(val value: Double) : Rotation2d(value) {
         return Angle(if (diff < -PI) diff + TAU else diff)
     }
 }
+
+val Rotation2d.k: KRotation
+    get() = KRotation(this.radians)
 
 const val TAU = 2 * PI
 
@@ -31,19 +35,3 @@ val Number.radians get() = toDouble().radians
 val Number.degrees get() = toDouble().degrees
 val Number.rotations get() = toDouble().rotations
 fun Number.encoderAngle(cpr: Int) = toDouble().encoderAngle(cpr)
-
-//val Angle.radians get() = value
-//val Angle.degrees get() = value / AngleConversions.degreesToRadians
-//val Angle.rotations get() = value / AngleConversions.rotationsToRadians
-
-//val Angle.sin get() = sin(value)
-//val Angle.cos get() = cos(value)
-//val Angle.tan get() = tan(value)
-
-//fun Angle.toCircumference(radius: Length) = Length(value * radius.value)
-//fun Angle.subtractNearest(other: Angle): Angle {
-//    val diff = (value - other.value + PI) % TAU - PI
-//    return Angle(if (diff < -PI) diff + TAU else diff)
-//}
-//
-//fun Angle.encoderAngle(cpr: Int) = (value / AngleConversions.rotationsToRadians) * (cpr * 4)
