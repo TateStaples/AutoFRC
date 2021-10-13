@@ -18,7 +18,7 @@ import kotlin.random.Random
 object PathPlanner {
     val field = RobotContainer.navigation.field // test edit
     val tree = Tree()
-    private val random = Random(4)//Timer.getFPGATimestamp().toInt())
+    private val random = Random(4)//Timer.getFPGATimestamp().toInt())  // test edit
 
     var minGoalDistance = 0.5.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
@@ -26,8 +26,10 @@ object PathPlanner {
     val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
         get() = endNode?.let { tree.trace(it) }
 
-    val explorationDepth = 5000  // how many nodes to create before giving up finding target
-    val optimizationDepth = 100  // how many nodes to dedicate to optimization
+    // how many nodes to create before giving up finding target
+    private const val explorationDepth = 5000
+    // how many nodes to dedicate to optimization
+    private const val optimizationDepth = 500
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
@@ -61,12 +63,13 @@ object PathPlanner {
         val positions = ArrayList<Translation2d>()
         for (node in path!!) positions.add(node.position)
         return RobotContainer.navigation.trajectory(positions)  // test edit
+//        return Trajectory()
     }
 
     /**
      * Creates the initial tree of nodes
      */
-    internal fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
+    fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
         // look @ BIT*
         // current version is Informed RRT*
         pathFound = false
@@ -81,6 +84,9 @@ object PathPlanner {
             addPoint(informedPoint())
     }
 
+    /**
+     * Branches tree towards a point
+     */
     private fun addPoint(point: Translation2d) {
         val nearest = tree.nearestNode(point)!!  // asserts not null
         var delta = point.minus(nearest.position)
