@@ -52,6 +52,10 @@ abstract class KBasicMotorController {
     private var vbus = if (RobotBase.isReal()) RobotController.getBatteryVoltage() else 12.0
 
     val notifier = Notifier { update() }
+
+    init {
+        notifier.startPeriodic(0.02)
+    }
     /**
      * True if this motor is following another.
      */
@@ -73,7 +77,7 @@ abstract class KBasicMotorController {
     /**
      * Internal update function
      */
-    fun update() {
+    open fun update() {
         updateFollowers()
     }
 

@@ -109,7 +109,7 @@ abstract class KMotorController : KBasicMotorController() {
 
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
         customPID = PIDController(kP, kI, kD)
-        customVelocityControl = {
+        customControl = {
             val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
             val pid = customPID!!.calculate(linearVelocityError.metersPerSecond)
             ff + pid
@@ -117,15 +117,14 @@ abstract class KMotorController : KBasicMotorController() {
     }
     fun addFeedforward(feedforward: ArmFeedforward) {
         customPID = PIDController(kP, kI, kD)
-        customPositionControl = {
+        customControl = {
             val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
             val pid = customPID!!.calculate(positionError.radians)
             ff + pid
         }
     }
 
-    var customPositionControl: (() -> Double)? = null
-    var customVelocityControl: (() -> Double)? = null
+    var customControl: (() -> Double)? = null
 
     // ----- main getter/setter methods ----- ///
     var position: Angle
@@ -173,8 +172,7 @@ abstract class KMotorController : KBasicMotorController() {
     var positionSetpoint: Angle = 0.rotations
         private set(value) {
             field = value
-            if (customPositionControl != null) voltage = customPositionControl!!()  // TODO: check if this is the current way to apply
-            else rawPosition = value
+            if(!closedLoopConfigured) rawPosition = value
         }
 
     /**
@@ -183,8 +181,7 @@ abstract class KMotorController : KBasicMotorController() {
     var velocitySetpoint: AngularVelocity = 0.rpm
         private set(value) {
             field = value
-            if (customVelocityControl != null) voltage = customVelocityControl!!()
-            else rawVelocity = value
+            if (!closedLoopConfigured) rawVelocity = value
         }
 
     /**
@@ -217,6 +214,10 @@ abstract class KMotorController : KBasicMotorController() {
         assert(linearConfigured) { linearErrorMessage }
         return vel.toTangentialVelocity(radius!!)
     }
+    override fun update() {  // TODO: check overriding this works
+        super.update()
+        if (customControl != null) voltage = customControl!!()
+    }
 
     // ----- meta information ----- //
     /**
@@ -238,7 +239,7 @@ abstract class KMotorController : KBasicMotorController() {
      * Allows for closed-loop control methods to be used
      */
     private val closedLoopConfigured
-        get() = encoderConfigured && (kP != 0.0 || kI != 0.0 || kD != 0.0)
+        get() = encoderConfigured && customControl != null
 
     // ----- low level getters and setters (customized to each encoder type) ----- //
     abstract var rawPosition: Angle
