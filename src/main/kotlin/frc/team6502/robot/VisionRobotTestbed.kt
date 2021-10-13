@@ -2,15 +2,10 @@ package frc.team6502.robot
 
 import edu.wpi.cscore.HttpCamera
 import edu.wpi.first.cameraserver.CameraServer
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-//import frc.team6502.robot.auto.cv.Camera
 import kyberlib.command.KRobot
-import kyberlib.vision.Limelight
-import org.opencv.core.Mat
-import org.opencv.core.Size
-import org.opencv.videoio.VideoCapture
-import org.opencv.videoio.VideoWriter
+import kyberlib.sensors.Limelight
+
 
 class VisionRobotTestbed : KRobot() {
     private val url = "http://10.65.2.11"  // http://10.TE.AM.11:5800
@@ -21,46 +16,11 @@ class VisionRobotTestbed : KRobot() {
 //        Shuffleboard.getTab("Limelight feed").add(video)
 //        CameraServer.getInstance().startAutomaticCapture(video)
         CameraServer.getInstance().addCamera(video)
+//        CameraServer.getInstance().video
 //        CameraServer.getInstance().putVideo("test", 320, 240)
     }
 
     override fun robotPeriodic() {
         SmartDashboard.putBoolean("image", video.isConnected)
-    }
-
-    val frame = Mat()
-    val size =  Size(320.0, 240.0)
-    val fourcc = VideoWriter.fourcc('a', 'v', 'c', '1')
-    val save = "example.mp4"
-    val writer = VideoWriter()
-    val cap = VideoCapture(0)
-    override fun autonomousInit() {
-        writer.open(save, fourcc, 20.0, size)
-    }
-    override fun autonomousPeriodic() {
-//        CameraServer.getInstance().video.grabFrame(frame)
-        cap.read(frame)
-        writer.write(frame)
-    }
-
-    override fun teleopInit() {
-        writer.release()
-    }
-
-    object Test {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val frame = Mat()
-            val size =  Size(320.0, 240.0)
-            val fourcc = VideoWriter.fourcc('a', 'v', 'c', '1')
-            val save = "example.mp4"
-            val writer = VideoWriter()
-            val cap = VideoCapture(0)
-            writer.open(save, fourcc, 20.0, size)
-            while (true) {
-                cap.read(frame)
-                writer.write(frame)
-            }
-        }
     }
 }
