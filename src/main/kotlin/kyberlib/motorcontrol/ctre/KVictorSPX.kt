@@ -9,17 +9,26 @@ import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
 import frc.team6502.kyberlib.motorcontrol.*
 
-class KVictorSPX(val canId: CANId, apply: KBasicMotorController.() -> Unit) : KBasicMotorController() {
-
+class KVictorSPX(val canId: CANId) : KBasicMotorController() {
     private val _victor = VictorSPX(canId)
 
-    constructor(canKey: CANKey, apply: KBasicMotorController.() -> Unit) : this(CANRegistry[canKey]!!, apply)
-
-    init {
-        this.apply(apply)
-    }
-
     override val identifier = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
+
+
+    override var brakeMode: BrakeMode = false
+        set(value) {
+            field = value
+            val mode = if(value) NeutralMode.Brake else NeutralMode.Coast
+            _victor.setNeutralMode(mode)
+        }
+
+    override var reversed: Boolean
+        get() = _victor.inverted
+        set(value) {_victor.inverted = value}
+
+    override var percent: Double
+        get() = _victor.motorOutputPercent
+        set(value) {_victor.set(ControlMode.PercentOutput, value)}
 
     override fun followTarget(kmc: KBasicMotorController) {
         if (kmc is KVictorSPX) {
@@ -29,23 +38,4 @@ class KVictorSPX(val canId: CANId, apply: KBasicMotorController.() -> Unit) : KB
             kmc.followers.add(this)
         }
     }
-
-    override fun writeBrakeMode(brakeMode: BrakeMode) {
-        _victor.setNeutralMode(
-            when (brakeMode) {
-                true -> NeutralMode.Brake
-                false -> NeutralMode.Coast
-            }
-        )
-    }
-
-    override fun writeReversed(reversed: Boolean) {
-        _victor.inverted = reversed
-    }
-
-    override fun writePercent(value: Double) {
-        _victor.set(ControlMode.PercentOutput, value)
-    }
-
-    override fun readPercent() = _victor.motorOutputPercent
 }

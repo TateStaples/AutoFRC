@@ -1,7 +1,13 @@
 package frc.team6502.kyberlib.motorcontrol
 
+import edu.wpi.first.wpilibj.controller.ArmFeedforward
+import edu.wpi.first.wpilibj.controller.PIDController
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
+import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
 import kyberlib.motorcontrol.KBasicMotorController
+import java.util.function.Consumer
+import kotlin.math.PI
 
 typealias GearRatio = Double
 typealias BrakeMode = Boolean
@@ -29,65 +35,49 @@ data class KEncoderConfig(val cpr: Int, val type: EncoderType, val reversed: Boo
  * A more advanced motor control with feedback control.
  */
 abstract class KMotorController : KBasicMotorController() {
-
+    // ----- configs ----- //
     /**
-     * Does the motor controller have a rotational to linear motion conversion defined? (i.e. wheel radius)
-     * Allows for linear setpoints to be used.
+     * The multiplier to attach to the raw velocity. *This is not the recommended way to do this.* Try using gearRatio instead
      */
-    protected var linearConfigured = false
-
-    /**
-     * Does the motor controller have an encoder configured?
-     * Allows for closed-loop control methods to be used
-     */
-    protected val encoderConfigured
-        get() = (encoderConfig.type != EncoderType.NONE && encoderConfig.cpr > 0)
-
-    /**
-     * Does the motor have closed-loop gains set?
-     * Allows for closed-loop control methods to be used
-     */
-    protected val closedLoopConfigured
-        get() = encoderConfigured && (kP != 0.0 || kI != 0.0 || kD != 0.0)
-
-    /**
-     * Settings relevant to the motor controller's encoder.
-     */
-    var encoderConfig: KEncoderConfig = KEncoderConfig(0, EncoderType.NONE)
-        set(value) {
-            if (configureEncoder(value)) {
-                field = value
-            } else {
-                System.err.println("Invalid encoder configuration")
-            }
-        }
-
-    var velocityMultipler = 1.0
+    var velocityConversionFactor = 1.0
         set(value) {
             field = value
-            writeMultipler(velocityMultipler, positionMultipler)
+            writeMultipler(velocityConversionFactor, positionConversionFactor)
         }
 
-    var positionMultipler = 1.0
+    /**
+     * The multiplier to attach to the raw position. *This is not the recommended way to do this.* Try using gearRatio instead
+     */
+    var positionConversionFactor = 1.0
         set(value) {
             field = value
-            writeMultipler(velocityMultipler, positionMultipler)
+            writeMultipler(velocityConversionFactor, positionConversionFactor)
         }
 
     /**
      * Defines the relationship between rotation and linear motion for the motor.
      */
     var radius: Length? = null
-        set(value) {
-            linearConfigured = value != null
-            field = value
-        }
 
     /**
      * Adds post-encoder gearing to allow for post-geared speeds to be set.
      */
     var gearRatio: GearRatio = 1.0
+        set(value) {
+            field = value
+            writeMultipler(gearRatio / 9.9, gearRatio / 9.9) // TODO: check why the div by 9.9
+        }
 
+    /**
+     * Settings relevant to the motor controller's encoder.
+     */
+    var encoderConfig: KEncoderConfig = KEncoderConfig(0, EncoderType.NONE)
+        set(value) {
+            if (configureEncoder(value)) field = value
+            else System.err.println("Invalid encoder configuration")
+        }
+
+    // ----- advanced tuning ----- //
     /**
      * Proportional gain of the PID controller.
      */
@@ -115,128 +105,154 @@ abstract class KMotorController : KBasicMotorController() {
             writePid(kP, kI, kD)
         }
 
-    /**
-     * Sets a current limit for the motor
-     */
-    var currentLimit: Int = 40
-        set(value) {
-            field = value
-            writeCurrentLimit(value)
-        }
+    private var customPID: PIDController? = null
 
+    fun addFeedforward(feedforward: SimpleMotorFeedforward) {
+        customPID = PIDController(kP, kI, kD)
+        customVelocityControl = {
+            val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
+            val pid = customPID!!.calculate(linearVelocityError.metersPerSecond)
+            ff + pid
+        }
+    }
+    fun addFeedforward(feedforward: ArmFeedforward) {
+        customPID = PIDController(kP, kI, kD)
+        customPositionControl = {
+            val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
+            val pid = customPID!!.calculate(positionError.radians)
+            ff + pid
+        }
+    }
+
+    var customPositionControl: (() -> Double)? = null
+    var customVelocityControl: (() -> Double)? = null
+
+    // ----- main getter/setter methods ----- ///
     var position: Angle
         get() {
-            if (!encoderConfigured) {
-                logError("Cannot get position without a configured encoder")
-                return 0.rotations
-            }
-            return (readPosition().value / gearRatio).radians
+            assert(encoderConfigured)
+            return (rawPosition.value / gearRatio).radians
         }
-        set(value) {
-            positionSetpoint = value
-        }
+        set(value) { positionSetpoint = value }
 
     var linearPosition: Length
-        get() {
-            if (!linearConfigured) {
-                logError("Cannot get linear position without a defined radius")
-                return 0.feet
-            }
-            return position.toCircumference(radius!!)
-        }
-        set(value) {
-            linearPositionSetpoint = value
-        }
+        get() = rotationToLinear(position)
+        set(value) { position = linearToRotation(value) }
 
     var velocity: AngularVelocity
         get() {
-            if (!encoderConfigured) {
-                logError("Cannot get velocity without a configured encoder")
-                return 0.rpm
-            }
-            return readVelocity() / gearRatio
+            assert(encoderConfigured)
+            val vel = rawVelocity / gearRatio
+            acceleration = accelerationCalculator.calculate(vel.radiansPerSecond).radiansPerSecond
+            return vel
         }
-        set(value) {
-            velocitySetpoint = value
-        }
+        set(value) { velocitySetpoint = value }
 
     var linearVelocity: LinearVelocity
-        get() {
-            if (!linearConfigured) {
-                logError("Cannot get linear velocity without a defined radius")
-                return 0.feetPerSecond
-            }
-            return velocity.toTangentialVelocity(radius!!)
-        }
-        set(value) {
-            linearVelocitySetpoint = value
-        }
+        get() = rotationToLinear(velocity)
+        set(value) { velocity = linearToRotation(value) }
 
+    val positionError
+        get() = position - positionSetpoint
+    val linearPositionError
+        get() = linearPosition - linearPositionSetpoint
+    val velocityError
+        get() = velocity - velocitySetpoint
+    val linearVelocityError
+        get() = linearVelocity - linearVelocitySetpoint
+
+    private var accelerationCalculator = Differentiator()
+    var acceleration = 0.rpm
+    val linearAcceleration
+        get() = rotationToLinear(acceleration)
+
+    // ----- this is where you put the advanced controls ---- //
     /**
      * Sets the angle to which the motor should go
      */
     var positionSetpoint: Angle = 0.rotations
-        set(value) {
-            if (!encoderConfigured) {
-                logError("Cannot set position without a configured encoder")
-            } else {
-                field = value
-                writePosition(value)
-            }
-        }
-
-    /**
-     * Sets the linear position to which the motor should go
-     */
-    var linearPositionSetpoint: Length = 0.meters
-        set(value) {
-            if (!encoderConfigured || !linearConfigured) {
-                logError("Cannot set linear position without a defined radius")
-            } else {
-                field = value
-                positionSetpoint = value.toAngle(radius!!)
-            }
+        private set(value) {
+            field = value
+            if (customPositionControl != null) voltage = customPositionControl!!()  // TODO: check if this is the current way to apply
+            else rawPosition = value
         }
 
     /**
      * Sets the velocity to which the motor should go
      */
     var velocitySetpoint: AngularVelocity = 0.rpm
-        set(value) {
-            if (!encoderConfigured) {
-                logError("Cannot set velocity without a configured encoder")
-            } else {
-                field = value
-                writeVelocity(value)
-            }
+        private set(value) {
+            field = value
+            if (customVelocityControl != null) voltage = customVelocityControl!!()
+            else rawVelocity = value
         }
+
+    /**
+     * Sets the linear position to which the motor should go
+     */
+    val linearPositionSetpoint: Length
+        get() = rotationToLinear(positionSetpoint)
 
     /**
      * Sets the linear velocity to which the motor should go
      */
-    var linearVelocitySetpoint: LinearVelocity = 0.metersPerSecond
-        set(value) {
-            if (!encoderConfigured || !linearConfigured) {
-                logError("Cannot set linear velocity without a defined radius")
-            } else {
-                field = value
-                velocitySetpoint = value.toAngularVelocity(radius!!)
-            }
-        }
+    val linearVelocitySetpoint: LinearVelocity
+        get() = rotationToLinear(velocitySetpoint)
+
+    // ----- util functions -----//
+    private val linearErrorMessage = "You must set the wheel radius before using linear values"
+    private fun linearToRotation(len: Length): Angle {
+        assert(linearConfigured) { linearErrorMessage }
+        return len.toAngle(radius!!)
+    }
+    private fun linearToRotation(vel: LinearVelocity): AngularVelocity {
+        assert(linearConfigured) { linearErrorMessage }
+        return vel.toAngularVelocity(radius!!)
+    }
+    private fun rotationToLinear(ang: Angle): Length {
+        assert(linearConfigured) { linearErrorMessage }
+        return ang.toCircumference(radius!!)
+    }
+    private fun rotationToLinear(vel: AngularVelocity): LinearVelocity {
+        assert(linearConfigured) { linearErrorMessage }
+        return vel.toTangentialVelocity(radius!!)
+    }
+
+    // ----- meta information ----- //
+    /**
+     * Does the motor controller have a rotational to linear motion conversion defined? (i.e. wheel radius)
+     * Allows for linear setpoints to be used.
+     */
+    private val linearConfigured
+        get() = radius != null
+
+    /**
+     * Does the motor controller have an encoder configured?
+     * Allows for closed-loop control methods to be used
+     */
+    protected val encoderConfigured
+        get() = (encoderConfig.type != EncoderType.NONE && encoderConfig.cpr > 0)
+
+    /**
+     * Does the motor have closed-loop gains set?
+     * Allows for closed-loop control methods to be used
+     */
+    private val closedLoopConfigured
+        get() = encoderConfigured && (kP != 0.0 || kI != 0.0 || kD != 0.0)
+
+    // ----- low level getters and setters (customized to each encoder type) ----- //
+    abstract var rawPosition: Angle
+        protected set
+    abstract var rawVelocity: AngularVelocity
+        protected set
+    abstract var currentLimit: Int
 
     protected abstract fun writePid(p: Double, i: Double, d: Double)
 
+    /**
+     * Set the conversion multipliers of postion and velocity
+     */
     protected abstract fun writeMultipler(mv: Double, mp: Double)
-
-    protected abstract fun writePosition(position: Angle)
-
-    protected abstract fun writeVelocity(vel: AngularVelocity)
-
-    protected abstract fun readPosition(): Angle
-
-    protected abstract fun readVelocity(): AngularVelocity
-
-    protected abstract fun writeCurrentLimit(limit: Int)
 
     /**
      * Resets the encoder's position to zero
@@ -246,7 +262,5 @@ abstract class KMotorController : KBasicMotorController() {
     /**
      * Configures the respective ESC encoder settings when a new encoder configuration is set
      */
-    internal abstract fun configureEncoder(config: KEncoderConfig): Boolean
-
-//    abstract fun setVoltage(v: Double)
+    protected abstract fun configureEncoder(config: KEncoderConfig): Boolean
 }
