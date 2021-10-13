@@ -1,8 +1,5 @@
 package frc.team6502.robot.subsystems
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase
-import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.DefaultDrive
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import edu.wpi.first.wpilibj.controller.PIDController
@@ -12,14 +9,12 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.*
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
-import frc.team6502.robot.RobotContainer
+import edu.wpi.first.wpilibj2.command.SubsystemBase
+import frc.team6502.robot.Constants
+import frc.team6502.robot.commands.DefaultDrive
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import frc.team6502.robot.commands.CommandManager
-import kyberlib.math.round
-import kyberlib.math.units.extensions.degrees
-import kyberlib.math.units.string
 import kotlin.math.PI
 
 /**
@@ -60,11 +55,19 @@ object Drivetrain : SubsystemBase() {
      * Configure all the encoders with proper gear ratios
      */
     init {
-        for (motor in motors)
+        for (motor in motors) {
             motor.encoder.apply {
-                velocityConversionFactor = Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 81.4  // no reason but testing
+                velocityConversionFactor =
+                    Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 81.4  // no reason but testing
                 positionConversionFactor = (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
             }
+            val pid = motor.pidController
+            pid.apply {
+                p = Constants.DRIVE_P
+                i = Constants.DRIVE_I
+                d = Constants.DRIVE_D
+            }
+        }
     }
 
     // motors positions
