@@ -6,8 +6,6 @@ import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
 import kyberlib.motorcontrol.KBasicMotorController
-import java.util.function.Consumer
-import kotlin.math.PI
 
 typealias GearRatio = Double
 typealias BrakeMode = Boolean
@@ -79,52 +77,53 @@ abstract class KMotorController : KBasicMotorController() {
 
     // ----- advanced tuning ----- //
     /**
-     * Proportional gain of the PID controller.
+     * Proportional gain of the customControl controller.
      */
-    var kP: Double = 0.0
+    var kP: Double
+        get() = PID.p
         set(value) {
-            field = value
+            PID.p = value
             writePid(kP, kI, kD)
         }
 
     /**
-     * Integral gain of the PID controller.
+     * Integral gain of the customControl controller.
      */
-    var kI: Double = 0.0
+    var kI: Double
+        get() = PID.i
         set(value) {
-            field = value
+            PID.i = value
             writePid(kP, kI, kD)
         }
 
     /**
-     * Derivative gain of the PID controller.
+     * Derivative gain of the customControl controller.
      */
-    var kD: Double = 0.0
+    var kD: Double
+        get() = PID.d
         set(value) {
-            field = value
+            PID.d = value
             writePid(kP, kI, kD)
         }
 
-    private var customPID: PIDController? = null
+    var PID = PIDController(0.0, 0.0, 0.0)
 
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
-        customPID = PIDController(kP, kI, kD)
         customControl = {
             val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
-            val pid = customPID!!.calculate(linearVelocityError.metersPerSecond)
+            val pid = PID!!.calculate(linearVelocityError.metersPerSecond)
             ff + pid
         }
     }
     fun addFeedforward(feedforward: ArmFeedforward) {
-        customPID = PIDController(kP, kI, kD)
         customControl = {
             val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
-            val pid = customPID!!.calculate(positionError.radians)
+            val pid = PID!!.calculate(positionError.radians)
             ff + pid
         }
     }
 
-    var customControl: (() -> Double)? = null
+    var customControl: ((it: KMotorController) -> Double)? = null
 
     // ----- main getter/setter methods ----- ///
     var position: Angle
@@ -216,7 +215,7 @@ abstract class KMotorController : KBasicMotorController() {
     }
     override fun update() {  // TODO: check overriding this works
         super.update()
-        if (customControl != null) voltage = customControl!!()
+        if (customControl != null) voltage = customControl!!(this)
     }
 
     // ----- meta information ----- //

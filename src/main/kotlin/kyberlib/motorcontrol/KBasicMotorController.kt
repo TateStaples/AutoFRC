@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.RobotController
 import frc.team6502.kyberlib.motorcontrol.BrakeMode
 import kyberlib.math.invertIf
-import java.util.function.DoubleSupplier
 
 /**
  * A basic motor controller.
