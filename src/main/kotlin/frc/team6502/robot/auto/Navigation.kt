@@ -16,6 +16,7 @@ import edu.wpi.first.wpiutil.math.numbers.*
 import kyberlib.math.units.extensions.degrees
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.auto.pathing.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.string
@@ -27,7 +28,11 @@ import kyberlib.math.units.string
  * @author TateStaples
  */
 class Navigation(initialPose: Pose2d) : SubsystemBase() {
+    /**
+     * The field data of the field the robot is on
+     */
     val field = KField2d()
+
     val fieldTraj: FieldObject2d = field.getObject("traj")
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
@@ -69,7 +74,10 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
             pathingConfig
         )
     }
-
+    /**
+     * Generate a through a list of positions
+     * @param waypoints list of Translation2d that the robot should go through
+     */
     fun trajectory(vararg waypoints: Translation2d): Trajectory = trajectory(waypoints.toMutableList())
 
     init {
@@ -111,7 +119,10 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
         val pose2d: Pose2d
         if (Constants.MECANUM) pose2d = mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
         else pose2d = difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftVel, Drivetrain.rightVel)
-
+        if (Constants.VISION) {
+            Photon.slamUpdate()  // updates UcoSLAM
+            Photon.targetUpdate()
+        }
         if (Constants.DEBUG)
             SmartDashboard.putString("pose", pose2d.string)
     }

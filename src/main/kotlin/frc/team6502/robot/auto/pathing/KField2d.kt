@@ -2,6 +2,7 @@ package frc.team6502.robot.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
 
 /**
@@ -13,7 +14,7 @@ import kyberlib.math.units.extensions.meters
  */
 class KField2d : Field2d() {
     val obstacles = ArrayList<Obstacle>()
-    private val goals = ArrayList<Goal>()
+    val goals = ArrayList<Goal>()
     val width = 4.3569128.meters.value
     val height = 2.8275026.meters.value
 
@@ -44,5 +45,21 @@ class KField2d : Field2d() {
             if (obstacle.contains(point)) return true
         }
         return false
+    }
+
+    private val sameDistance = 1.feet
+
+    /**
+     * Adds a goal to the field. Checks to prevent duplicates
+     * @param estimatedPosition the position that the goal is locates
+     * @param time the time that the observation of the position was made
+     * @param name the name of the type of goal
+     */
+    fun addGoal(estimatedPosition: Translation2d, time: Double, name: String) {
+        val similarGoals = goals.filter { it.name == name }
+        if (similarGoals.any { it.position.getDistance(estimatedPosition) < sameDistance.value })  // TODO: this bad
+            return
+        val newGoal = Goal(name, estimatedPosition)
+        goals.add(newGoal)
     }
 }

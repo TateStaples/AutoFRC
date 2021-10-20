@@ -11,10 +11,6 @@ import frc.team6502.robot.Constants
  * @property shooterMotor motor that releases balls
  */
 object Shooter : SubsystemBase() {
-    init {
-
-    }
-
     val intake = CANSparkMax(Constants.INTAKE_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake

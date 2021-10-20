@@ -14,7 +14,7 @@ import kyberlib.math.units.extensions.radiansPerSecond
  * The default drive command. Systemically takes user important and applies normal PIDF manipulations to make it happen
  * @property Drivetrain required subsystem for this command
  */
-class DefaultDrive: CommandBase() {
+object DefaultDrive: CommandBase() {
     init {
         addRequirements(Drivetrain)
     }

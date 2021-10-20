@@ -9,11 +9,14 @@ import frc.team6502.robot.commands.CommandManager
 /**
  * A custom field object that has a position and linked command
  */
-class Goal(name: String, val position: Translation2d, val command: Command) : SequentialCommandGroup() {
-    init {
-        addCommands(command, CommandManager.follow(pathTo))
-        this.name = name
-    }
-    private val pathTo
-        get() = PathPlanner.pathTo(position)
+class Goal(val name: String, val position: Translation2d, val uponArrival: Command? = null) {
+    val command: Command
+        get() {
+            val path = PathPlanner.pathTo(position)
+            val pathCommand = CommandManager.follow(path)
+            if (uponArrival != null)
+                return CommandManager.sequence(pathCommand, uponArrival)
+            return pathCommand
+        }
+
 }
