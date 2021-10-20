@@ -110,7 +110,7 @@ object Drivetrain : SubsystemBase() {
     init {
 //        defaultCommand = CommandManager  // this needs to require Drivetrain
 //        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
-        defaultCommand = DefaultDrive()
+        defaultCommand = DefaultDrive
     }
 
     /**
