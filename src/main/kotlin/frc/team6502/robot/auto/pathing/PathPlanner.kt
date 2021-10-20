@@ -130,7 +130,7 @@ object PathPlanner {
      */
     private fun informedPoint(): Translation2d {
         val theta = random.nextDouble(2*Math.PI)
-        val rho = random.nextDouble(1.0)
+        val rho = sqrt(random.nextDouble(1.0))
         return Information.get(rho, theta)
     }
 
