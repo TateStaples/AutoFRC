@@ -14,13 +14,31 @@ import kotlin.collections.ArrayList
  * Allows scheduling when to do what.
  */
 object CommandManager : Command {
-    private val queue = LinkedList<Command>()  // change to list by Subsystem
+    private val queue = LinkedList<() -> Command>()  // change to list by Subsystem
 
     var activeCommand: Command? = null
         set(value) {
             value?.initialize()
             field = value
         }
+
+    /**
+     * Run the active command.
+     * Also check if the command is done.
+     */
+    override fun execute() {
+        if (activeCommand == null && queue.isEmpty()) {
+            Strategy.plan()
+//            Drivetrain.driveAllVolts(0.0, 0.0, 0.0, 0.0)
+            return
+        }
+        if (activeCommand == null) activeCommand = next()
+        activeCommand!!.execute()
+        if (activeCommand!!.isFinished) {
+            activeCommand = next()
+        }
+    }
+
     /**
      * Generate a command to follow a designated trajectory
      *
@@ -61,48 +79,50 @@ object CommandManager : Command {
         return if (Constants.MECANUM) mecCommand(trajectory)
         else ramsete(trajectory)
     }
+
+    // ---------- add / remove --------- //
+
     /**
-     * Adds args trajectories to queue
-     * @param trajectories list of trajectories to add to the queue. Will follow these trajectories one at a time
+     * Adds args to queue
+     * @param commandSuppliers list of commandSuppliers to add to the queue.
+     * Will execute the supplied commands one at a time
      */
-    fun enqueue(vararg trajectories: Trajectory) {
-        for (trajectory in trajectories) {
-            queue.add(follow(trajectory))
-        }
+    fun enqueue(vararg commandSuppliers: ()->Command) {
+        queue.addAll(commandSuppliers)
     }
     /**
-     * Adds args trajectories to queue
+     * Adds args to queue
      * @param commands list of commands to add to the queue. Will execute these commands one at a time
      */
     fun enqueue(vararg commands: Command) {
-        queue.addAll(commands)
+        enqueue(*commands.map { {it} }.toTypedArray())
     }
+
     /**
-     * Put list of trajectories in a specific location of the queue
-     * @param trajectories list of trajectories you want the robot to follow
+     * Put list of commands in a specific location of the queue
+     * @param commandSuppliers list of command Suppliers you want to robot to receive from
      * @param index where in the queue to insert. Defaults to the front of the list
      */
-    fun queueInsert(vararg trajectories: Trajectory, index: Int = 0) {
-        val commands = arrayListOf<Command>()
-        for (trajectory in trajectories) {
-            commands.add(follow(trajectory))
-        }
-        queueInsert(*commands.toTypedArray(), index = index)
+    fun queueInsert(vararg commandSuppliers: ()->Command, index: Int = 0) {
+        queue.addAll(index, commandSuppliers.toList())
     }
+
     /**
      * Put list of commands in a specific location of the queue
      * @param trajectories list of commands you want the robot to follow
      * @param index where in the queue to insert. Defaults to the front of the list
      */
     fun queueInsert(vararg commands: Command, index: Int = 0) {
-        for ((i, command) in commands.withIndex())
-            queue.add(index+i, command)
+        queue.addAll(index, commands.map { {it} })
     }
+
+
     /**
      * Get the next command in the queue
      * @param remove whether to remove from the queue when you retrieve. Defaults to true
      */
-    fun next(remove: Boolean = true): Command? {return if (remove) queue.poll() else queue.peek()}
+    fun next(remove: Boolean = true): Command = if (remove) queue.poll()() else queue.peek()()
+
     /**
      * Ends the current command
      */
@@ -114,6 +134,8 @@ object CommandManager : Command {
      * Empty all queued commands
      */
     fun clear() { queue.clear() }
+
+    // ---------- manipulate commands --------- //
     /**
      * Creates command to run commands together
      */
@@ -143,32 +165,22 @@ object CommandManager : Command {
         return true
     }
 
+    /**
+     * returns a string name of command
+     */
     private fun describe(command: Command): String {
         return command.javaClass.simpleName
     }
-    /**
-     * Run the active command.
-     * Also check if the command is done.
-     */
-    override fun execute() {
-        if (activeCommand == null && queue.isEmpty()) {
-            Drivetrain.driveAllVolts(0.0, 0.0, 0.0, 0.0)
-            return
-        }
-        if (activeCommand == null) activeCommand = next()
-        activeCommand!!.execute()
-        if (activeCommand!!.isFinished) {
-            activeCommand = next()
-        }
-    }
 
+    // ---------- general command stuff --------- //
     override fun isFinished(): Boolean = false
 
     override fun getRequirements(): MutableSet<Subsystem> {
         val set = mutableSetOf<Subsystem>(Drivetrain)
         activeCommand?.let { set.addAll(it.requirements) }
         for (command in queue)
-            set.addAll(command.requirements)
+            set.addAll(command().requirements)
         return set
     }
 }
+
