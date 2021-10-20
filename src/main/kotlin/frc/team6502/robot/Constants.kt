@@ -16,6 +16,7 @@ object Constants{
             SmartDashboard.putBoolean("AUTO", value)
         }
     const val MECANUM = true
+    const val VISION = true
 
     // ------ PORTS ------ //
 
@@ -25,7 +26,7 @@ object Constants{
     const val RIGHT_FRONT_ID = 4
     const val RIGHT_BACK_ID = 1
 
-    // navigation TODO set up and figure out
+    // navigation
     const val PIGEON_PORT = 6
 
     // shooter ports
@@ -39,11 +40,11 @@ object Constants{
     const val DRIVE_D = 0.0
 
     // feed forwards TODO characterize
-    const val DRIVE_KS_L = 0.0
-    const val DRIVE_KV_L = 0.0
-    const val DRIVE_KA_L = 0.0
+    const val DRIVE_KS = 0.0
+    const val DRIVE_KV = 0.0
+    const val DRIVE_KA = 0.0
 
-    // drivetrain setup TODO none of this is right
+    // drivetrain setup TODO: track width
     const val TRACK_WIDTH = 0.3
     val WHEEL_RADIUS = 2.inches
     const val DRIVE_GEAR_RATIO = 1.0 / 20.0
