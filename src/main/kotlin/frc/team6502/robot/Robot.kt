@@ -1,7 +1,9 @@
 package frc.team6502.robot
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import frc.team6502.robot.commands.CommandManager
+import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.commands.drive.AutoDrive
+import frc.team6502.robot.commands.general.CommandManager
 import kyberlib.command.KRobot
 import kyberlib.math.units.zeroPose
 
@@ -15,35 +17,15 @@ class Robot : KRobot() {
         RobotContainer
     }
 
-    override fun robotPeriodic() {
-
-    }
-
-    override fun disabledInit() {
-
-    }
-
-    override fun disabledPeriodic() {
-
-    }
-
     override fun autonomousInit() {
         Constants.AUTO = true
-        val trajectory = RobotContainer.navigation.trajectory(Translation2d(3.0, 0.0), Translation2d(10.0, 3.0))
-        CommandManager.enqueue(trajectory)
-    }
-
-    override fun autonomousPeriodic() {
-
+        val drive1 = AutoDrive(Translation2d(3.0, 0.0))  // Drives here
+        val drive2 = AutoDrive(Translation2d(10.0, 3.0))  // drives here
+        CommandManager.enqueue(CommandManager.sequence(drive1, drive2))
     }
 
     override fun teleopInit() {
         Constants.AUTO = false
-        RobotContainer.navigation.pose = zeroPose
+        Navigation.pose = zeroPose
     }
-
-    override fun teleopPeriodic() {
-
-    }
-
 }

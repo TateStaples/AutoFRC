@@ -4,7 +4,6 @@ import edu.wpi.cscore.HttpCamera
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Transform2d
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.auto.Navigation
@@ -49,8 +48,8 @@ object Photon {
             val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
             for (target in res.targets) {
                 val camToTargetTrans: Transform2d = target.cameraToTarget
-                val estimatedPosition = camToTargetTrans.translation.plus(RobotContainer.navigation.position)  // TODO: this might not factor rotation
-                RobotContainer.navigation.field.addGoal(estimatedPosition, imageCaptureTime, "ball")
+                val estimatedPosition = Navigation.pose.plus(camToTargetTrans)
+                Navigation.field.addGoal(estimatedPosition.translation, imageCaptureTime, "ball")
             }
         }
     }
@@ -67,7 +66,7 @@ object Photon {
             val theta  = thetaEntry.getDouble(0.0).radians
             val slamPose = Pose2d(x, y, theta)
             val adjustedPose = slamPose.transformBy(cameraOffset.transform)
-            RobotContainer.navigation.update(adjustedPose, updateTime)
+            Navigation.update(adjustedPose, updateTime)
         }
         lastUpdate = updateTime
     }
