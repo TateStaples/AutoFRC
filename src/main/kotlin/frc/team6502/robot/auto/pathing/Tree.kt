@@ -2,6 +2,7 @@ package frc.team6502.robot.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import frc.team6502.robot.auto.pathing.utils.Obstacle
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
@@ -22,8 +23,15 @@ class Node {
     var position: Translation2d
     var informed = false
     var pathLengthFromRoot: Double
+        set(value) {
+            field = value
+            for (child in children)
+                child.pathLengthFromRoot = pathLengthFromRoot + child.distance
+        }
     var nodeLengthFromRoot: Int
     val children = ArrayList<Node>()
+    var distance = 0.0
+
     var parent: Node? = null
         /**
          * Should update the previous parent and change the pathLength to root
@@ -34,7 +42,8 @@ class Node {
             }
             if (value != null && nodeLengthFromRoot != 0) {
                 value.children.add(this)
-                pathLengthFromRoot = value.pathLengthFromRoot + position.getDistance(value.position)  // TODO this might not be changed when optimizing
+                distance = position.getDistance(value.position)
+                pathLengthFromRoot = value.pathLengthFromRoot + distance  // TODO this might not be changed when optimizing
                 nodeLengthFromRoot = value.nodeLengthFromRoot + 1
             }
             field = value
@@ -52,6 +61,7 @@ class Node {
         this.position = position
         nodeLengthFromRoot = 0
         pathLengthFromRoot = 0.0
+        distance = 0.0
         informed = false
     }
 
@@ -100,7 +110,7 @@ class Tree {
             // current version in RRT
             start = Translation2d(1.feet, 1.feet)
             end = Translation2d(10.feet, 6.feet)
-            for (i in 0..10) {
+            for (i in 0..20) {
                 val p = PathPlanner.randomPoint()
                 val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
                 if (o.contains(start) || o.contains(end)) continue
@@ -109,6 +119,7 @@ class Tree {
             println("field setup")
             PathPlanner.loadTree(start, end)
             println("tree loaded")
+            println(PathPlanner.path!!.size)
             PathPlanner.tree.draw()
         }
     }

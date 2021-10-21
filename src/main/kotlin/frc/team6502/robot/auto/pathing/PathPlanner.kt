@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.math.units.extensions.feet
 import frc.team6502.robot.RobotContainer  // test edit
+import frc.team6502.robot.auto.Navigation
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -16,9 +17,9 @@ import kotlin.random.Random
  * @author TateStaples
  */
 object PathPlanner {
-    val field = RobotContainer.navigation.field // test edit
+    val field = Navigation.field // test edit
     val tree = Tree()
-    private val random = Random(4)//Timer.getFPGATimestamp().toInt())  // test edit
+    private val random = Random(5)//Timer.getFPGATimestamp().toInt())  // test edit
 
     var minGoalDistance = 0.5.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
@@ -37,10 +38,11 @@ object PathPlanner {
      * @return a trajectory that will track your robot to the goal target
      */
     fun pathTo(position: Translation2d): Trajectory {
+        if (position != Information.endPosition)
+            reset()
         if (tree.nodeCount > 0)
             tree.pruneInformed()
-        loadTree(position, RobotContainer.navigation.position)  // test edit
-        // TODO: figure out how to maintain rotation information
+        loadTree(position, Navigation.position)  // test edit
         return treeToTrajectory()
     }
 
@@ -49,9 +51,11 @@ object PathPlanner {
      * @param trajectory the old trajectory that may need correction
      * @return a trajectory that won't collide with any of the updated obstacles
      */
-    fun updateTrajectory(trajectory: Trajectory): Trajectory {
+    fun updateTrajectory(trajectory: Trajectory): Trajectory {  // TODO: idk think this works at all
         tree.pruneBlocked()
-        if (tree.vertices.contains(endNode!!)) return trajectory
+        if (tree.vertices.contains(endNode!!)) // this is not optimal if moving obstacles
+            return trajectory
+
         return pathTo(trajectory.states.last().poseMeters.translation)
     }
 
@@ -60,21 +64,20 @@ object PathPlanner {
      * @return a trajectory that follows the Tree recommended path
      */
     private fun treeToTrajectory(): Trajectory {
-        val positions = ArrayList<Translation2d>()
-        for (node in path!!) positions.add(node.position)
-        return RobotContainer.navigation.trajectory(positions)  // test edit
+        return Navigation.trajectory(*path!!.map{it.position}.toTypedArray())  // test edit
 //        return Trajectory()
     }
 
     /**
      * Creates the initial tree of nodes
      */
-    fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
+    internal fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
         // look @ BIT*
         // current version is Informed RRT*
         pathFound = false
+        if (tree.vertices.size == 0)
+            tree.addNode(Node(startPosition))
         Information.setup(startPosition, endPosition)
-        tree.addNode(Node(startPosition))  // TODO: this may cause errors when loading tree several times
         for (i in tree.nodeCount..explorationDepth) {
             if (pathFound) break
             val point = randomPoint()
@@ -140,6 +143,13 @@ object PathPlanner {
     private fun drawTreePath() {
         // TODO: update with field stuff and smartdashboard
         tree.draw()
+    }
+
+    /**
+     * Resets the pathing tree
+     */
+    private fun reset() {
+        tree.vertices.clear()
     }
 
     /**
