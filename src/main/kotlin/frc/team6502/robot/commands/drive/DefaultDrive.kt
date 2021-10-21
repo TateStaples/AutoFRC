@@ -1,4 +1,4 @@
-package frc.team6502.robot.commands
+package frc.team6502.robot.commands.drive
 
 import edu.wpi.first.wpilibj.SlewRateLimiter
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard

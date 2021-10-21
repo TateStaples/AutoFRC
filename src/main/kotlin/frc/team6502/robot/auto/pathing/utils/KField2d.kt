@@ -1,4 +1,4 @@
-package frc.team6502.robot.auto.pathing
+package frc.team6502.robot.auto.pathing.utils
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d

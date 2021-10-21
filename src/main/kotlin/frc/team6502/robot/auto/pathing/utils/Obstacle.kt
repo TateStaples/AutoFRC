@@ -1,6 +1,7 @@
-package frc.team6502.robot.auto.pathing
+package frc.team6502.robot.auto.pathing.utils
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
+import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 
 /**
@@ -12,13 +13,13 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
  */
 class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
     // TODO: maybe inflate obstacle sizes so robot doesn't hit anything
-    val x
+    val x: Double
         get() = pose.x
-    val y
+    val y: Double
         get() = pose.y
-    val rotation
+    val rotation: Rotation2d
         get() = pose.rotation
-    val position
+    val position: Translation2d
         get() = pose.translation
 
     /**

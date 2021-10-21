@@ -1,12 +1,16 @@
-package frc.team6502.robot.commands
+package frc.team6502.robot.commands.drive
 
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj2.command.CommandBase
-import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.subsystems.Drivetrain
 
-object Search : CommandBase() {  // TODO: This can be a lot better
+/**
+ * Shitty method to look for new balls.
+ * Just spins in a circle
+ */
+object Search : CommandBase() {
     private var lastDetectedBallTime = -1.0
     private val time
         get() = Timer.getFPGATimestamp()
@@ -16,9 +20,7 @@ object Search : CommandBase() {  // TODO: This can be a lot better
 
     private var previousFoundBalls = 0
     private val foundBalls
-        get() = RobotContainer.navigation.field.goals.size
-
-
+        get() = Navigation.field.goals.size
 
     init {
         addRequirements(Drivetrain)
@@ -38,7 +40,7 @@ object Search : CommandBase() {  // TODO: This can be a lot better
     }
 
     override fun isFinished(): Boolean {
-        val doneWaiting = lastDetectedBallTime != -1.0 && time- lastDetectedBallTime > maxWait
+        val doneWaiting = lastDetectedBallTime != -1.0 && time - lastDetectedBallTime > maxWait
         return doneWaiting || foundBalls >= maxBalls
     }
 }

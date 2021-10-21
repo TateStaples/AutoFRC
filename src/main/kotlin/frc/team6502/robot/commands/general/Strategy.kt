@@ -1,17 +1,23 @@
-package frc.team6502.robot.commands
+package frc.team6502.robot.commands.general
 
-import frc.team6502.robot.RobotContainer
-import frc.team6502.robot.auto.pathing.PathPlanner
+import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.commands.balls.Shoot
+import frc.team6502.robot.commands.drive.AutoDrive
+import frc.team6502.robot.commands.drive.Search
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
-import kyberlib.math.units.extensions.feet
+import kyberlib.math.units.extensions.inches
 
+/**
+ * Offers a high level strategy loop. Main Brain center of the robot.
+ * It checks what part of the game loop the robot is in and then dispatches the next commands
+ */
 object Strategy {
     private var collectedBalls = 0
     private val foundBalls
-        get() = RobotContainer.navigation.field.goals.size
+        get() = Navigation.field.goals.size
 
-    private var goalPose = Pose2d(10.feet, 10.feet, 0.degrees)  // TODO: get this better
+    private var goalPose = Pose2d(171.532.inches, 79.inches, 0.degrees)
 
     /**
      * When all the queued commands are done, it requests here what to do next
@@ -28,13 +34,11 @@ object Strategy {
      */
     private fun debug() {}
 
-    // TODO: implement and document these
     /**
      * Paths to the goal and then dispenses
      */
     private fun shoot() {
-        val toGoal = PathPlanner.pathTo(goalPose.translation)
-        CommandManager.enqueue({ CommandManager.follow(toGoal) })
+        CommandManager.enqueue(AutoDrive(goalPose))
         CommandManager.enqueue(Shoot)
     }
 
@@ -42,9 +46,9 @@ object Strategy {
      * Drives to each ball and picks it up
      */
     private fun collectBalls() {
-        // TODO: implement better navigation
-        for (goal in RobotContainer.navigation.field.goals) {
-            CommandManager.enqueue({goal.command})  // TODO: find a way to manipulate trajectory start position
+        // TODO: implement traveling salesman optimization
+        for (goal in Navigation.field.goals) {
+            CommandManager.enqueue(goal.command)
         }
     }
 
