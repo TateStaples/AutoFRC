@@ -11,10 +11,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.DefaultDrive
+import frc.team6502.robot.commands.drive.DefaultDrive
 import kyberlib.math.Filters.Differentiator
-import kyberlib.math.units.extensions.inches
-import kyberlib.math.units.extensions.meters
+import kyberlib.math.units.extensions.*
 import kotlin.math.PI
 
 /**
@@ -34,7 +33,6 @@ object Drivetrain : SubsystemBase() {
         inverted = true
         setSmartCurrentLimit(40)
     }
-
     private val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
         restoreFactoryDefaults()
         idleMode = CANSparkMax.IdleMode.kBrake
@@ -55,11 +53,11 @@ object Drivetrain : SubsystemBase() {
      * Configure all the encoders with proper gear ratios
      */
     init {
+        val circumference = (Constants.WHEEL_RADIUS.meters * 2 * PI)
         for (motor in motors) {
             motor.encoder.apply {
-                velocityConversionFactor =
-                    Constants.DRIVE_GEAR_RATIO * (Constants.WHEEL_RADIUS.meters * 2 * PI) / 81.4  // no reason but testing
-                positionConversionFactor = (Constants.WHEEL_RADIUS.meters * 2 * PI) / 9.9
+                velocityConversionFactor = (circumference * Constants.DRIVE_GEAR_RATIO).rpm.rotationsPerSecond
+                positionConversionFactor = circumference * Constants.DRIVE_GEAR_RATIO
             }
             val pid = motor.pidController
             pid.apply {
@@ -70,7 +68,6 @@ object Drivetrain : SubsystemBase() {
         }
     }
 
-    // motors positions
     /**
      * Location of each of the wheels relative to the center of the robot.
      * Important for mecanum control
@@ -82,7 +79,6 @@ object Drivetrain : SubsystemBase() {
     private val backLeftPosition = Translation2d(-robotWidth.meters, -robotLength.meters)
     private val backRightPosition = Translation2d(robotWidth.meters, -robotLength.meters)
 
-    // controls
     /**
      * Do important math specific to your chassis
      */
@@ -116,15 +112,15 @@ object Drivetrain : SubsystemBase() {
     /**
      * A list of important variables the rest of the code needs easy access to
      */
-    val leftFrontVel
+    private val leftFrontVel
         get() = leftFront.encoder.velocity
-    val rightFrontVel
+    private val rightFrontVel
         get() = rightFront.encoder.velocity
-    val leftBackVel
+    private val leftBackVel
         get() = leftBack.encoder.velocity
-    val rightBackVel
+    private val rightBackVel
         get() = rightBack.encoder.velocity
-    val leftVel // TODO figure this out better
+    val leftVel
         get() = leftFrontVel
     val rightVel
         get() = rightFrontVel
@@ -153,7 +149,7 @@ object Drivetrain : SubsystemBase() {
      * Drive the robot with specific wheel speeds
      * @param speeds DifferentialDriveWheelsSpeeds that have instruction for how fast each side should go
      */
-    fun drive(speeds: DifferentialDriveWheelSpeeds) {
+    private fun drive(speeds: DifferentialDriveWheelSpeeds) {
         val leftSpeed = speeds.leftMetersPerSecond
         val rightSpeed = speeds.rightMetersPerSecond
 
@@ -161,21 +157,20 @@ object Drivetrain : SubsystemBase() {
         val lFF = feedforward.calculate(leftSpeed, leftAccelCalculator.calculate(leftSpeed))
         val rPID = rightPID.calculate(rightFront.encoder.velocity, rightSpeed)
         val rFF = feedforward.calculate(rightSpeed, rightAccelCalculator.calculate(rightSpeed))
-        if (Constants.DEBUG) {
+        if (Constants.DEBUG)
             debug()
-        }
 //        driveVolts(lPID + lFF, rPID + rFF)
 
         leftFront.set(leftSpeed)
         rightFront.set(rightSpeed)
     }
 
-
     /**
      * Drive a Mecanum robot at specific speeds
      * @param speeds the wheel speeds to move the Mecanum robot
      */
     fun drive(speeds: MecanumDriveWheelSpeeds) {
+        speeds.normalize(Constants.velocity.metersPerSecond)
         leftFront.set(speeds.frontLeftMetersPerSecond)
         leftBack.set(speeds.rearLeftMetersPerSecond)
         rightFront.set(speeds.frontRightMetersPerSecond)
@@ -237,5 +232,4 @@ object Drivetrain : SubsystemBase() {
         logEncoders()
 
     }
-
 }
