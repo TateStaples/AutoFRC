@@ -22,6 +22,10 @@ val Translation2d.string: String
 fun Translation2d(x: Length, y:Length): Translation2d = Translation2d(x.meters, y.meters)
 fun Translation2d(x: Length, rotation: Rotation2d): Translation2d = Translation2d(x.meters, rotation)
 val zeroTranslation = Translation2d(0.0, 0.0)
+fun Translation2d.towards(translation2d: Translation2d): Rotation2d {
+    val dif = translation2d.minus(this)
+    return Rotation2d(dif.x, dif.y)
+}
 
 val ChassisSpeeds.speed: LinearVelocity
         get() = sqrt(vxMetersPerSecond * vxMetersPerSecond + vyMetersPerSecond * vyMetersPerSecond).metersPerSecond

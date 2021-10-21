@@ -11,7 +11,8 @@ typealias Angle = KRotation
 class KRotation(val value: Double) : Rotation2d(value) {
     val rotations
         get() = value / AngleConversions.rotationsToRadians
-    val normalized = ((rotations - rotations.toInt()) * rotations).radians // TODO check if this works at all
+    val normalized
+        get() = ((rotations - rotations.toInt()) * rotations).radians
 
     fun encoderAngle(cpr: Int) = (value / AngleConversions.rotationsToRadians) * (cpr * 4)
     fun toCircumference(radius: Length) = Length(value * radius.value)
