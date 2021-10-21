@@ -63,7 +63,7 @@ abstract class KMotorController : KBasicMotorController() {
     var gearRatio: GearRatio = 1.0
         set(value) {
             field = value
-            writeMultipler(gearRatio / 9.9, gearRatio / 9.9) // TODO: check why the div by 9.9
+            writeMultipler(gearRatio.rpm.rotationsPerSecond, gearRatio)
         }
 
     /**
