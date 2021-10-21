@@ -1,20 +1,16 @@
-package frc.team6502.robot.commands
+package frc.team6502.robot.commands.general
 
-import edu.wpi.first.wpilibj.controller.RamseteController
-import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj2.command.*
-import frc.team6502.robot.Constants
-import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
-import kotlin.collections.ArrayList
+
 
 /**
  * The main auto command manager.
  * Allows scheduling when to do what.
  */
 object CommandManager : Command {
-    private val queue = LinkedList<() -> Command>()  // change to list by Subsystem
+    private val queue = LinkedList<Command>()  // change to list by Subsystem
 
     var activeCommand: Command? = null
         set(value) {
@@ -39,72 +35,13 @@ object CommandManager : Command {
         }
     }
 
-    /**
-     * Generate a command to follow a designated trajectory
-     *
-     * @param trajectory path for the robot to follow
-     */
-    private fun ramsete(trajectory: Trajectory): RamseteCommand {
-        return RamseteCommand(
-            trajectory,
-            RobotContainer.navigation::pose,
-            RamseteController(Constants.RAMSETE_BETA, Constants.RAMSETE_ZETA),
-            Drivetrain.feedforward,
-            Drivetrain.difKinematics,
-            Drivetrain::difWheelSpeeds,
-            Drivetrain.leftPID,
-            Drivetrain.rightPID,
-            // RamseteCommand passes volts to the callback
-            Drivetrain::driveVolts,
-            Drivetrain
-        )
-    }
-    /**
-     * Generate a command to follow a designated trajectory
-     * @param trajectory path for the robot to follow
-     */
-    private fun mecCommand(trajectory: Trajectory): MecanumControllerCommand {
-        return MecanumControllerCommand(trajectory, {RobotContainer.navigation.pose}, Drivetrain.mecKinematics,
-            Drivetrain.leftPID, Drivetrain.rightPID, Drivetrain.rotationPID,
-            Constants.velocity.value,
-            Drivetrain::drive,
-            Drivetrain
-        )
-    }
-
-    /**
-     * Drivetrain invariant method to get follow trajectory command
-     */
-    fun follow(trajectory: Trajectory): Command {
-        return if (Constants.MECANUM) mecCommand(trajectory)
-        else ramsete(trajectory)
-    }
-
     // ---------- add / remove --------- //
-
-    /**
-     * Adds args to queue
-     * @param commandSuppliers list of commandSuppliers to add to the queue.
-     * Will execute the supplied commands one at a time
-     */
-    fun enqueue(vararg commandSuppliers: ()->Command) {
-        queue.addAll(commandSuppliers)
-    }
     /**
      * Adds args to queue
      * @param commands list of commands to add to the queue. Will execute these commands one at a time
      */
     fun enqueue(vararg commands: Command) {
-        enqueue(*commands.map { {it} }.toTypedArray())
-    }
-
-    /**
-     * Put list of commands in a specific location of the queue
-     * @param commandSuppliers list of command Suppliers you want to robot to receive from
-     * @param index where in the queue to insert. Defaults to the front of the list
-     */
-    fun queueInsert(vararg commandSuppliers: ()->Command, index: Int = 0) {
-        queue.addAll(index, commandSuppliers.toList())
+        queue.addAll(commands)
     }
 
     /**
@@ -113,7 +50,7 @@ object CommandManager : Command {
      * @param index where in the queue to insert. Defaults to the front of the list
      */
     fun queueInsert(vararg commands: Command, index: Int = 0) {
-        queue.addAll(index, commands.map { {it} })
+        queue.addAll(index, commands.toList())
     }
 
 
@@ -121,7 +58,7 @@ object CommandManager : Command {
      * Get the next command in the queue
      * @param remove whether to remove from the queue when you retrieve. Defaults to true
      */
-    fun next(remove: Boolean = true): Command = if (remove) queue.poll()() else queue.peek()()
+    fun next(remove: Boolean = true): Command = if (remove) queue.poll() else queue.peek()
 
     /**
      * Ends the current command
@@ -173,13 +110,16 @@ object CommandManager : Command {
     }
 
     // ---------- general command stuff --------- //
+    /**
+     * This is the main command. Therefore, it never ends.
+     */
     override fun isFinished(): Boolean = false
 
     override fun getRequirements(): MutableSet<Subsystem> {
         val set = mutableSetOf<Subsystem>(Drivetrain)
         activeCommand?.let { set.addAll(it.requirements) }
         for (command in queue)
-            set.addAll(command().requirements)
+            set.addAll(command.requirements)
         return set
     }
 }
