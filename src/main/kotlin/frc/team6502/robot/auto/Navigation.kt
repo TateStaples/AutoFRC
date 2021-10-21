@@ -15,36 +15,41 @@ import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.numbers.*
 import kyberlib.math.units.extensions.degrees
 import frc.team6502.robot.Constants
-import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.auto.cv.Photon
-import frc.team6502.robot.auto.pathing.KField2d
+import frc.team6502.robot.auto.pathing.utils.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.math.units.Pose2d
+import kyberlib.math.units.extensions.Angle
+import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.string
+import kyberlib.sensors.gyros.KGyro
 
 
+val startPose = Pose2d(0.feet, 0.feet, 0.degrees)
 /**
  * A Subsystem to manage and update the Robots position
  * @param initialPose the pose of the robot when Navigation begins
  * @author TateStaples
  */
-class Navigation(initialPose: Pose2d) : SubsystemBase() {
+object Navigation : SubsystemBase() {
     /**
      * The field data of the field the robot is on
      */
     val field = KField2d()
+    lateinit var gyro: KGyro
 
     val fieldTraj: FieldObject2d = field.getObject("traj")
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
      */
     private val difEstimator = DifferentialDrivePoseEstimator(
-        heading, initialPose,
+        heading, startPose,
         MatBuilder(N5.instance, N1.instance).fill(0.02, 0.02, 0.01, 0.02, 0.02),  // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01),  // Local measurement standard deviations. Left encoder, right encoder, gyro.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01) // Global measurement standard deviations. X, Y, and theta.
     )
     private val mecEstimator = MecanumDrivePoseEstimator(
-        heading, initialPose, Drivetrain.mecKinematics,
+        heading, startPose, Drivetrain.mecKinematics,
         MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01), // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N1.instance, N1.instance).fill(0.02), // Local measurement standard deviations. gyro.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01) // Global measurement standard deviations. X, Y, and theta.
@@ -99,17 +104,17 @@ class Navigation(initialPose: Pose2d) : SubsystemBase() {
 
     // ----- public variables ----- //
     // location
-    var heading  // what direction the robot is facing
-        get() = RobotContainer.gyro.fusedHeading.degrees
-        set(value) {RobotContainer.gyro.fusedHeading = value.degrees}
-    var pose  // the location and direction of the robot
+    var heading: Angle  // what direction the robot is facing
+        get() = gyro.heading
+        set(value) {gyro.heading = value}
+    var pose: Pose2d  // the location and direction of the robot
         get() = if (Constants.MECANUM) mecEstimator.estimatedPosition else difEstimator.estimatedPosition
         set(value) {
             if (Constants.MECANUM) mecEstimator.resetPosition(value, heading)
             else difEstimator.resetPosition(value, heading)
             this.field.robotPose = value
         }
-    val position  // the estimated location of the robot
+    val position: Translation2d  // the estimated location of the robot
         get() = pose.translation
 
     /**
