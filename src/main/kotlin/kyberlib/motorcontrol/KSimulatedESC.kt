@@ -2,9 +2,6 @@ package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.controller.PIDController
 import kyberlib.math.invertIf
-import frc.team6502.kyberlib.motorcontrol.BrakeMode
-import frc.team6502.kyberlib.motorcontrol.KEncoderConfig
-import frc.team6502.kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.*
 
 class KSimulatedESC(val name: String) : KMotorController() {
@@ -50,8 +47,8 @@ class KSimulatedESC(val name: String) : KMotorController() {
 
     }
 
-    override fun zeroPosition() {
-        rawPosition = 0.rotations
+    override fun resetPosition(position: Angle) {
+        rawPosition = position
     }
 
     override fun followTarget(kmc: KBasicMotorController) {

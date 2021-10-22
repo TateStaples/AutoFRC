@@ -1,13 +1,9 @@
 package kyberlib.motorcontrol.ctre
 
-import kyberlib.motorcontrol.CANId
-import kyberlib.motorcontrol.CANKey
-import kyberlib.motorcontrol.CANRegistry
-import kyberlib.motorcontrol.KBasicMotorController
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
-import frc.team6502.kyberlib.motorcontrol.*
+import kyberlib.motorcontrol.*
 
 class KVictorSPX(val canId: CANId) : KBasicMotorController() {
     private val _victor = VictorSPX(canId)

@@ -1,11 +1,10 @@
-package frc.team6502.kyberlib.motorcontrol
+package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.controller.ArmFeedforward
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
-import kyberlib.motorcontrol.KBasicMotorController
 
 typealias GearRatio = Double
 typealias BrakeMode = Boolean
@@ -125,7 +124,7 @@ abstract class KMotorController : KBasicMotorController() {
 
     var customControl: ((it: KMotorController) -> Double)? = null
 
-    // ----- main getter/setter methods ----- ///
+    // ----- main getter/setter methods ----- //
     var position: Angle
         get() {
             assert(encoderConfigured)
@@ -241,6 +240,10 @@ abstract class KMotorController : KBasicMotorController() {
         get() = encoderConfigured && customControl != null
 
     // ----- low level getters and setters (customized to each encoder type) ----- //
+    abstract fun resetPosition(position: Angle = 0.rotations)
+    fun resetPosition(position: Length) {
+        resetPosition(linearToRotation(position))
+    }
     abstract var rawPosition: Angle
         protected set
     abstract var rawVelocity: AngularVelocity
@@ -254,10 +257,6 @@ abstract class KMotorController : KBasicMotorController() {
      */
     protected abstract fun writeMultipler(mv: Double, mp: Double)
 
-    /**
-     * Resets the encoder's position to zero
-     */
-    abstract fun zeroPosition()
 
     /**
      * Configures the respective ESC encoder settings when a new encoder configuration is set

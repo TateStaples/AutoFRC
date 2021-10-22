@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.RobotController
-import frc.team6502.kyberlib.motorcontrol.BrakeMode
 import kyberlib.math.invertIf
 
 /**
@@ -41,7 +40,7 @@ abstract class KBasicMotorController {
     /**
      * Sets controller voltage directly
      */
-    protected var voltage: Double = 0.0
+    var voltage = 0.0
         set(value) {
             field = value
             value.coerceAtMost(vbus)

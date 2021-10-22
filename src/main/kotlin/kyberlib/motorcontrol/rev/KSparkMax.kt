@@ -5,12 +5,11 @@ import com.revrobotics.CANPIDController
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel.MotorType
 import com.revrobotics.ControlType
-import frc.team6502.kyberlib.motorcontrol.BrakeMode
-import frc.team6502.kyberlib.motorcontrol.EncoderType
-import frc.team6502.kyberlib.motorcontrol.KEncoderConfig
-import frc.team6502.kyberlib.motorcontrol.KMotorController
-import frc.team6502.kyberlib.motorcontrol.MotorType.BRUSHED
-import frc.team6502.kyberlib.motorcontrol.MotorType.BRUSHLESS
+import kyberlib.motorcontrol.EncoderType
+import kyberlib.motorcontrol.KEncoderConfig
+import kyberlib.motorcontrol.KMotorController
+import kyberlib.motorcontrol.MotorType.BRUSHED
+import kyberlib.motorcontrol.MotorType.BRUSHLESS
 import kyberlib.math.units.extensions.Angle
 import kyberlib.math.units.extensions.AngularVelocity
 import kyberlib.math.units.extensions.rotations
@@ -26,7 +25,7 @@ import kyberlib.motorcontrol.KBasicMotorController
  * [motorType] is the type of motor being driven. WARNING: If set incorrectly this can seriously damage hardware. You've been warned.
  * [apply] is where motor setup can occur
  */
-class KSparkMax(val canId: CANId, val motorType: frc.team6502.kyberlib.motorcontrol.MotorType
+class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
                             ) : KMotorController() {
 
     // ----- low-level stuff ----- //
@@ -79,7 +78,6 @@ class KSparkMax(val canId: CANId, val motorType: frc.team6502.kyberlib.motorcont
             field = value
         }
 
-
     override fun configureEncoder(config: KEncoderConfig): Boolean {
         return when {
             config.type == EncoderType.NEO_HALL && motorType == BRUSHLESS -> {
@@ -117,10 +115,10 @@ class KSparkMax(val canId: CANId, val motorType: frc.team6502.kyberlib.motorcont
         }
     }
 
-    override fun zeroPosition() {
+    override fun resetPosition(position: Angle) {
         if (!encoderConfigured) {
             return logError("Cannot reset encoder position without configured encoder")
         }
-        _enc?.position = 0.0
+        _enc?.position = position.rotations
     }
 }
