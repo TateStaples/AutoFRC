@@ -1,4 +1,4 @@
-package kyberlib.motorcontrol.swerve
+package kyberlib.mechanisms.drivetrain.swerve
 
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController
@@ -37,7 +37,7 @@ class SwerveDrive(private val gyro: KGyro,
         get() = swerveModules.map { it.state }
         set(value) {swerveModules.zip(value).forEach { it.first.state = it.second }}
 
-    val speed
+    val speed: ChassisSpeeds
         get() =  kinematics.toChassisSpeeds(*states.toTypedArray())
 
     /**

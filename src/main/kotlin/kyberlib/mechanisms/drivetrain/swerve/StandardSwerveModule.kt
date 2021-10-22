@@ -1,8 +1,8 @@
-package kyberlib.motorcontrol.swerve
+package kyberlib.mechanisms.drivetrain.swerve
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import frc.team6502.kyberlib.motorcontrol.KMotorController
+import kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.k
 
 open class StandardSwerveModule (location: Translation2d, private val driveMotor: KMotorController, private val turnMotor: KMotorController) : SwerveModule(location) {

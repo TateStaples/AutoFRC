@@ -1,4 +1,4 @@
-package kyberlib.motorcontrol.swerve
+package kyberlib.mechanisms.drivetrain.swerve
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
