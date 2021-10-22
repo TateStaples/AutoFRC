@@ -1,6 +1,8 @@
 package frc.team6502.robot.commands.general
 
 import edu.wpi.first.wpilibj2.command.*
+import frc.team6502.robot.Constants
+import frc.team6502.robot.commands.drive.DefaultDrive
 import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 
@@ -23,6 +25,10 @@ object CommandManager : Command {
      * Also check if the command is done.
      */
     override fun execute() {
+        if (!Constants.AUTO) {
+            DefaultDrive.execute()
+            return
+        }
         if (activeCommand == null && queue.isEmpty()) {
             Strategy.plan()
 //            Drivetrain.driveAllVolts(0.0, 0.0, 0.0, 0.0)

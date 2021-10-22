@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.drive.DefaultDrive
+import frc.team6502.robot.commands.general.CommandManager
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
 import kotlin.math.PI
@@ -53,7 +53,7 @@ object Drivetrain : SubsystemBase() {
      * Configure all the encoders with proper gear ratios
      */
     init {
-        val circumference = (Constants.WHEEL_RADIUS.meters * 2 * PI)
+        val circumference = Constants.WHEEL_RADIUS.meters * 2 * PI
         for (motor in motors) {
             motor.encoder.apply {
                 velocityConversionFactor = (circumference * Constants.DRIVE_GEAR_RATIO).rpm.rotationsPerSecond
@@ -104,9 +104,7 @@ object Drivetrain : SubsystemBase() {
      * Setup the default command for the system
      */
     init {
-//        defaultCommand = CommandManager  // this needs to require Drivetrain
-//        if (!Constants.AUTO) (defaultCommand as CommandManager).enqueue(DefaultDrive())
-        defaultCommand = DefaultDrive
+        defaultCommand = CommandManager
     }
 
     /**
@@ -175,31 +173,6 @@ object Drivetrain : SubsystemBase() {
         leftBack.set(speeds.rearLeftMetersPerSecond)
         rightFront.set(speeds.frontRightMetersPerSecond)
         rightBack.set(speeds.rearRightMetersPerSecond)
-    }
-
-    /**
-     * Low level drive call.
-     * Applies voltage directly to each side
-     * @param leftVolts Double representing voltage to apply to the two left motors
-     * @param rightVolts Double representing voltage to apply to the two right motors
-     */
-    fun driveVolts(leftVolts: Double, rightVolts: Double) {
-        leftFront.setVoltage(leftVolts)
-        rightFront.setVoltage(rightVolts)
-    }
-
-    /**
-     * Low level call to set each individual motor voltage
-     * @param lf voltage for left front motor
-     * @param lb voltage for left back motor
-     * @param rf voltage for right front motor
-     * @param rb voltage for right back motor
-     */
-    fun driveAllVolts(lf: Double, lb: Double, rf: Double, rb: Double) {
-        leftFront.setVoltage(lf)
-        rightFront.setVoltage(rf)
-        leftBack.setVoltage(lb)
-        rightBack.setVoltage(rb)
     }
 
     /**
