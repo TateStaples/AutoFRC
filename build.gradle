@@ -65,7 +65,7 @@ dependencies {
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.21"
-//    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4'
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
 
     // Enable simulation gui support. Must check the box in vscode to enable support
     // upon debugging
@@ -84,8 +84,6 @@ dependencies {
     compile "edu.wpi.first.cscore:cscore-java:2021.2.2"
     compile "edu.wpi.first.cameraserver:cameraserver-java:2021.2.2"
     compile name: 'opencv-347'
-//    def opencvVersion = '3.4.7-1'
-//    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:${opencvVersion}"
 
     // Add wpiutil-java
     compile "edu.wpi.first.wpiutil:wpiutil-java:2021.2.2"
@@ -108,7 +106,7 @@ dependencies {
 // Simulation configuration (e.g. environment variables).
 sim {
     // Sets the websocket client remote host.
-    // envVar "HALSIMWS_HOST", "10.0.0.2"
+     envVar "HALSIMWS_HOST", "10.0.0.2"
 }
 
 //task copyOpenCVDll(type: Copy) {
