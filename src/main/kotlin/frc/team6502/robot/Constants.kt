@@ -31,7 +31,7 @@ object Constants{
 
     // shooter ports
     const val INTAKE_ID = 5
-    const val SHOOTER_ID = 6
+    const val SHOOTER_ID = 6 // TODO: figure out this port
 
     // ------ CONTROLS ------ //
     // pids
