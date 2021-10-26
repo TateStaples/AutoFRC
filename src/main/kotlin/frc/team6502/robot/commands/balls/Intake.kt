@@ -11,4 +11,8 @@ object Intake : CommandBase() {
     override fun execute() {
         Shooter.intake.setVoltage(1.0)
     }
+
+    override fun end(interrupted: Boolean) {
+        Shooter.intake.setVoltage(0.0)
+    }
 }
