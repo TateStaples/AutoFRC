@@ -3,6 +3,8 @@ package frc.team6502.robot
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.auto.pathing.PathPlanner
+import frc.team6502.robot.commands.balls.Intake
+import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.input.controller.KXboxController
 import kyberlib.sensors.gyros.KPigeon
@@ -30,6 +32,9 @@ object RobotContainer {
             expo = 20.0
             deadband = 0.2
         }
+
+        rightBumper.whileActiveContinuous(Shoot)
+        leftBumper.whileActiveContinuous(Intake)
     }
 
     init {
