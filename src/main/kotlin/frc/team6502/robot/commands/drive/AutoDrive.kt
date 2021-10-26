@@ -18,6 +18,10 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
     constructor(position: Translation2d) : this(Pose2d(position, 0.degrees)) {
         rotationInvariant = true
     }
+
+    constructor(trajectory: Trajectory) : this(trajectory.states.last().poseMeters) {
+        this.trajectory = trajectory
+    }
     private var rotationInvariant = false
 
     lateinit var trajectory: Trajectory
@@ -32,7 +36,8 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
         timer.start()
         if (rotationInvariant)
             targetPose = Pose2d(targetPose.translation, Navigation.position.towards(targetPose.translation))
-        trajectory = PathPlanner.pathTo(targetPose.translation)
+        if (!this::trajectory.isInitialized)
+            trajectory = PathPlanner.pathTo(targetPose.translation)
     }
 
     override fun execute() {
