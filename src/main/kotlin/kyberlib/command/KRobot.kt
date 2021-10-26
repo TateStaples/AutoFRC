@@ -54,6 +54,14 @@ open class KRobot(private val period: Double = 0.02) {
             this@KRobot.teleopPeriodic()
         }
 
+        override fun simulationInit() {
+            this@KRobot.simulationInit()
+        }
+
+        override fun simulationPeriodic() {
+            this@KRobot.simulationPeriodic()
+        }
+
         override fun testInit() {
 //            LiveWindow.setEnabled(false)
         }
@@ -109,6 +117,16 @@ open class KRobot(private val period: Double = 0.02) {
      * Ran continuously when the robot is in teleoperated mode
      */
     open fun teleopPeriodic() {}
+
+    /**
+     * Run on the start of simulated robot
+     */
+    open fun simulationInit() {}
+
+    /**
+     * Run continuously while Simulating the robot
+     */
+    open fun simulationPeriodic() {}
 
     /**
      * Runs the underlying WPILib startup methods. Run this in Main.kt
