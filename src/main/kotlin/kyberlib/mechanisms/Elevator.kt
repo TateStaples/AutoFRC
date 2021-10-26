@@ -6,7 +6,7 @@ import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
 
 
-class Elevator(vararg motors: KMotorController, radius: Length, initialPosition: Length = 0.feet) : SubsystemBase() {
+class Elevator(vararg val motors: KMotorController, radius: Length, initialPosition: Length = 0.feet) : SubsystemBase() {
     private val master = motors[0].apply {
         this.radius = radius
         resetPosition(initialPosition)

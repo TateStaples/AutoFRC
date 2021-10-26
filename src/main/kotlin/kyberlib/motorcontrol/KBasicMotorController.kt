@@ -40,14 +40,14 @@ abstract class KBasicMotorController {
     /**
      * Sets controller voltage directly
      */
-    var voltage = 0.0
+    var voltage: Double
+        get() = percent * vbus
         set(value) {
-            field = value
             value.coerceAtMost(vbus)
             percent = (value / vbus)
         }
 
-    private var vbus = if (RobotBase.isReal()) RobotController.getBatteryVoltage() else 12.0
+    protected var vbus = if (RobotBase.isReal()) RobotController.getBatteryVoltage() else 12.0
 
     val notifier = Notifier { update() }
 
