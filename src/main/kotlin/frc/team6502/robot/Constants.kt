@@ -15,7 +15,7 @@ object Constants{
             field = value
             SmartDashboard.putBoolean("AUTO", value)
         }
-    const val MECANUM = true
+    const val MECANUM = false
     const val VISION = true
 
     // ------ PORTS ------ //

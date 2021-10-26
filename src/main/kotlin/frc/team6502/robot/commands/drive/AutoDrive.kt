@@ -41,14 +41,13 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
     }
 
     override fun execute() {
-        if (Constants.MECANUM)
-            Drivetrain.chassisSpeeds = mecCalculator.calculate(Navigation.pose, trajectory.sample(timer.get()), targetPose.rotation)
-        else
-            Drivetrain.chassisSpeeds = difCalculator.calculate(Navigation.pose, trajectory.sample(timer.get()))
+        val targetSpeed = if (Constants.MECANUM) mecCalculator.calculate(Navigation.pose, trajectory.sample(timer.get()), targetPose.rotation)
+            else difCalculator.calculate(Navigation.pose, trajectory.sample(timer.get()))
+        Drivetrain.drive(targetSpeed)
 //        trajectory = PathPlanner.updateTrajectory(trajectory) - this should be necesary until moving obstabcles
     }
 
     override fun isFinished(): Boolean {
-        return timer.hasElapsed(trajectory.totalTimeSeconds)
+        return timer.hasElapsed(trajectory.totalTimeSeconds) || Navigation.position.getDistance(targetPose.translation) < 0.5
     }
 }

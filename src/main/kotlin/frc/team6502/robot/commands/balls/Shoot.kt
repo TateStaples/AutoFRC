@@ -9,7 +9,7 @@ object Shoot : CommandBase() {  // TODO: test
     }
 
     override fun execute() {
-        Shooter.intake.setVoltage(-1.0)
+        Shooter.intake.setVoltage(-5.0)
         Shooter.shooterMotor.setVoltage(1.0)
     }
 }

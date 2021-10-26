@@ -1,5 +1,6 @@
 package frc.team6502.robot.commands.general
 
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.drive.DefaultDrive
@@ -30,8 +31,8 @@ object CommandManager : Command {
             return
         }
         if (activeCommand == null && queue.isEmpty()) {
-            Strategy.plan()
-//            Drivetrain.driveAllVolts(0.0, 0.0, 0.0, 0.0)
+//            Strategy.plan()
+            Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.0))
             return
         }
         if (activeCommand == null) activeCommand = next()
@@ -64,7 +65,11 @@ object CommandManager : Command {
      * Get the next command in the queue
      * @param remove whether to remove from the queue when you retrieve. Defaults to true
      */
-    fun next(remove: Boolean = true): Command = if (remove) queue.poll() else queue.peek()
+    fun next(remove: Boolean = true): Command? {
+        if (queue.isEmpty()) return null
+        val command = if (remove) queue.poll() else queue.peek()
+        return command
+    }
 
     /**
      * Ends the current command

@@ -159,8 +159,10 @@ object Drivetrain : SubsystemBase() {
             debug()
 //        driveVolts(lPID + lFF, rPID + rFF)
 
-        leftFront.set(leftSpeed)
-        rightFront.set(rightSpeed)
+//        leftFront.set(leftSpeed)
+//        rightFront.set(rightSpeed)
+        leftFront.setVoltage(lPID + lFF)
+        rightFront.setVoltage(rPID + rFF)
     }
 
     /**

@@ -43,13 +43,13 @@ object Navigation : SubsystemBase() {
      * A probability calculator to guess where the robot is from odometer and vision updates
      */
     private val difEstimator = DifferentialDrivePoseEstimator(
-        heading, startPose,
+        startPose.rotation, startPose,
         MatBuilder(N5.instance, N1.instance).fill(0.02, 0.02, 0.01, 0.02, 0.02),  // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01),  // Local measurement standard deviations. Left encoder, right encoder, gyro.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01) // Global measurement standard deviations. X, Y, and theta.
     )
     private val mecEstimator = MecanumDrivePoseEstimator(
-        heading, startPose, Drivetrain.mecKinematics,
+        startPose.rotation, startPose, Drivetrain.mecKinematics,
         MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01), // State measurement standard deviations. X, Y, theta, dist_l, dist_r. (dist is encoder distance I think)
         MatBuilder(N1.instance, N1.instance).fill(0.02), // Local measurement standard deviations. gyro.
         MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01) // Global measurement standard deviations. X, Y, and theta.

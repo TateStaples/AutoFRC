@@ -5,7 +5,6 @@ import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Transform2d
-import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.auto.Navigation
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees

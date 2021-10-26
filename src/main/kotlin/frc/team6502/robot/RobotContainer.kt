@@ -33,8 +33,8 @@ object RobotContainer {
             deadband = 0.2
         }
 
-        rightBumper.whileActiveContinuous(Shoot)
-        leftBumper.whileActiveContinuous(Intake)
+        rightBumper.whileActiveOnce(Shoot)
+        leftBumper.whileActiveOnce(Intake)
     }
 
     init {

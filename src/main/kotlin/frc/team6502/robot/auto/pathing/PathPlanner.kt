@@ -1,11 +1,11 @@
 package frc.team6502.robot.auto.pathing
 
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
-import kyberlib.math.units.extensions.feet
-import frc.team6502.robot.RobotContainer  // test edit
 import frc.team6502.robot.auto.Navigation
+import kyberlib.math.units.extensions.feet
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -19,9 +19,9 @@ import kotlin.random.Random
 object PathPlanner {
     val field = Navigation.field // test edit
     val tree = Tree()
-    private val random = Random(5)//Timer.getFPGATimestamp().toInt())  // test edit
+    private val random = Random(Timer.getFPGATimestamp().toInt())
 
-    var minGoalDistance = 0.5.feet.value  // margin of error for pathfinding node
+    var minGoalDistance = 0.1.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
     var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
     val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
@@ -38,7 +38,7 @@ object PathPlanner {
      * @return a trajectory that will track your robot to the goal target
      */
     fun pathTo(position: Translation2d): Trajectory {
-        if (position != Information.endPosition)
+        if (tree.nodeCount > 0 && position != Information.endPosition)
             reset()
         if (tree.nodeCount > 0)
             tree.pruneInformed()
@@ -75,7 +75,7 @@ object PathPlanner {
         // look @ BIT*
         // current version is Informed RRT*
         pathFound = false
-        if (tree.vertices.size == 0)
+        if (tree.nodeCount == 0)
             tree.addNode(Node(startPosition))
         Information.setup(startPosition, endPosition)
         for (i in tree.nodeCount..explorationDepth) {
@@ -134,7 +134,8 @@ object PathPlanner {
     private fun informedPoint(): Translation2d {
         val theta = random.nextDouble(2*Math.PI)
         val rho = sqrt(random.nextDouble(1.0))
-        return Information.get(rho, theta)
+        val point = Information.get(rho, theta)
+        return point
     }
 
     /**
@@ -150,6 +151,7 @@ object PathPlanner {
      */
     private fun reset() {
         tree.vertices.clear()
+        path?.clear()
     }
 
     /**
@@ -176,7 +178,7 @@ object PathPlanner {
         }
 
         fun update() {
-            currentPathLength = path!![0].pathLengthFromRoot
+            currentPathLength = path!![0].pathLengthFromRoot.coerceAtLeast(dis)
             width = currentPathLength
             height = sqrt(currentPathLength * currentPathLength - dis * dis)
         }
@@ -184,7 +186,12 @@ object PathPlanner {
         fun get(rho: Double, theta: Double): Translation2d {
             val x = cos(theta) * width/2 * rho
             val y = sin(theta) * height/2 * rho
-            return Translation2d(x, y).rotateBy(rotation).plus(center)
+            val rotated = Translation2d(x, y).rotateBy(rotation)
+            return rotated.plus(center)
+        }
+
+        fun debug() {
+            println("start: $startPosition, end: $endPosition, w: $width, h: $height center: $center, dis: $dis, rotation: $rotation")
         }
     }
 }

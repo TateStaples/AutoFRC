@@ -47,7 +47,7 @@ repositories {
     mavenCentral()
     mavenLocal()
     flatDir {
-        dirs '/usr/local/frc/java', './opencv/'
+        dirs './opencv/'
     }
     maven {
         url 'https://frcmaven.wpi.edu/artifactory/release/'
@@ -59,7 +59,6 @@ dependencies {
     implementation wpi.deps.wpilib()
     nativeZip wpi.deps.wpilibJni(wpi.platforms.roborio)
     nativeDesktopZip wpi.deps.wpilibJni(wpi.platforms.desktop)
-
 
     implementation wpi.deps.vendor.java()
     nativeZip wpi.deps.vendor.jni(wpi.platforms.roborio)
