@@ -34,22 +34,22 @@ object Constants{
     const val SHOOTER_ID = 6
 
     // ------ CONTROLS ------ //
-    // pids TODO tune
-    const val DRIVE_P = 0.7
-    const val DRIVE_I = 0.1
+    // pids
+    const val DRIVE_P = 1.47
+    const val DRIVE_I = 0.0
     const val DRIVE_D = 0.0
 
-    // feed forwards TODO characterize
-    const val DRIVE_KS = 0.0
-    const val DRIVE_KV = 0.0
-    const val DRIVE_KA = 0.0
+    // feed forwards
+    const val DRIVE_KS = 0.0943
+    const val DRIVE_KV = 4.83
+    const val DRIVE_KA = 0.287
 
-    // drivetrain setup TODO: track width
-    const val TRACK_WIDTH = 0.3
+    // drivetrain setup
+    const val TRACK_WIDTH = 0.657299651
     val WHEEL_RADIUS = 2.inches
     const val DRIVE_GEAR_RATIO = 1.0 / 20.0
 
-    const val RAMSETE_BETA = 0.7  // TODO I have no idea if these are right
+    const val RAMSETE_BETA = 0.7
     const val RAMSETE_ZETA = 0.1
 
     // TODO: mess with this - these are max values
