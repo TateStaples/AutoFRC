@@ -22,7 +22,7 @@ class KVictorSPX(val canId: CANId) : KBasicMotorController() {
         get() = _victor.inverted
         set(value) {_victor.inverted = value}
 
-    override var percent: Double
+    override var rawPercent: Double
         get() = _victor.motorOutputPercent
         set(value) {_victor.set(ControlMode.PercentOutput, value)}
 

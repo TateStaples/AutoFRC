@@ -58,6 +58,4 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     override fun debug() {
         println(motors.map { it.linearVelocity }.toString())
     }
-
-
 }

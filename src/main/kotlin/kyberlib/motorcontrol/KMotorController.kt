@@ -2,7 +2,10 @@ package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.controller.ArmFeedforward
 import edu.wpi.first.wpilibj.controller.PIDController
+import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
+import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
 
@@ -23,15 +26,21 @@ enum class MotorType {
     BRUSHLESS, BRUSHED
 }
 
+enum class ControlMode {
+    VELOCITY, POSITION, NULL
+}
+
 /**
  * Stores data about an encoder. [reversed] means the encoder reading goes + when the motor is applied - voltage.
  */
 data class KEncoderConfig(val cpr: Int, val type: EncoderType, val reversed: Boolean = false)
 
+// todo: add motion profiling
 /**
  * A more advanced motor control with feedback control.
  */
 abstract class KMotorController : KBasicMotorController() {
+    private var controlMode = ControlMode.NULL
     // ----- configs ----- //
     /**
      * The multiplier to attach to the raw velocity. *This is not the recommended way to do this.* Try using gearRatio instead
@@ -105,45 +114,98 @@ abstract class KMotorController : KBasicMotorController() {
             writePid(kP, kI, kD)
         }
 
-    var PID = PIDController(0.0, 0.0, 0.0)
+    var maxVelocity: AngularVelocity
+        get() = constraints.maxVelocity.radiansPerSecond
+        set(value) {
+            constraints.maxVelocity = value.radiansPerSecond
+        }
+    var maxAcceleration: AngularVelocity
+        get() = constraints.maxAcceleration.radiansPerSecond
+        set(value) { constraints.maxAcceleration = value.radiansPerSecond }
+    var maxLinearVelocity: LinearVelocity
+        get() = rotationToLinear(maxVelocity)
+        set(value) { maxVelocity = linearToRotation(value) }
+    var maxLinearAcceleration: LinearVelocity
+        get() = rotationToLinear(maxAcceleration)
+        set(value) { maxAcceleration = linearToRotation(value) }
+
+    private val constraints = TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    var PID = ProfiledPIDController(0.0, 0.0, 0.0, constraints)  // todo test affect of profile
 
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
         customControl = {
-            val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
-            val pid = PID.calculate(linearVelocityError.metersPerSecond)
-            ff + pid
+            var voltage = 0.0
+            if (controlMode == ControlMode.VELOCITY) {
+                val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
+                val pid = PID.calculate(linearVelocityError.metersPerSecond)
+                voltage = ff + pid
+            } else if (controlMode == ControlMode.POSITION) {
+                val pid = PID.calculate(positionError.radians)
+                voltage = pid
+            }
+            voltage
         }
     }
     fun addFeedforward(feedforward: ArmFeedforward) {
+        assert(!linearConfigured) {"you shouldn't be using armFF for linear motors"}
         customControl = {
-            val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
-            val pid = PID.calculate(positionError.radians)
-            ff + pid
+            var voltage = 0.0
+            if (controlMode == ControlMode.POSITION) {
+                val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
+                val pid = PID.calculate(positionError.radians)
+                voltage = ff + pid
+            } else if (controlMode == ControlMode.VELOCITY) {
+                val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
+                val pid = PID.calculate(velocityError.radiansPerSecond)
+                voltage = ff + pid
+            }
+            voltage
+
         }
     }
 
-    var customControl: ((it: KMotorController) -> Double)? = null
+    var customControl: ((it: KMotorController) -> Double)? = {
+        var voltage = 0.0
+        if (controlMode == ControlMode.POSITION) {
+            voltage = PID.calculate(positionError.radians)
+        }
+        else if (controlMode == ControlMode.VELOCITY) voltage = PID.calculate(velocityError.radiansPerSecond)
+        voltage
+    }
 
     // ----- main getter/setter methods ----- //
-    var position: Angle
+    var position: Angle = 0.degrees
         get() {
+            controlMode = ControlMode.POSITION
+            if (!real) return field
             assert(encoderConfigured)
             return (rawPosition.value / gearRatio).radians
         }
-        set(value) { positionSetpoint = value }
+        set(value) {
+            if (real) positionSetpoint = value
+            else field = value
+        }
 
     var linearPosition: Length
         get() = rotationToLinear(position)
         set(value) { position = linearToRotation(value) }
 
-    var velocity: AngularVelocity
+    var velocity: AngularVelocity = 0.rpm
         get() {
+            controlMode = ControlMode.VELOCITY
+            if (!real)  {
+                acceleration = accelerationCalculator.calculate(field.radiansPerSecond).radiansPerSecond
+                return field
+            }
             assert(encoderConfigured)
             val vel = rawVelocity / gearRatio
             acceleration = accelerationCalculator.calculate(vel.radiansPerSecond).radiansPerSecond
             return vel
         }
-        set(value) { velocitySetpoint = value }
+        set(value) {
+            if (real) velocitySetpoint = value
+            else field = value
+        }
 
     var linearVelocity: LinearVelocity
         get() = rotationToLinear(velocity)
@@ -257,9 +319,19 @@ abstract class KMotorController : KBasicMotorController() {
      */
     protected abstract fun writeMultipler(mv: Double, mp: Double)
 
-
     /**
      * Configures the respective ESC encoder settings when a new encoder configuration is set
      */
     protected abstract fun configureEncoder(config: KEncoderConfig): Boolean
+
+    override fun initSendable(builder: SendableBuilder) {
+        super.initSendable(builder)
+        if (linearConfigured) {
+            builder.addDoubleProperty("Velocity (m/s)", { linearVelocity.metersPerSecond }, null)
+            builder.addDoubleProperty("Position (m)", { linearPosition.meters }, null)
+        } else {
+            builder.addDoubleProperty("Velocity (rpm)", { velocity.rpm }, null)
+            builder.addDoubleProperty("Position (rot)", { position.rotations }, null)
+        }
+    }
 }

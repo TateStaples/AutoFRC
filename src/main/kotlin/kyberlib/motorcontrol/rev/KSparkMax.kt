@@ -52,7 +52,7 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
             _spark.idleMode = if(value) CANSparkMax.IdleMode.kBrake else CANSparkMax.IdleMode.kCoast
         }
 
-    override var percent
+    override var rawPercent
         get() = _spark.appliedOutput
         set(value) {_spark.set(value)}
 

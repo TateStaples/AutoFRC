@@ -1,15 +1,13 @@
 package kyberlib.motorcontrol
 
-import edu.wpi.first.wpilibj.DriverStation
-import edu.wpi.first.wpilibj.Notifier
-import edu.wpi.first.wpilibj.RobotBase
-import edu.wpi.first.wpilibj.RobotController
+import edu.wpi.first.wpilibj.*
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import kyberlib.math.invertIf
 
 /**
  * A basic motor controller.
  */
-abstract class KBasicMotorController {
+abstract class KBasicMotorController : Sendable {
     // ------ configs ----- //
     /**
      * Controls how the motor will stop when set to 0. If true the motor will brake instead of coast.
@@ -31,11 +29,20 @@ abstract class KBasicMotorController {
      */
     abstract val identifier: String
 
+    protected val real: Boolean
+        get() = RobotBase.isReal()
+
     // ------ low-level write methods ----- //
     /**
      * What percent output is currently being applied?
      */
-    abstract var percent: Double
+    var percent: Double = 0.0
+        get() = if (real) rawPercent else field
+        set(value) {
+            if (real) rawPercent = value else field = value
+        }
+
+    protected abstract var rawPercent: Double
 
     /**
      * Sets controller voltage directly
@@ -47,7 +54,7 @@ abstract class KBasicMotorController {
             percent = (value / vbus)
         }
 
-    protected var vbus = if (RobotBase.isReal()) RobotController.getBatteryVoltage() else 12.0
+    protected var vbus = if (real) RobotController.getBatteryVoltage() else 12.0
 
     val notifier = Notifier { update() }
 
@@ -79,7 +86,7 @@ abstract class KBasicMotorController {
         updateFollowers()
     }
 
-    protected fun updateFollowers() {
+    private fun updateFollowers() {
         for (follower in followers) {
              follower.percent = percent.invertIf { follower.reversed }
              follower.update()
@@ -99,4 +106,10 @@ abstract class KBasicMotorController {
     fun logDebug(text: String) {
         if (debug) println("[$identifier] $text")
     }
+
+    override fun initSendable(builder: SendableBuilder) {
+        builder.setSmartDashboardType("Encoder")
+        builder.addDoubleProperty("Voltage", this::voltage, null)
+    }
+
 }

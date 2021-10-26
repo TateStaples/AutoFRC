@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.controller.PIDController
 import kyberlib.math.invertIf
 import kyberlib.math.units.extensions.*
 
-class KSimulatedESC(val name: String) : KMotorController() {
+class KSimulatedESC(name: String) : KMotorController() {
 
     private val posController = PIDController(0.0, 0.0, 0.0)
     private val velController = PIDController(0.0, 0.0, 0.0)
@@ -25,13 +25,13 @@ class KSimulatedESC(val name: String) : KMotorController() {
 
     override fun configureEncoder(config: KEncoderConfig) = true
 
-    override val identifier = "sim"
+    override val identifier = name
 
     override var brakeMode: BrakeMode = false
 
     override var reversed: Boolean = false
 
-    override var percent: Double = 0.0
+    override var rawPercent: Double = 0.0
         set(value) {
             field =  value.invertIf { reversed && !isFollower }
         }

@@ -4,10 +4,13 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim
+import edu.wpi.first.wpilibj.system.plant.DCMotor
+import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import kyberlib.motorcontrol.KMotorController
+import edu.wpi.first.wpiutil.math.VecBuilder
 import kyberlib.math.units.extensions.*
-import kyberlib.motorcontrol.KSimulatedESC
+import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 
 
@@ -22,7 +25,6 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     private val motors = leftMotors.plus(rightMotors)
     private val leftMaster = leftMotors[0]
     private val rightMaster = rightMotors[0]
-
 
     init {
         for (info in leftMotors.withIndex()) if (info.index > 0) info.value.follow(leftMaster)
@@ -49,4 +51,28 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     override fun debug() {
         println("${leftMaster.velocity}, ${rightMaster.velocity}")
     }
+
+    private lateinit var driveSim: DifferentialDrivetrainSim
+    fun setupSim(KvLinear: Double, KaLinear: Double, KvAngular: Double, KaAngular: Double) {
+        driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
+            LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
+            DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
+            motors.first().gearRatio,  // gearing reduction
+            configs.trackWidth.meters,  // The track width
+            configs.wheelRadius.meters,  // wheel radius
+            // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
+            VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+        )
+    }
+
+    fun simUpdate(dt: Double) {
+        driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
+        driveSim.update(dt)
+        leftMaster.linearPosition = driveSim.leftPositionMeters.meters
+        leftMaster.linearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
+        rightMaster.linearPosition = driveSim.rightPositionMeters.meters
+        rightMaster.linearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
+        gyro.heading = (-driveSim.heading).k
+    }
+
 }
