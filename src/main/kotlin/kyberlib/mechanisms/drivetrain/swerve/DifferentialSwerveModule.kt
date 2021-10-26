@@ -21,7 +21,6 @@ class DifferentialSwerveModule(location: Translation2d, private val gearRatio: G
     private fun differentialControl(it: KMotorController): Double { // TODO: this needs work - do you have to divide by 2 or somethign
         val goal = stateSetpoint
         val ff = feedforward.calculate(it.linearVelocity.metersPerSecond, it.linearAcceleration.metersPerSecond)
-        val velocityError = it.velocityError
         val velCorrection = it.PID.calculate(goal.speedMetersPerSecond)
         val rotationError = rotation - goal.angle  // TODO: idk if this loops properly - needs testing
         val rotCorrection = rotationPID.calculate(rotationError.radians, goal.angle.radians)

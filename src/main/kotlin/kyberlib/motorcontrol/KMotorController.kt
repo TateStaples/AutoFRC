@@ -110,14 +110,14 @@ abstract class KMotorController : KBasicMotorController() {
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
         customControl = {
             val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
-            val pid = PID!!.calculate(linearVelocityError.metersPerSecond)
+            val pid = PID.calculate(linearVelocityError.metersPerSecond)
             ff + pid
         }
     }
     fun addFeedforward(feedforward: ArmFeedforward) {
         customControl = {
             val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
-            val pid = PID!!.calculate(positionError.radians)
+            val pid = PID.calculate(positionError.radians)
             ff + pid
         }
     }
