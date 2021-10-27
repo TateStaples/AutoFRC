@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
  * @param height vertical distance from center to top/bottom (meters)
  */
 class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
-    // TODO: maybe inflate obstacle sizes so robot doesn't hit anything
     val x: Double
         get() = pose.x
     val y: Double

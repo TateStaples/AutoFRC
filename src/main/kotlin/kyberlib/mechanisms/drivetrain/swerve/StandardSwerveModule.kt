@@ -10,7 +10,7 @@ open class StandardSwerveModule (location: Translation2d, private val driveMotor
     override var rotation: Rotation2d
         get() = turnMotor.position.normalized
         set(value) {
-            turnMotor.position = value.k  // TODO: maybe add custom controls (ie Feedforward)
+            turnMotor.position = value.k.normalized
         }
 
     // drive info
@@ -22,6 +22,6 @@ open class StandardSwerveModule (location: Translation2d, private val driveMotor
 
 
     override fun debug() {
-
+        println("speed: $speed, rot: $rotation")
     }
 }

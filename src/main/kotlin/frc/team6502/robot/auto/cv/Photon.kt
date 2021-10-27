@@ -22,7 +22,7 @@ object Photon {
     private const val url = "http://10.65.2.11"
     private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
     private val camera = PhotonCamera("$url:5800")
-    private val cameraOffset = Pose2d(0.inches, 5.inches, 0.degrees)  // TODO: tune this a bit
+    private val cameraOffset = Pose2d(3.inches, 0.inches, 0.degrees)
 
     // Network Tables Info
     private val tableInstance = NetworkTableInstance.getDefault()

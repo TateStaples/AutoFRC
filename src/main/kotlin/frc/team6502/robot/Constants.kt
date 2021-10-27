@@ -52,7 +52,7 @@ object Constants{
     const val RAMSETE_BETA = 0.7
     const val RAMSETE_ZETA = 0.1
 
-    // TODO: mess with this - these are max values
+    // drive constraints
     val acceleration = 1.metersPerSecond
     val velocity = 1.metersPerSecond
 }

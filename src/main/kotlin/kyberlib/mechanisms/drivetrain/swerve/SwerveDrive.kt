@@ -14,13 +14,7 @@ import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feetPerSecond
 import kyberlib.sensors.gyros.KGyro
 
-/**
- * TODO:
- * test everything
- * test Field oriented
- * test breaks
- * tune closed loop
- */
+
 
 class SwerveDrive(private val gyro: KGyro,
                   private vararg val swerveModules: SwerveModule,
@@ -31,7 +25,7 @@ class SwerveDrive(private val gyro: KGyro,
     private val odometry = SwerveDriveOdometry(kinematics, 0.degrees)
 
     // field relative settings
-    private var fieldHeading = gyro.heading  // TODO: what is the 0 absolute heading
+    private var fieldHeading = gyro.heading
 
     var states
         get() = swerveModules.map { it.state }

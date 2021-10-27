@@ -43,7 +43,7 @@ class Node {
             if (value != null && nodeLengthFromRoot != 0) {
                 value.children.add(this)
                 distance = position.getDistance(value.position)
-                pathLengthFromRoot = value.pathLengthFromRoot + distance  // TODO this might not be changed when optimizing
+                pathLengthFromRoot = value.pathLengthFromRoot + distance
                 nodeLengthFromRoot = value.nodeLengthFromRoot + 1
             }
             field = value
