@@ -1,6 +1,7 @@
 package frc.team6502.robot.commands.general
 
 import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.pathing.TravelingSalesman
 import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.drive.Search
@@ -46,9 +47,13 @@ object Strategy {
      * Drives to each ball and picks it up
      */
     private fun collectBalls() {
-        // TODO: implement traveling salesman optimization
-        for (goal in Navigation.field.goals) {
-            CommandManager.enqueue(goal.command)
+        val points = Navigation.field.goals.map { it.position }
+        val route = TravelingSalesman(points.toMutableList()).bruteForce()
+        for (waypoint in route) {
+            val goal = Navigation.field.goals.find { it.position == waypoint }
+            if (goal != null) {
+                CommandManager.enqueue(goal.command)
+            }
         }
     }
 
