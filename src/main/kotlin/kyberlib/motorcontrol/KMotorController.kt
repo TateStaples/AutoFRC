@@ -1,11 +1,14 @@
 package kyberlib.motorcontrol
 
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.controller.ArmFeedforward
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
+import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand
+import edu.wpi.first.wpilibj2.command.TrapezoidProfileSubsystem
 import kyberlib.math.Filters.Differentiator
 import kyberlib.math.units.extensions.*
 
@@ -34,8 +37,6 @@ enum class ControlMode {
  * Stores data about an encoder. [reversed] means the encoder reading goes + when the motor is applied - voltage.
  */
 data class KEncoderConfig(val cpr: Int, val type: EncoderType, val reversed: Boolean = false)
-
-// todo: add motion profiling
 /**
  * A more advanced motor control with feedback control.
  */
@@ -114,24 +115,38 @@ abstract class KMotorController : KBasicMotorController() {
             writePid(kP, kI, kD)
         }
 
+    /**
+     * The max angular velocity the motor can have
+     */
     var maxVelocity: AngularVelocity
         get() = constraints.maxVelocity.radiansPerSecond
-        set(value) {
-            constraints.maxVelocity = value.radiansPerSecond
-        }
+        set(value) { constraints.maxVelocity = value.radiansPerSecond }
+    /**
+     * The max angular acceleation the motor can have
+     */
     var maxAcceleration: AngularVelocity
         get() = constraints.maxAcceleration.radiansPerSecond
         set(value) { constraints.maxAcceleration = value.radiansPerSecond }
+    /**
+     * The max linear velocity the motor can have
+     */
     var maxLinearVelocity: LinearVelocity
         get() = rotationToLinear(maxVelocity)
         set(value) { maxVelocity = linearToRotation(value) }
+    /**
+     * The max linear acceleration the motor can have
+     */
     var maxLinearAcceleration: LinearVelocity
         get() = rotationToLinear(maxAcceleration)
         set(value) { maxAcceleration = linearToRotation(value) }
 
     private val constraints = TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
-    var PID = ProfiledPIDController(0.0, 0.0, 0.0, constraints)  // todo test affect of profile
+    var PID = ProfiledPIDController(0.0, 0.0, 0.0, constraints)  // what does the profile do?
 
+    /**
+     * Builtin control that will combine feedforward with the PID.
+     * Useful in both position and velocity control
+     */
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
         customControl = {
             var voltage = 0.0
@@ -146,6 +161,11 @@ abstract class KMotorController : KBasicMotorController() {
             voltage
         }
     }
+
+    /**
+     * Used to create builtin functions for angular position sheet.
+     * @exception WhyFuckingLinear you should not have linear controlled arm.
+     */
     fun addFeedforward(feedforward: ArmFeedforward) {
         assert(!linearConfigured) {"you shouldn't be using armFF for linear motors"}
         customControl = {
@@ -164,6 +184,29 @@ abstract class KMotorController : KBasicMotorController() {
         }
     }
 
+    /**
+     * Follows a trapezoidal motion profile and then reverts when done
+     */
+    fun followProfile(profile: TrapezoidProfile) {
+        val timer = Timer()
+        val prevControl = customControl
+        timer.start()
+        customControl = {
+            val state = profile.calculate(timer.get())
+            position = state.position.radians
+            if (profile.isFinished(timer.get())) {
+                timer.stop()
+                customControl = prevControl
+            }
+            if (prevControl != null) prevControl(it) else 0.0
+        }
+    }
+
+    /**
+     * The control function of the robot.
+     * Uses the motor state to determine what voltage should be applied.
+     * Can be set to null to use in-built motor control system
+     */
     var customControl: ((it: KMotorController) -> Double)? = {
         var voltage = 0.0
         if (controlMode == ControlMode.POSITION) {
@@ -174,6 +217,9 @@ abstract class KMotorController : KBasicMotorController() {
     }
 
     // ----- main getter/setter methods ----- //
+    /**
+     * Angle that the motor is at / should be at
+     */
     var position: Angle = 0.degrees
         get() {
             controlMode = ControlMode.POSITION
@@ -186,6 +232,9 @@ abstract class KMotorController : KBasicMotorController() {
             else field = value
         }
 
+    /**
+     * Linear Position that the
+     */
     var linearPosition: Length
         get() = rotationToLinear(position)
         set(value) { position = linearToRotation(value) }
@@ -257,24 +306,36 @@ abstract class KMotorController : KBasicMotorController() {
         get() = rotationToLinear(velocitySetpoint)
 
     // ----- util functions -----//
-    private val linearErrorMessage = "You must set the wheel radius before using linear values"
+    /**
+     * Converts linear units to rotational units
+     * @exception LinearUnconfigured: you must set wheel radius before using
+     */
     private fun linearToRotation(len: Length): Angle {
-        assert(linearConfigured) { linearErrorMessage }
+        if (!linearConfigured) throw LinearUnconfigured
         return len.toAngle(radius!!)
     }
     private fun linearToRotation(vel: LinearVelocity): AngularVelocity {
-        assert(linearConfigured) { linearErrorMessage }
+        if (!linearConfigured) throw LinearUnconfigured
         return vel.toAngularVelocity(radius!!)
     }
+
+    /**
+     * Converts rotational units to linear
+     * @exception LinearUnconfigured you must set wheel radius before using
+     */
     private fun rotationToLinear(ang: Angle): Length {
-        assert(linearConfigured) { linearErrorMessage }
+        if (!linearConfigured) throw LinearUnconfigured
         return ang.toCircumference(radius!!)
     }
     private fun rotationToLinear(vel: AngularVelocity): LinearVelocity {
-        assert(linearConfigured) { linearErrorMessage }
+        if (!linearConfigured) throw LinearUnconfigured
         return vel.toTangentialVelocity(radius!!)
     }
-    override fun update() {  // TODO: check overriding this works
+
+    /**
+     * Updates the voltage from customControl and updates followers
+     */
+    override fun update() {
         super.update()
         if (customControl != null) voltage = customControl!!(this)
     }
@@ -282,7 +343,7 @@ abstract class KMotorController : KBasicMotorController() {
     // ----- meta information ----- //
     /**
      * Does the motor controller have a rotational to linear motion conversion defined? (i.e. wheel radius)
-     * Allows for linear setpoints to be used.
+     * Allows for linear units to be used.
      */
     private val linearConfigured
         get() = radius != null
@@ -302,20 +363,38 @@ abstract class KMotorController : KBasicMotorController() {
         get() = encoderConfigured && customControl != null
 
     // ----- low level getters and setters (customized to each encoder type) ----- //
+    /**
+     * Resets motor to a certain positions
+     * Does *not* move to angle, just changes the variable
+     */
     abstract fun resetPosition(position: Angle = 0.rotations)
     fun resetPosition(position: Length) {
         resetPosition(linearToRotation(position))
     }
+
+    /**
+     * The native motors get and set methods for position.
+     * Recommend using Position instead because it is safer.
+     */
     abstract var rawPosition: Angle
         protected set
+
+    /**
+     * Native motor get and set for angular velocity.
+     * Recommend using Velocity instead because it is safer
+     */
     abstract var rawVelocity: AngularVelocity
         protected set
+
+    /**
+     * Max current draw for the motors
+     */
     abstract var currentLimit: Int
 
     protected abstract fun writePid(p: Double, i: Double, d: Double)
 
     /**
-     * Set the conversion multipliers of postion and velocity
+     * Set the conversion multipliers of to native motor
      */
     protected abstract fun writeMultipler(mv: Double, mp: Double)
 
@@ -334,4 +413,6 @@ abstract class KMotorController : KBasicMotorController() {
             builder.addDoubleProperty("Position (rot)", { position.rotations }, null)
         }
     }
+
+    companion object LinearUnconfigured : Exception("You must set the wheel radius before using linear values")
 }

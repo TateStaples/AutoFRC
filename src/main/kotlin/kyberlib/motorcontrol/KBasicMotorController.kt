@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import kyberlib.math.invertIf
 
 /**
- * A basic motor controller.
+ * A basic motor controller. No closed-loop control
  */
 abstract class KBasicMotorController : Sendable {
     // ------ configs ----- //
@@ -29,6 +29,9 @@ abstract class KBasicMotorController : Sendable {
      */
     abstract val identifier: String
 
+    /**
+     * Whether the motor is connected to a real Robot
+     */
     protected val real: Boolean
         get() = RobotBase.isReal()
 
@@ -42,6 +45,10 @@ abstract class KBasicMotorController : Sendable {
             if (real) rawPercent = value else field = value
         }
 
+    /**
+     * Native level get and set of motor percent.
+     * Recommend using Percent because it is safer
+     */
     protected abstract var rawPercent: Double
 
     /**
@@ -54,9 +61,15 @@ abstract class KBasicMotorController : Sendable {
             percent = (value / vbus)
         }
 
+    /**
+     * The voltage available to the motor
+     */
     protected var vbus = if (real) RobotController.getBatteryVoltage() else 12.0
 
-    val notifier = Notifier { update() }
+    /**
+     * The notifier to update the motor continuously
+     */
+    internal val notifier = Notifier { update() }
 
     init {
         notifier.startPeriodic(0.02)
@@ -72,11 +85,18 @@ abstract class KBasicMotorController : Sendable {
     }
 
     internal val followers = arrayListOf<KBasicMotorController>()
+
+    /**
+     * Follow a motor
+     */
     fun follow(kmc: KBasicMotorController) {
         isFollower = true
         followTarget(kmc)
     }
 
+    /**
+     * Native level follow
+     */
     protected abstract fun followTarget(kmc: KBasicMotorController)
 
     /**
@@ -86,6 +106,9 @@ abstract class KBasicMotorController : Sendable {
         updateFollowers()
     }
 
+    /**
+     * Update all followers to match voltage
+     */
     private fun updateFollowers() {
         for (follower in followers) {
              follower.percent = percent.invertIf { follower.reversed }
@@ -107,6 +130,9 @@ abstract class KBasicMotorController : Sendable {
         if (debug) println("[$identifier] $text")
     }
 
+    /**
+     * Converts motor in sendable graphics widget
+     */
     override fun initSendable(builder: SendableBuilder) {
         builder.setSmartDashboardType("Encoder")
         builder.addDoubleProperty("Voltage", this::voltage, null)
