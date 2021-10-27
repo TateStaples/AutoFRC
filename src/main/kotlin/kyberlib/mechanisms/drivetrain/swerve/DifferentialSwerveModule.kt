@@ -15,14 +15,14 @@ class DifferentialSwerveModule(location: Translation2d, private val gearRatio: G
                                private val topMotor: KMotorController, private val bottomMotor: KMotorController
                                         ) : SwerveModule(location) {
 
-    private val rotationPID = PIDController(0.07, 0.00, 0.01) // TODO: tune
-    private val feedforward = SimpleMotorFeedforward(0.0, 0.0, 0.0)  // TODO: figure out how the hell to get these
+    private val rotationPID = PIDController(0.07, 0.00, 0.01)
+    private val feedforward = SimpleMotorFeedforward(0.0, 0.0, 0.0)
 
-    private fun differentialControl(it: KMotorController): Double { // TODO: this needs work - do you have to divide by 2 or somethign
+    private fun differentialControl(it: KMotorController): Double {
         val goal = stateSetpoint
         val ff = feedforward.calculate(it.linearVelocity.metersPerSecond, it.linearAcceleration.metersPerSecond)
         val velCorrection = it.PID.calculate(goal.speedMetersPerSecond)
-        val rotationError = rotation - goal.angle  // TODO: idk if this loops properly - needs testing
+        val rotationError = rotation - goal.angle
         val rotCorrection = rotationPID.calculate(rotationError.radians, goal.angle.radians)
         return ff + velCorrection + rotCorrection
     }
@@ -48,9 +48,9 @@ class DifferentialSwerveModule(location: Translation2d, private val gearRatio: G
 
     override var speed: LinearVelocity
         get() {
-            val topSpeed = topMotor.linearVelocity
+            val topSpeed = topMotor.linearVelocity  // gearing might make this weird
             val bottomSpeed = bottomMotor.linearVelocity
-            return topSpeed + bottomSpeed  // TODO: check if this works - gearing and stuff might make it weird
+            return topSpeed + bottomSpeed
         }
         set(value) {
             stateSetpoint.speedMetersPerSecond = value.metersPerSecond

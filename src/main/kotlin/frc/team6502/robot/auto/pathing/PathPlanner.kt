@@ -27,9 +27,9 @@ object PathPlanner {
     val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
         get() = endNode?.let { tree.trace(it) }
 
-    // how many nodes to create before giving up finding target
+    /** how many nodes to create before giving up finding target */
     private const val explorationDepth = 5000
-    // how many nodes to dedicate to optimization
+    /** how many nodes to dedicate to optimization */
     private const val optimizationDepth = 500
 
     /**
@@ -51,7 +51,7 @@ object PathPlanner {
      * @param trajectory the old trajectory that may need correction
      * @return a trajectory that won't collide with any of the updated obstacles
      */
-    fun updateTrajectory(trajectory: Trajectory): Trajectory {  // TODO: idk think this works at all
+    fun updateTrajectory(trajectory: Trajectory): Trajectory {
         tree.pruneBlocked()
         if (tree.vertices.contains(endNode!!)) // this is not optimal if moving obstacles
             return trajectory
@@ -142,7 +142,6 @@ object PathPlanner {
      * Illustrate to tree of values
      */
     private fun drawTreePath() {
-        // TODO: update with field stuff and smartdashboard
         tree.draw()
     }
 

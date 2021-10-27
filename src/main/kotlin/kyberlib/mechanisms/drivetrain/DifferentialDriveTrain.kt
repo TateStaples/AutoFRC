@@ -73,6 +73,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         rightMaster.linearPosition = driveSim.rightPositionMeters.meters
         rightMaster.linearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
         gyro.heading = (-driveSim.heading).k
+        odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
     }
 
 }
