@@ -1,14 +1,22 @@
 package frc.team6502.robot
 
+import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.general.CommandManager
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kyberlib.command.KRobot
 import kyberlib.math.units.zeroPose
+import kyberlib.runCommand
+import org.opencv.core.Core
+import org.opencv.core.Mat
+import org.opencv.imgcodecs.Imgcodecs
+import java.io.File
 
 
 /**
@@ -38,12 +46,21 @@ class Robot : KRobot() {
     private val yEntry = table.getEntry("Y")
     private val thetaEntry = table.getEntry("THETA")
     private val outputTimeEntry = table.getEntry("OUTPUT TIME")
-    private var prevOutputTime = -1
+    private var prevOutputTime = -1.0
 
     override fun simulationInit() {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+        val saveFile = File(slamValues)
+        if (!saveFile.exists()) {
+            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0)
+            val jsonString = Json.encodeToString(defaultVals)
+            File(slamValues).writeText(jsonString)
+        }
+        "frcMonocular.exe".runCommand(File("./UcoSlam/"))
     }
 
     override fun simulationPeriodic() {
+        // read to SLAM output
         val deserialized = Json.decodeFromString<SlamValues>(slamValues)
         if (prevOutputTime == deserialized.outputImgTime) return
         prevOutputTime = deserialized.outputImgTime
@@ -51,10 +68,18 @@ class Robot : KRobot() {
         yEntry.setNumber(deserialized.Y)
         thetaEntry.setNumber(deserialized.THETA)
         outputTimeEntry.setNumber(deserialized.outputImgTime)
+
+        // write the SLAM input
+        val mat = Mat()
+        CameraServer.getInstance().video.grabFrame(mat)
+        Imgcodecs.imwrite("slam.jpg", mat)
+        deserialized.inputImgTime = Timer.getFPGATimestamp()
+        val jsonString = Json.encodeToString(deserialized)
+        File(slamValues).writeText(jsonString)
     }
 }
 
 data class SlamValues(
-    val X:Double, val Y: Double, val THETA: Double, val outputImgTime: Int,
-    val inputImgTime: Int
+    var X:Double, var Y: Double, var THETA: Double, var outputImgTime: Double,
+    var inputImgTime: Double
 )
