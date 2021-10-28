@@ -12,12 +12,13 @@ import edu.wpi.first.wpiutil.math.VecBuilder
 import kyberlib.math.units.extensions.*
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
+import kyberlib.simulation.Simulatable
 
 
 data class DifferentialDriveConfigs(val wheelRadius: Length, val trackWidth: Length)
 
 class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: Array<KMotorController>,
-                             private val configs: DifferentialDriveConfigs, val gyro: KGyro) : SubsystemBase(),
+                             private val configs: DifferentialDriveConfigs, val gyro: KGyro) : SubsystemBase(), Simulatable,
     Drivetrain {
     constructor(leftMotor: KMotorController, rightMotor: KMotorController,
                 configs: DifferentialDriveConfigs, gyro: KGyro) : this(arrayOf(leftMotor), arrayOf(rightMotor), configs, gyro)
@@ -65,7 +66,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         )
     }
 
-    fun simUpdate(dt: Double) {
+    override fun simUpdate(dt: Double) {
         driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
         leftMaster.linearPosition = driveSim.leftPositionMeters.meters

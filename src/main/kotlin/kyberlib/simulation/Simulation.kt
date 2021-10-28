@@ -18,7 +18,7 @@ object Simulation : SubsystemBase() {
         }
         val dt = prevTime - time
         for (sim in sims) {
-            sim.update(dt)
+            sim.simUpdate(dt)
         }
     }
 
