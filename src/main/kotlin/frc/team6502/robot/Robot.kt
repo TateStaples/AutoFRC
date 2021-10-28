@@ -73,7 +73,7 @@ class Robot : KRobot() {
         val mat = Mat()
         CameraServer.getInstance().video.grabFrame(mat)
         Imgcodecs.imwrite("slam.jpg", mat)
-        deserialized.inputImgTime = Timer.getFPGATimestamp()
+        deserialized.newImgTime = Timer.getFPGATimestamp()
         val jsonString = Json.encodeToString(deserialized)
         File(slamValues).writeText(jsonString)
     }
@@ -81,5 +81,5 @@ class Robot : KRobot() {
 
 data class SlamValues(
     var X:Double, var Y: Double, var THETA: Double, var outputImgTime: Double,
-    var inputImgTime: Double
+    var newImgTime: Double
 )
