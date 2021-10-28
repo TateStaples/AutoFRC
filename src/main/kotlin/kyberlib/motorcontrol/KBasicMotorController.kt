@@ -2,12 +2,13 @@ package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
+import kyberlib.command.Debuggable
 import kyberlib.math.invertIf
 
 /**
  * A basic motor controller. No closed-loop control
  */
-abstract class KBasicMotorController : Sendable {
+abstract class KBasicMotorController : Sendable, Debuggable() {
     // ------ configs ----- //
     /**
      * Controls how the motor will stop when set to 0. If true the motor will brake instead of coast.
@@ -27,7 +28,7 @@ abstract class KBasicMotorController : Sendable {
     /**
      * The prefix used by this motor for logging of errors and debug information.
      */
-    abstract val identifier: String
+    abstract override val identifier: String
 
     /**
      * Whether the motor is connected to a real Robot
@@ -136,6 +137,12 @@ abstract class KBasicMotorController : Sendable {
     override fun initSendable(builder: SendableBuilder) {
         builder.setSmartDashboardType("Encoder")
         builder.addDoubleProperty("Voltage", this::voltage, null)
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "Voltage" to voltage
+        )
     }
 
 }

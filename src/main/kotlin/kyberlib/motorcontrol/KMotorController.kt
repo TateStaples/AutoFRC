@@ -414,5 +414,19 @@ abstract class KMotorController : KBasicMotorController() {
         }
     }
 
+    override fun debugValues(): Map<String, Any?> {
+        var map = super.debugValues().toMutableMap()
+        map.putAll(mapOf(
+            "Angular Position" to position,
+            "Angular Velocity" to velocity
+        ))
+        if (linearConfigured)
+            map.putAll(mapOf(
+                "Linear Position" to linearPosition,
+                "Linear Velocity" to linearVelocity
+            ))
+        return map.toMap()
+    }
+
     companion object LinearUnconfigured : Exception("You must set the wheel radius before using linear values")
 }
