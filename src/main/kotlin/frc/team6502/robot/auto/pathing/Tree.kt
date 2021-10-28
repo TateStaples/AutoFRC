@@ -110,7 +110,7 @@ class Tree {
             // current version in RRT
             start = Translation2d(1.feet, 1.feet)
             end = Translation2d(10.feet, 6.feet)
-            for (i in 0..20) {
+            for (i in 0..10) {
                 val p = PathPlanner.randomPoint()
                 val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
                 if (o.contains(start) || o.contains(end)) continue
@@ -124,7 +124,7 @@ class Tree {
         }
     }
 
-    val maxBranchLength = 0.5
+    val maxBranchLength = 0.2
     val vertices = ArrayList<Node>()
 
     /**
@@ -320,10 +320,9 @@ class Tree {
             val y2 = drawingCordinates(n2.position.y)
             if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2))
                 g.color = Color.RED
-            else g.color =
-                Color.BLACK
-//            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2)) g.drawLine(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt())
-            g.drawLine(x1, y1, x2, y2)
+            else g.color = Color.BLACK
+            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2)) g.drawLine(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt())
+//            g.drawLine(x1, y1, x2, y2)
             drawBranch(n2, g)
         }
     }

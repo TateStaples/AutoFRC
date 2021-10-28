@@ -1,6 +1,5 @@
 package frc.team6502.robot.auto.pathing
 
-import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
@@ -19,7 +18,7 @@ import kotlin.random.Random
 object PathPlanner {
     val field = Navigation.field // test edit
     val tree = Tree()
-    private val random = Random(Timer.getFPGATimestamp().toInt())
+    private val random = Random(5)
 
     var minGoalDistance = 0.1.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
