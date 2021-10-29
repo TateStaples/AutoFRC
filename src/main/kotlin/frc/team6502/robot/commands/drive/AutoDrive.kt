@@ -38,6 +38,7 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
             targetPose = Pose2d(targetPose.translation, Navigation.position.towards(targetPose.translation))
         if (!this::trajectory.isInitialized)
             trajectory = PathPlanner.pathTo(targetPose.translation)
+        Navigation.fieldTraj.setTrajectory(trajectory)
     }
 
     override fun execute() {
