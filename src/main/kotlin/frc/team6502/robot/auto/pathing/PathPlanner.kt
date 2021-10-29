@@ -1,10 +1,20 @@
 package frc.team6502.robot.auto.pathing
 
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.pathing.utils.Obstacle
+import kyberlib.math.units.Translation2d
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.geom.Ellipse2D
+import javax.swing.JFrame
+import javax.swing.JPanel
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -17,7 +27,7 @@ import kotlin.random.Random
  */
 object PathPlanner {
     val field = Navigation.field // test edit
-    val tree = Tree()
+    private val tree = Tree { field.inField(it) }
     private val random = Random(5)
 
     var minGoalDistance = 0.1.feet.value  // margin of error for pathfinding node
@@ -100,7 +110,7 @@ object PathPlanner {
         if (!field.inField(new)) {
             return
         }
-        val node = Node(new, nearest)
+        val node = Node(new, parent = nearest, informed = pathFound)
         tree.addNode(node)
         tree.optimize(node)
         val endDis = new.getDistance(Information.endPosition)
@@ -140,8 +150,16 @@ object PathPlanner {
     /**
      * Illustrate to tree of values
      */
-    private fun drawTreePath() {
-        tree.draw()
+    fun drawTreePath() {
+        val drawingMult = 200
+        val frame = JFrame()
+        frame.setSize(PathPlanner.field.width.toInt() * drawingMult, PathPlanner.field.height.toInt() * drawingMult * 2)
+        frame.title = "Tree drawing"
+        frame.layout = null
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        val drawing = TreeDrawing(tree, drawingMult)
+        frame.contentPane = drawing
+        frame.isVisible = true
     }
 
     /**
@@ -191,5 +209,92 @@ object PathPlanner {
         fun debug() {
             println("start: $startPosition, end: $endPosition, w: $width, h: $height center: $center, dis: $dis, rotation: $rotation")
         }
+    }
+}
+
+
+/**
+ * Draws a basic Tree without showing the obstacles
+ */
+class TreeDrawing(private val tree: Tree, private val drawingMult: Int = 200) : JPanel() {
+    public override fun paintComponent(g: Graphics) { draw(g as Graphics2D) }
+
+    /**
+     * Puts the branches onto a graphics window
+     */
+    fun draw(graphics: Graphics2D) {
+        val start = PathPlanner.Information.startPosition
+        val end = PathPlanner.Information.endPosition
+        graphics.color = Color.BLACK
+        for (obstacle in PathPlanner.field.obstacles) {
+            graphics.drawRect(drawingCoordinates(obstacle.x-obstacle.width), drawingCoordinates(obstacle.y-obstacle.height), drawingCoordinates(obstacle.width*2), drawingCoordinates(obstacle.height * 2))
+        }
+        drawBranch(tree.vertices[0], graphics)
+        graphics.color = Color.GREEN
+        graphics.drawOval(drawingCoordinates(start.x), drawingCoordinates(start.y), 10, 10)
+        graphics.drawOval(drawingCoordinates(end.x), drawingCoordinates(end.y), 10, 10)
+        if (PathPlanner.pathFound) drawPathOval(graphics)
+    }
+
+    /**
+     * Draws the oval for Informed RRT*
+     * Any point outside of this oval cannot be useful
+     */
+    private fun drawPathOval(graphics: Graphics2D) {
+        val center = PathPlanner.Information.center
+        val width = PathPlanner.Information.width
+        val height = PathPlanner.Information.height
+        val oval = Ellipse2D.Double(drawingCoordinates(center.x-width/2.0).toDouble(), drawingCoordinates(center.y-height/2).toDouble(), drawingCoordinates(width).toDouble(), drawingCoordinates(height).toDouble())
+        graphics.color = Color.BLUE
+        graphics.rotate(PathPlanner.Information.rotation.radians, drawingCoordinates(center.x).toDouble(), drawingCoordinates(PathPlanner.Information.center.y).toDouble())
+        graphics.draw(oval)
+    }
+
+    /**
+     * Recursively draws each part of the branch
+     */
+    private fun drawBranch(n: Node, g: Graphics2D) {
+        val x1 = drawingCoordinates(n.position.x)
+        val y1 = drawingCoordinates(n.position.y)
+        for (n2 in n.children) {
+            val x2 = drawingCoordinates(n2.position.x)
+            val y2 = drawingCoordinates(n2.position.y)
+            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2))
+                g.color = Color.RED
+            else g.color = Color.BLACK
+            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2)) g.drawLine(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt())
+//            g.drawLine(x1, y1, x2, y2)
+            drawBranch(n2, g)
+        }
+    }
+
+    fun drawingCoordinates(mapValue: Double) = (drawingMult * mapValue).toInt()
+}
+
+
+/**
+ * A way to test tree functionality
+ */
+object Test {
+    lateinit var start: Translation2d
+    lateinit var end: Translation2d
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        // look @ informed RRT* and BIT*
+        // current version in RRT
+        start = Translation2d(1.feet, 1.feet)
+        end = Translation2d(10.feet, 6.feet)
+        for (i in 0..10) {
+            val p = PathPlanner.randomPoint()
+            val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
+            if (o.contains(start) || o.contains(end)) continue
+            PathPlanner.field.obstacles.add(o)
+        }
+        println("field setup")
+        PathPlanner.loadTree(start, end)
+        println("tree loaded")
+        println(PathPlanner.path!!.size)
+        PathPlanner.drawTreePath()
     }
 }
