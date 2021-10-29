@@ -13,13 +13,12 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
 import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.numbers.*
-import kyberlib.math.units.extensions.degrees
 import frc.team6502.robot.Constants
-import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.auto.pathing.utils.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.Angle
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.string
 import kyberlib.sensors.gyros.KGyro
@@ -122,12 +121,8 @@ object Navigation : SubsystemBase() {
      */
     private fun update() {  // estimate motion
         val pose2d: Pose2d
-        if (Constants.MECANUM) pose2d = mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
-        else pose2d = difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftVel, Drivetrain.rightVel)
-        if (Constants.VISION) {
-            Photon.slamUpdate()  // updates UcoSLAM
-            Photon.targetUpdate()
-        }
+        pose2d = if (Constants.MECANUM) mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
+                else difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftPos, Drivetrain.rightPos)
         if (Constants.DEBUG)
             SmartDashboard.putString("pose", pose2d.string)
     }

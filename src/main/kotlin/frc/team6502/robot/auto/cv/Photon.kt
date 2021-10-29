@@ -5,6 +5,7 @@ import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Transform2d
+import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.auto.Navigation
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
@@ -17,7 +18,7 @@ import org.photonvision.PhotonCamera
 /**
  * Testing Photon vision stuff
  */
-object Photon {
+object Photon : SubsystemBase() {
     // camera setups
     private const val url = "http://10.65.2.11"
     private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
@@ -36,6 +37,11 @@ object Photon {
 
     init {
         CameraServer.getInstance().addCamera(video)
+    }
+
+    override fun periodic() {
+        slamUpdate()
+        targetUpdate()
     }
 
     /**

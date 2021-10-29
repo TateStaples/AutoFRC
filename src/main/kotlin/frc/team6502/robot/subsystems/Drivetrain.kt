@@ -110,18 +110,14 @@ object Drivetrain : SubsystemBase() {
     /**
      * A list of important variables the rest of the code needs easy access to
      */
-    private val leftFrontVel
-        get() = leftFront.encoder.velocity
-    private val rightFrontVel
-        get() = rightFront.encoder.velocity
-    private val leftBackVel
-        get() = leftBack.encoder.velocity
-    private val rightBackVel
-        get() = rightBack.encoder.velocity
-    val leftVel
-        get() = leftFrontVel
-    val rightVel
-        get() = rightFrontVel
+    private val leftFrontVel get() = leftFront.encoder.velocity
+    private val rightFrontVel get() = rightFront.encoder.velocity
+    private val leftBackVel get() = leftBack.encoder.velocity
+    private val rightBackVel get() = rightBack.encoder.velocity
+    val leftVel get() = leftFrontVel
+    val rightVel get() = rightFrontVel
+    val leftPos get() = leftFront.encoder.position
+    val rightPos get() = rightFront.encoder.position
     var difWheelSpeeds
         get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
         set(value) {drive(value)}
@@ -169,7 +165,7 @@ object Drivetrain : SubsystemBase() {
      * Drive a Mecanum robot at specific speeds
      * @param speeds the wheel speeds to move the Mecanum robot
      */
-    fun drive(speeds: MecanumDriveWheelSpeeds) {
+    private fun drive(speeds: MecanumDriveWheelSpeeds) {
         speeds.normalize(Constants.velocity.metersPerSecond)
         leftFront.set(speeds.frontLeftMetersPerSecond)
         leftBack.set(speeds.rearLeftMetersPerSecond)

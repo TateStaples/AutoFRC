@@ -2,6 +2,7 @@ package frc.team6502.robot
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.balls.Shoot
@@ -46,6 +47,7 @@ object RobotContainer {
         Navigation.apply { gyro = RobotContainer.gyro }
         Drivetrain
         PathPlanner
+        Photon
 
         SmartDashboard.putBoolean("AUTO", Constants.AUTO)
         SmartDashboard.putBoolean("DEBUG", Constants.DEBUG)
