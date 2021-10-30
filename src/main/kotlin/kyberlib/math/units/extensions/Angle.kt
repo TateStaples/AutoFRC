@@ -1,11 +1,11 @@
 package kyberlib.math.units.extensions
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d
-import kyberlib.math.units.AngleConversions
+import kyberlib.math.units.*
 import kotlin.math.PI
 
 typealias Angle = KRotation
-//typealias Heading = KUnit<Unitless>
+//typealias Heading = KUnit<Radians>
 
 
 class KRotation(val value: Double) : Rotation2d(value) {
@@ -22,17 +22,18 @@ class KRotation(val value: Double) : Rotation2d(value) {
     }
 }
 
+operator fun Rotation2d.div(other: KUnit<Second>): KUnit<Div<Radian, Second>> {
+    val unit = KUnit<Div<Radian, Second>>(radians / other.value)
+    unit.units = "Radians / ${other.units}"
+    return unit
+}
+
 val Rotation2d.k: KRotation
     get() = KRotation(this.radians)
 
 const val TAU = 2 * PI
 
-val Double.radians get() = Angle(this)
-val Double.degrees get() = Angle(this * AngleConversions.degreesToRadians)
-val Double.rotations get() = Angle(this * AngleConversions.rotationsToRadians)
-fun Double.encoderAngle(cpr: Int) = (this / (cpr * 4.0)).rotations
-
-val Number.radians get() = toDouble().radians
-val Number.degrees get() = toDouble().degrees
-val Number.rotations get() = toDouble().rotations
-fun Number.encoderAngle(cpr: Int) = toDouble().encoderAngle(cpr)
+val Number.radians get() = Angle(this.toDouble())
+val Number.degrees get() = Angle(this.toDouble() * AngleConversions.degreesToRadians)
+val Number.rotations get() = Angle(this.toDouble() * AngleConversions.rotationsToRadians)
+fun Number.encoderAngle(cpr: Int) = (this.toDouble() / (cpr * 4.0)).rotations

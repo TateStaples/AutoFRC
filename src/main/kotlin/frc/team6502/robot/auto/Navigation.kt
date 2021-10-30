@@ -17,9 +17,9 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.auto.pathing.utils.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.Pose2d
+import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.Angle
 import kyberlib.math.units.extensions.degrees
-import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.string
 import kyberlib.sensors.gyros.KGyro
 

@@ -2,19 +2,13 @@ package kyberlib.math.units.extensions
 
 import kyberlib.math.units.*
 
-typealias AngularVelocity = KUnit<Div<Unitless, Second>>
+typealias AngularVelocity = KUnit<Div<Radian, Second>>
 
-val Double.radiansPerSecond get() = AngularVelocity(this)
-val Double.degreesPerSecond get() = AngularVelocity(this * AngleConversions.degreesToRadians)
-val Double.rpm get() = AngularVelocity(this * AngleConversions.rotationsToRadians / TimeConversions.minutesToSeconds)
-val Double.rotationsPerSecond get() = AngularVelocity(this * AngleConversions.rotationsToRadians)
-fun Double.encoderVelocity(cpr: Int) = AngularVelocity((this / (cpr * 4.0)) * AngleConversions.rotationsToRadians * 10)
-
-val Number.radiansPerSecond get() = toDouble().radiansPerSecond
-val Number.degreesPerSecond get() = toDouble().degreesPerSecond
-val Number.rpm get() = toDouble().rpm
-val Number.rotationsPerSecond get() = toDouble().rotationsPerSecond
-fun Number.encoderVelocity(cpr: Int) = toDouble().encoderVelocity(cpr)
+val Number.radiansPerSecond get() = this.radians / 1.seconds
+val Number.degreesPerSecond get() = this.degrees / 1.seconds
+val Number.rpm get() = this.rotations / 1.minutes
+val Number.rotationsPerSecond get() = this.rotations / 1.seconds
+fun Number.encoderVelocity(cpr: Int) = ((this.toDouble() / (cpr * 4.0)) * AngleConversions.rotationsToRadians * 10).radiansPerSecond
 
 val AngularVelocity.radiansPerSecond get() = value
 val AngularVelocity.degreesPerSecond get() = value / AngleConversions.degreesToRadians
