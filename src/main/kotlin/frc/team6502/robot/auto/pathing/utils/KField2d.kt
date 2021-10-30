@@ -34,7 +34,11 @@ class KField2d : Field2d() {
      * @return true/false of whether the position is free
      */
     fun inField(point: Translation2d): Boolean {
-        return point.x in 0.0..width && point.y in 0.0..height && !hitObstacle(point)
+        return inBoundaries(point) && !hitObstacle(point)
+    }
+
+    fun inField(point1: Translation2d, point2: Translation2d): Boolean {
+        return inBoundaries(point1) && inBoundaries(point2) && !hitObstacle(point1, point2)
     }
 
     /**
@@ -46,6 +50,15 @@ class KField2d : Field2d() {
         }
         return false
     }
+
+    private fun hitObstacle(point1: Translation2d, point2: Translation2d): Boolean {
+        for (obstacle in obstacles) {
+            if (obstacle.contains(point1, point2)) return true
+        }
+        return false
+    }
+
+    private fun inBoundaries(point: Translation2d) = point.x in 0.0..width && point.y in 0.0..height
 
     private val sameDistance = 1.feet
 

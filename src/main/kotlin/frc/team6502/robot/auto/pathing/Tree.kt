@@ -1,6 +1,7 @@
 package frc.team6502.robot.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import frc.team6502.robot.auto.pathing.utils.KField2d
 import java.util.function.Predicate
 
 /**
@@ -84,8 +85,8 @@ class Node {
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree(private val validPoint: (Translation2d) -> Boolean) {
-    val maxBranchLength = 0.2
+class Tree(private val field: KField2d) {
+    val maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 
     /**
@@ -151,7 +152,7 @@ class Tree(private val validPoint: (Translation2d) -> Boolean) {
     private fun nearNodes(point: Translation2d): ArrayList<Node> {
         val nodes = ArrayList<Node>()
         for (node in vertices) {
-            if (node.position.getDistance(point) < maxBranchLength)
+            if (node.position.getDistance(point) < maxBranchLength && field.inField(point, node.position))
                 nodes.add(node)
         }
         return nodes
@@ -185,7 +186,7 @@ class Tree(private val validPoint: (Translation2d) -> Boolean) {
      * Prune the tree with updated obstacle information
      */
     fun pruneBlocked() {
-        prune { validPoint(it.position)}
+        prune { field.inField(it.position)}
     }
 
     /**

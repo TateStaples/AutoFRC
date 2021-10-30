@@ -1,10 +1,11 @@
 package frc.team6502.robot.auto.pathing
 
+//import frc.team6502.robot.auto.Navigation  // test edit
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
-import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.pathing.utils.KField2d
 import frc.team6502.robot.auto.pathing.utils.Obstacle
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
@@ -26,11 +27,11 @@ import kotlin.random.Random
  * @author TateStaples
  */
 object PathPlanner {
-    val field = Navigation.field // test edit
-    private val tree = Tree { field.inField(it) }
-    private val random = Random(5)
+    val field = KField2d() // Navigation.field // test edit
+    private val tree = Tree(field)
+    private val random = Random(4)
 
-    var minGoalDistance = 0.1.feet.value  // margin of error for pathfinding node
+    var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
     var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
     val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
@@ -39,7 +40,7 @@ object PathPlanner {
     /** how many nodes to create before giving up finding target */
     private const val explorationDepth = 5000
     /** how many nodes to dedicate to optimization */
-    private const val optimizationDepth = 500
+    private const val optimizationDepth = 1000
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
@@ -51,7 +52,7 @@ object PathPlanner {
             reset()
         if (tree.nodeCount > 0)
             tree.pruneInformed()
-        loadTree(position, Navigation.position)  // test edit
+//        loadTree(position, Navigation.position)  // test edit
         return treeToTrajectory()
     }
 
@@ -73,8 +74,8 @@ object PathPlanner {
      * @return a trajectory that follows the Tree recommended path
      */
     private fun treeToTrajectory(): Trajectory {
-        return Navigation.trajectory(*path!!.map{it.position}.toTypedArray())  // test edit
-//        return Trajectory()
+//        return Navigation.trajectory(*path!!.map{it.position}.toTypedArray())  // test edit
+        return Trajectory()
     }
 
     /**
@@ -107,10 +108,11 @@ object PathPlanner {
             delta = delta.times(tree.maxBranchLength/magnitude)  // resize the vector
         }
         val new = nearest.position.plus(delta)
-        if (!field.inField(new)) {
+        if (!field.inField(new, nearest.position)) {
             return
         }
         val node = Node(new, parent = nearest, informed = pathFound)
+//        println(node)
         tree.addNode(node)
         tree.optimize(node)
         val endDis = new.getDistance(Information.endPosition)
@@ -226,14 +228,18 @@ class TreeDrawing(private val tree: Tree, private val drawingMult: Int = 200) : 
         val start = PathPlanner.Information.startPosition
         val end = PathPlanner.Information.endPosition
         graphics.color = Color.BLACK
-        for (obstacle in PathPlanner.field.obstacles) {
-            graphics.drawRect(drawingCoordinates(obstacle.x-obstacle.width), drawingCoordinates(obstacle.y-obstacle.height), drawingCoordinates(obstacle.width*2), drawingCoordinates(obstacle.height * 2))
-        }
+        drawObstacles(graphics)
         drawBranch(tree.vertices[0], graphics)
         graphics.color = Color.GREEN
         graphics.drawOval(drawingCoordinates(start.x), drawingCoordinates(start.y), 10, 10)
         graphics.drawOval(drawingCoordinates(end.x), drawingCoordinates(end.y), 10, 10)
         if (PathPlanner.pathFound) drawPathOval(graphics)
+    }
+
+    private fun drawObstacles(graphics: Graphics2D) {
+        for (obstacle in PathPlanner.field.obstacles) {
+            graphics.drawRect(drawingCoordinates(obstacle.x-obstacle.width), drawingCoordinates(obstacle.y-obstacle.height), drawingCoordinates(obstacle.width*2), drawingCoordinates(obstacle.height*2))
+        }
     }
 
     /**
@@ -262,8 +268,8 @@ class TreeDrawing(private val tree: Tree, private val drawingMult: Int = 200) : 
             if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2))
                 g.color = Color.RED
             else g.color = Color.BLACK
-            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2)) g.drawLine(x1.toInt(), y1.toInt(), x2.toInt(), y2.toInt())
-//            g.drawLine(x1, y1, x2, y2)
+//            if (PathPlanner.pathFound && PathPlanner.path!!.contains(n2)) g.drawLine(x1, y1, x2, y2)
+            g.drawLine(x1, y1, x2, y2)
             drawBranch(n2, g)
         }
     }
@@ -284,17 +290,24 @@ object Test {
         // look @ informed RRT* and BIT*
         // current version in RRT
         start = Translation2d(1.feet, 1.feet)
-        end = Translation2d(10.feet, 6.feet)
-        for (i in 0..10) {
+        end = Translation2d(6.feet, 6.feet)
+//
+//        println(testO.contains(start, end))
+        for (i in 0..5) {
             val p = PathPlanner.randomPoint()
             val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
             if (o.contains(start) || o.contains(end)) continue
             PathPlanner.field.obstacles.add(o)
         }
+//        val testO = Obstacle(Pose2d(3.feet, 5.feet, 0.degrees), 1.feet.meters, 1.feet.meters)
+//        PathPlanner.field.obstacles.add(testO)
         println("field setup")
         PathPlanner.loadTree(start, end)
         println("tree loaded")
-        println(PathPlanner.path!!.size)
+//        println(PathPlanner.path!!.size)
         PathPlanner.drawTreePath()
+        println(PathPlanner.path)
+        println(PathPlanner.path!!.map { PathPlanner.field.inField(it.position)})
+        println(PathPlanner.field.obstacles)
     }
 }

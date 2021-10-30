@@ -3,6 +3,10 @@ package frc.team6502.robot.auto.pathing.utils
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import java.awt.Rectangle
+import java.awt.geom.Line2D
+import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 
 /**
  * A rectangular obstacle on the field
@@ -20,13 +24,34 @@ class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
         get() = pose.rotation
     val position: Translation2d
         get() = pose.translation
+    val box = Rectangle2D.Double(x-width, y-height, width*2, height*2)
 
     /**
      * Checks if a point falls within the obstacles hitbox
      */
     fun contains(point: Translation2d): Boolean {
-        val centered = point.minus(position)
-        val rotated = centered.rotateBy(-rotation)
-        return rotated.x in -width..width && rotated.y in -height..height
+//        val adjusted = normalize(point)
+        val adjusted = point
+        val point2d = Point2D.Double(adjusted.x, adjusted.y)
+        return box.contains(point2d)
     }
+
+    fun contains(point1: Translation2d, point2: Translation2d): Boolean {
+//        val adj1 = normalize(point1)
+//        val adj2 = normalize(point2)
+        val adj1 = point1
+        val adj2 = point2
+        val line = Line2D.Double(adj1.x, adj1.y, adj2.x, adj2.y)
+        return line.intersects(box)
+    }
+
+    private fun normalize(point: Translation2d): Translation2d {
+        val centered = point.minus(position)
+        return centered.rotateBy(-rotation)
+    }
+
+    override fun toString(): String {
+        return "Obstacle @ ($x, $y) and dims ($width, $height)"
+    }
+
 }
