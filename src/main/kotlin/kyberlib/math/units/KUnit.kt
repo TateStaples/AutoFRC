@@ -11,10 +11,6 @@ import kotlin.math.absoluteValue
  */
 class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
     var units = "KUnit"
-        set(value) {
-            field = value
-            cancelExtraUnits()
-        }
 
     // math functions
     operator fun plus(other: KUnit<T>): KUnit<T> {
@@ -53,7 +49,7 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
     /**
      * Removes redundant units from unit name
      */
-    private fun cancelExtraUnits() {
+    internal fun cancelExtraUnits() {
         val seq = units.splitToSequence(' ').toList()
         if (seq.size == 1) return
         val topList = mutableListOf<String>()
@@ -113,11 +109,13 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
 operator fun <T : KUnitKey, U : KUnitKey> KUnit<T>.times(other: KUnit<U>): KUnit<Mul<T, U>> {
     val unit = KUnit<Mul<T, U>>(value * other.value)
     unit.units = "$units * ${other.units}"
+    unit.cancelExtraUnits()
     return unit
 }
 operator fun <T : KUnitKey, U : KUnitKey> KUnit<T>.div(other: KUnit<U>): KUnit<Div<T, U>> {
     val unit = KUnit<Div<T, U>>(value / other.value)
     unit.units = "$units / ${other.units}"
+    unit.cancelExtraUnits()
     return unit
 }
 

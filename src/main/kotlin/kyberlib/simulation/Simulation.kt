@@ -15,7 +15,7 @@ object Simulation : SubsystemBase() {
 
     override fun periodic() {
         if (RobotBase.isReal()) {
-            println("incorrectly called Simulation")
+            println("incorrectly called Simulation.kt")
             return
         }
 
@@ -23,10 +23,12 @@ object Simulation : SubsystemBase() {
             prevTime = time
             return
         }
-        val dt = prevTime - time
+        val dt = time - prevTime
+        println("dt = $dt")
         for (sim in sims) {
             sim.simUpdate(dt)
         }
+        prevTime = time
     }
 
     fun include(simulatable: Simulatable) {

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.general.CommandManager
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -52,11 +53,11 @@ class Robot : KRobot() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
         val saveFile = File(slamValues)
         if (!saveFile.exists()) {
-            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0)
+            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0, true)
             val jsonString = Json.encodeToString(defaultVals)
             File(slamValues).writeText(jsonString)
         }
-        "frcMonocular.exe".runCommand(File("./UcoSlam/"))
+//        "frcMonocular.exe".runCommand(File("./UcoSlam/"))
     }
 
     override fun simulationPeriodic() {
@@ -75,11 +76,13 @@ class Robot : KRobot() {
         Imgcodecs.imwrite("slam.jpg", mat)
         deserialized.newImgTime = Timer.getFPGATimestamp()
         val jsonString = Json.encodeToString(deserialized)
+        println(jsonString)
         File(slamValues).writeText(jsonString)
     }
 }
 
+@Serializable
 data class SlamValues(
     var X:Double, var Y: Double, var THETA: Double, var outputImgTime: Double,
-    var newImgTime: Double
+    var newImgTime: Double, var running: Boolean
 )

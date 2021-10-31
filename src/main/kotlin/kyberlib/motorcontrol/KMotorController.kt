@@ -281,7 +281,7 @@ abstract class KMotorController : KBasicMotorController() {
     var positionSetpoint: Angle = 0.rotations
         private set(value) {
             field = value
-            if(!closedLoopConfigured) rawPosition = value
+            if(!closedLoopConfigured && real) rawPosition = value
         }
 
     /**
