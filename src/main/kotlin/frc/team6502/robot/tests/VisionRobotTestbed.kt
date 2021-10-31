@@ -1,7 +1,6 @@
-package frc.team6502.robot
+package frc.team6502.robot.tests
 
 import edu.wpi.cscore.HttpCamera
-import edu.wpi.cscore.MjpegServer
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kyberlib.command.KRobot

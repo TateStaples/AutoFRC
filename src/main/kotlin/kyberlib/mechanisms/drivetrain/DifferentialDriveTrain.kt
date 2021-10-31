@@ -37,6 +37,9 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     private val odometry = DifferentialDriveOdometry(0.degrees)
     private val kinematics = DifferentialDriveKinematics(configs.trackWidth.meters)
 
+    val pose
+        get() = odometry.poseMeters
+
     override fun drive(speeds: ChassisSpeeds) {
         drive(kinematics.toWheelSpeeds(speeds))
     }
@@ -76,5 +79,4 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         gyro.heading = (-driveSim.heading).k
         odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
     }
-
 }

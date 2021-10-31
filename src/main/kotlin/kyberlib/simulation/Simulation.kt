@@ -10,8 +10,12 @@ object Simulation : SubsystemBase() {
     private val time: Double
         get() = Timer.getFPGATimestamp()
 
-    fun update() {
-        if (RobotBase.isReal()) return
+    override fun periodic() {
+        if (RobotBase.isReal()) {
+            println("incorrectly called Simulation")
+            return
+        }
+
         if (prevTime < 0) {
             prevTime = time
             return
