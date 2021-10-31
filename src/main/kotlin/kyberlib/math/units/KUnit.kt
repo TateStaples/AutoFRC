@@ -124,6 +124,7 @@ object Test {
     @JvmStatic
     fun main(args: Array<String>) {
         println(1.meters / 1.seconds)
+        println(3.5.milesPerHour)
         println(1.rpm)
         println(1.meters + 1.meters)
         println(1.rpm * 1.minutes)

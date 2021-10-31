@@ -12,6 +12,7 @@ object Simulation : SubsystemBase() {
     private var prevTime = -1.0
     private val time: Double
         get() = Timer.getFPGATimestamp()
+    private val startTime = time
 
     override fun periodic() {
         if (RobotBase.isReal()) {
@@ -24,7 +25,6 @@ object Simulation : SubsystemBase() {
             return
         }
         val dt = time - prevTime
-        println("dt = $dt")
         for (sim in sims) {
             sim.simUpdate(dt)
         }

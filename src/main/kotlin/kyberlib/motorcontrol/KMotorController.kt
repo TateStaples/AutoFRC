@@ -30,7 +30,7 @@ enum class MotorType {
 }
 
 enum class ControlMode {
-    VELOCITY, POSITION, NULL
+    VELOCITY, POSITION, VOLTAGE, NULL
 }
 
 /**
@@ -41,7 +41,6 @@ data class KEncoderConfig(val cpr: Int, val type: EncoderType, val reversed: Boo
  * A more advanced motor control with feedback control.
  */
 abstract class KMotorController : KBasicMotorController() {
-    private var controlMode = ControlMode.NULL
     // ----- configs ----- //
     /**
      * The multiplier to attach to the raw velocity. *This is not the recommended way to do this.* Try using gearRatio instead
@@ -150,13 +149,17 @@ abstract class KMotorController : KBasicMotorController() {
     fun addFeedforward(feedforward: SimpleMotorFeedforward) {
         customControl = {
             var voltage = 0.0
-            if (controlMode == ControlMode.VELOCITY) {
-                val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
-                val pid = PID.calculate(linearVelocityError.metersPerSecond)
-                voltage = ff + pid
-            } else if (controlMode == ControlMode.POSITION) {
-                val pid = PID.calculate(positionError.radians)
-                voltage = pid
+            when (controlMode) {
+                ControlMode.VELOCITY -> {
+                    val ff = feedforward.calculate(linearVelocity.metersPerSecond, linearAcceleration.metersPerSecond)
+                    val pid = PID.calculate(linearVelocityError.metersPerSecond)
+                    voltage = ff + pid
+                }
+                ControlMode.POSITION -> {
+                    val pid = PID.calculate(positionError.radians)
+                    voltage = pid
+                }
+                ControlMode.VOLTAGE -> voltage = it.voltage
             }
             voltage
         }
@@ -178,7 +181,8 @@ abstract class KMotorController : KBasicMotorController() {
                 val ff = feedforward.calculate(position.radians, velocity.radiansPerSecond, acceleration.radiansPerSecond)
                 val pid = PID.calculate(velocityError.radiansPerSecond)
                 voltage = ff + pid
-            }
+            } else if (controlMode == ControlMode.VOLTAGE) voltage = it.voltage
+
             voltage
 
         }
@@ -202,17 +206,20 @@ abstract class KMotorController : KBasicMotorController() {
         }
     }
 
+    // todo: maybe separate custom control by mode
     /**
      * The control function of the robot.
      * Uses the motor state to determine what voltage should be applied.
      * Can be set to null to use in-built motor control system
      */
     var customControl: ((it: KMotorController) -> Double)? = {
-        var voltage = 0.0
-        if (controlMode == ControlMode.POSITION) {
-            voltage = PID.calculate(positionError.radians)
+        println(controlMode)
+        voltage = when (controlMode) {
+            ControlMode.POSITION -> PID.calculate(positionError.radians)
+            ControlMode.VELOCITY -> PID.calculate(velocityError.radiansPerSecond)
+            ControlMode.VOLTAGE -> it.voltage
+            else -> 0.0
         }
-        else if (controlMode == ControlMode.VELOCITY) voltage = PID.calculate(velocityError.radiansPerSecond)
         voltage
     }
 
@@ -228,8 +235,8 @@ abstract class KMotorController : KBasicMotorController() {
             return (rawPosition.value / gearRatio).radians
         }
         set(value) {
-            if (real) positionSetpoint = value
-            else field = value
+            if (!real) field = value
+            positionSetpoint = value
         }
 
     /**
@@ -252,8 +259,8 @@ abstract class KMotorController : KBasicMotorController() {
             return vel
         }
         set(value) {
-            if (real) velocitySetpoint = value
-            else field = value
+            if (!real) field = value
+            velocitySetpoint = value
         }
 
     var linearVelocity: LinearVelocity
@@ -290,7 +297,7 @@ abstract class KMotorController : KBasicMotorController() {
     var velocitySetpoint: AngularVelocity = 0.rpm
         private set(value) {
             field = value
-            if (!closedLoopConfigured) rawVelocity = value
+            if (!closedLoopConfigured && real) rawVelocity = value
         }
 
     /**
@@ -415,7 +422,7 @@ abstract class KMotorController : KBasicMotorController() {
     }
 
     override fun debugValues(): Map<String, Any?> {
-        var map = super.debugValues().toMutableMap()
+        val map = super.debugValues().toMutableMap()
         map.putAll(mapOf(
             "Angular Position" to position,
             "Angular Velocity" to velocity

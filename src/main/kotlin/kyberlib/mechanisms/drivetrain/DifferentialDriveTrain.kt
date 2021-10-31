@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim
+import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
@@ -66,7 +68,10 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
+    private lateinit var field: Field2d
     fun setupSim(KvLinear: Double, KaLinear: Double, KvAngular: Double, KaAngular: Double) {
+        field = Field2d()
+        SmartDashboard.putData("Field", field)
         driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
@@ -79,7 +84,15 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun simUpdate(dt: Double) {
-        driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
+//        drive(ChassisSpeeds(1.0, 0.0, 0.0))
+        val leftVolt = 1.0//leftMaster.customControl!!(leftMaster)
+        val rightVolt = 1.0//leftMaster.customControl!!(leftMaster)
+//        leftMaster.voltage = leftVolt
+//        rightMaster.voltage = rightVolt
+        println("${leftMaster.percent}, ${leftMaster.voltage}, ${leftMaster.customControl!!(leftMaster)}")
+//        leftMaster.debugPrint()
+        leftMaster.debugDashboard()
+        driveSim.setInputs(leftVolt, rightVolt)
         driveSim.update(dt)
         leftMaster.linearPosition = driveSim.leftPositionMeters.meters
         leftMaster.linearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
@@ -87,5 +100,6 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         rightMaster.linearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
         gyro.heading = (-driveSim.heading).k
         odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
+        field.robotPose = odometry.poseMeters
     }
 }

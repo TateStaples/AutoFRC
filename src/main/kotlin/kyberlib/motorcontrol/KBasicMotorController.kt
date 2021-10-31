@@ -9,6 +9,7 @@ import kyberlib.math.invertIf
  * A basic motor controller. No closed-loop control
  */
 abstract class KBasicMotorController : Sendable, Debuggable() {
+    protected var controlMode = ControlMode.NULL
     // ------ configs ----- //
     /**
      * Controls how the motor will stop when set to 0. If true the motor will brake instead of coast.
@@ -43,6 +44,7 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     var percent: Double = 0.0
         get() = if (real) rawPercent else field
         set(value) {
+            controlMode = ControlMode.VOLTAGE
             if (real) rawPercent = value else field = value
         }
 

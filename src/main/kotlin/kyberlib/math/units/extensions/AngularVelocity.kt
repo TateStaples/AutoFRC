@@ -14,5 +14,5 @@ val AngularVelocity.radiansPerSecond get() = value
 val AngularVelocity.degreesPerSecond get() = value / AngleConversions.degreesToRadians
 val AngularVelocity.rpm get() = value * TimeConversions.minutesToSeconds / AngleConversions.rotationsToRadians
 val AngularVelocity.rotationsPerSecond get() = value / AngleConversions.rotationsToRadians
-fun AngularVelocity.toTangentialVelocity(radius: Length) = LinearVelocity(value * radius.value)
+fun AngularVelocity.toTangentialVelocity(radius: Length) = (value * radius.value).metersPerSecond
 fun AngularVelocity.encoderVelocity(cpr: Int) = (value / (AngleConversions.rotationsToRadians * 10)) * (cpr * 4)
