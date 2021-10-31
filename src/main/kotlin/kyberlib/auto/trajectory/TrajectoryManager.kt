@@ -1,4 +1,4 @@
-package kyberlib.auto
+package kyberlib.auto.trajectory
 
 object TrajectoryManager {
     internal val trajectories = mutableMapOf<String, KTrajectory>()

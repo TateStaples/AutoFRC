@@ -1,4 +1,4 @@
-package kyberlib.auto
+package kyberlib.auto.trajectory
 
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig
 import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint
