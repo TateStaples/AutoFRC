@@ -3,6 +3,9 @@ package kyberlib.math.Filters
 import edu.wpi.first.wpilibj.RobotBase.isReal
 import edu.wpi.first.wpilibj.Timer
 
+/**
+ * Gets the rate of change of a stream of values
+ */
 class Differentiator {
 
     private var lastFPGA = getTime()

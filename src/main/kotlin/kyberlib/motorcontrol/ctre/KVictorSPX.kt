@@ -5,6 +5,9 @@ import com.ctre.phoenix.motorcontrol.NeutralMode
 import com.ctre.phoenix.motorcontrol.can.VictorSPX
 import kyberlib.motorcontrol.*
 
+/**
+ * Kotlin wrapper for VictorSPX on CAN
+ */
 class KVictorSPX(val canId: CANId) : KBasicMotorController() {
     private val _victor = VictorSPX(canId)
 

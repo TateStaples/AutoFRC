@@ -12,6 +12,10 @@ open class KRobot(private val period: Double = 0.02) {
     var enabled = false
         private set
 
+    /**
+     * Normal Robot.
+     * Executes some default code before calling the main functions
+     */
     private inner class KRobotInternal : TimedRobot(period) {
 
         override fun robotInit() {

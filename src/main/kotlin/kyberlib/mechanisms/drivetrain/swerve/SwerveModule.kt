@@ -8,6 +8,9 @@ import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.k
 import kyberlib.math.units.extensions.metersPerSecond
 
+/**
+ * Class that manages the speed and rotation of a swerve package
+ */
 abstract class SwerveModule(val location: Translation2d) {
     abstract var rotation: Rotation2d
     abstract var speed: LinearVelocity

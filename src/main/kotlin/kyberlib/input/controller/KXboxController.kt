@@ -6,6 +6,9 @@ import kyberlib.input.KAxis
 import kyberlib.input.KController
 import edu.wpi.first.wpilibj2.command.button.Trigger
 
+/**
+ * Represents a standard Xbox Controller
+ */
 class KXboxController(port: Int) : KController(port) {
     val triggerSensitivity = 0.2
 

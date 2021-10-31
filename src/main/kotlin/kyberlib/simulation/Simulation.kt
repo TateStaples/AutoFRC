@@ -4,6 +4,9 @@ import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
+/**
+ * Simulation that will run a loop to update simulatable objects
+ */
 object Simulation : SubsystemBase() {
     private val sims = ArrayList<Simulatable>()
     private var prevTime = -1.0

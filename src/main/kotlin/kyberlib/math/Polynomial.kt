@@ -2,6 +2,9 @@ package kyberlib.math
 
 import kotlin.math.pow
 
+/**
+ * Representation and calculator of a polynomial
+ */
 class Polynomial(vararg val coeffs: Double, val variableName: Char = 'x') {
     val degree = coeffs.size
     fun eval(x: Double): Double {

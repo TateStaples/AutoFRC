@@ -14,11 +14,15 @@ import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feetPerSecond
 import kyberlib.sensors.gyros.KGyro
 
-
-
+/**
+ * Pre-made Swerve Drivetrain.
+ * @param gyro provides heading information
+ * @param swerveModules are used to physically move the robot
+ * @param constraints optional value that regulates how the robot can move
+ */
 class SwerveDrive(private val gyro: KGyro,
                   private vararg val swerveModules: SwerveModule,
-                  val constraints: TrapezoidProfile.Constraints = TrapezoidProfile.Constraints(10.feetPerSecond.value, 10.feetPerSecond.value)
+                  private val constraints: TrapezoidProfile.Constraints = TrapezoidProfile.Constraints(10.feetPerSecond.value, 10.feetPerSecond.value)
                         ) : SubsystemBase() {
     // controls
     private val kinematics = SwerveDriveKinematics(*swerveModules.map { it.location }.toTypedArray())

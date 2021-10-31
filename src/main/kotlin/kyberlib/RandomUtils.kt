@@ -12,7 +12,8 @@ fun String.runCommand(workingDir: File) {
             redirectError(ProcessBuilder.Redirect.PIPE)
         }
         proc.start()
-    } catch(e: IOException) {
+    }
+    catch(e: IOException) {
         e.printStackTrace()
     }
 }

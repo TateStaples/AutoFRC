@@ -2,14 +2,23 @@ package kyberlib.input
 
 import kotlin.math.abs
 
+/**
+ * Wrapper for a DoubleSuppler (that retrieves raw axis value) and applies some hyper-parameters to increase usability
+ */
 class KAxis(val raw: () -> Double) {
 
     var rate = 1.0
     var expo = 0.0
     var superRate = 0.0
-    var deadband = 0.01
+    var deadband = 0.01  // how much of the controller should default to 0
 
+    /**
+     * Fancy non-linear value of the axis
+     */
     val value: Double
+        /**
+         * Applies fancy math to make joystick non-linear
+         */
         get() {
             var command = raw.invoke()
 

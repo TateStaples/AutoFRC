@@ -1,8 +1,9 @@
 package kyberlib.math.units.test
 
-import kyberlib.math.units.KUnit
-import kyberlib.math.units.KUnitKey
-
+/**
+ * Tate was messing around trying to have completely dynamic SI unit math.
+ * Doesn't really work without creating a mess
+ */
 open class Dimension {
     // the power of each unit
     open val angle = 0

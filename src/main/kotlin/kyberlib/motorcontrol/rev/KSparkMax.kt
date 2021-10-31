@@ -20,10 +20,9 @@ import kyberlib.motorcontrol.KBasicMotorController
 
 
 /**
- * Represents a REV Robotics Spark MAX motor controller.
+ * Represents a REV Robotics Spark MAX motor controller. Recommend using .apply to setup move configs
  * [canId] is the controller's ID on the CAN bus
  * [motorType] is the type of motor being driven. WARNING: If set incorrectly this can seriously damage hardware. You've been warned.
- * [apply] is where motor setup can occur
  */
 class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
                             ) : KMotorController() {

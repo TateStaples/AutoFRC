@@ -53,7 +53,7 @@ object CommandManager : Command {
 
     /**
      * Put list of commands in a specific location of the queue
-     * @param trajectories list of commands you want the robot to follow
+     * @param commands list of commands you want the robot to follow
      * @param index where in the queue to insert. Defaults to the front of the list
      */
     fun queueInsert(vararg commands: Command, index: Int = 0) {
@@ -126,6 +126,9 @@ object CommandManager : Command {
      */
     override fun isFinished(): Boolean = false
 
+    /**
+     * All the requirements that the current command queue will use
+     */
     override fun getRequirements(): MutableSet<Subsystem> {
         val set = mutableSetOf<Subsystem>(Drivetrain)
         activeCommand?.let { set.addAll(it.requirements) }

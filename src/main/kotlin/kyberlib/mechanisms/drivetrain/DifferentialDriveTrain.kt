@@ -14,9 +14,18 @@ import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.Simulatable
 
-
+/**
+ * Stores important information for the motion of a DifferentialDrive Robot
+ */
 data class DifferentialDriveConfigs(val wheelRadius: Length, val trackWidth: Length)
 
+/**
+ * Pre-made DifferentialDrive Robot.
+ * @param leftMotors array of all the motors on the left side of the robot. They will all follow the first
+ * @param rightMotors array of all the motors on the right side of the robot. They will all follow the first
+ * @param configs information about the physical desciption of this drivetrain
+ * @param gyro KGyro to provide heading information
+ */
 class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: Array<KMotorController>,
                              private val configs: DifferentialDriveConfigs, val gyro: KGyro) : SubsystemBase(), Simulatable,
     Drivetrain {

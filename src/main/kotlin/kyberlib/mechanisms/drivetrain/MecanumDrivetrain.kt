@@ -10,6 +10,11 @@ import kyberlib.math.units.extensions.metersPerSecond
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 
+/**
+ * Pre-made Drivetrain for MecanumWheels.
+ * @param packages pairs of <wheelPosition, wheel motor> (currently requires 4 motors in frontLeft, frontRight, backLeft, backRight order)
+ * @param gyro a KGyro that will provide heading information
+ */
 class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, private val gyro: KGyro) : Drivetrain, SubsystemBase() {
     init {
         assert(packages.size == 4) { "the pre-made drivetrain only accepts 4 wheel mecanum drives" }
@@ -21,8 +26,8 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     private val backRight = motors[3]
     private val locations = packages.map { it.first }.toTypedArray()
 
+    // changing this will normalize the top speed that a motor can have
     var maxVelocity = 0.metersPerSecond
-
 
     private val kinematics = MecanumDriveKinematics(locations[0], locations[1], locations[2], locations[3])
     val odometry = MecanumDriveOdometry(kinematics, gyro.heading)

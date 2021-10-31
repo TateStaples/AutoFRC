@@ -7,10 +7,14 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpiutil.math.VecBuilder
 import edu.wpi.first.wpiutil.math.numbers.N1
+import kyberlib.math.units.extensions.AngularVelocity
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.radiansPerSecond
 
-
+/**
+ * Pre-made Flywheel Subsystem. Also a demo of StateSpace control from WPILIB. Control using velocity variable.
+ * @param motor the controlling motor of the flywheel. If other motors are involves, make them follow this
+ */
 class Flywheel(private val motor: KMotorController) {
     // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-flywheel-walkthrough.html
 
@@ -66,4 +70,9 @@ class Flywheel(private val motor: KMotorController) {
             nextVoltage
         }
     }
+
+    var velocity: AngularVelocity
+        get() = motor.velocity
+        set(value) {motor.velocity = value}
+
 }

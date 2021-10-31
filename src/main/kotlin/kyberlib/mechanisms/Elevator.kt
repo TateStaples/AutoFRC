@@ -5,7 +5,12 @@ import kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
 
-
+/**
+ * Simple pre-made system that will control an elevator. Control by setting the position.
+ * @param motors a series of motors to move the elevator. Subsequent motors will follow the first
+ * @param radius the radius of the wheel that moves the elevator. Alternatively rotationToVelocityConversionFactor/2π
+ * @param initialPosition optional value of where the elevator starts
+ */
 class Elevator(vararg val motors: KMotorController, radius: Length, initialPosition: Length = 0.feet) : SubsystemBase() {
     private val master = motors[0].apply {
         this.radius = radius

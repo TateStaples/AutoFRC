@@ -1,5 +1,8 @@
 package kyberlib.math.units
 
+/**
+ * Represents a unit type
+ */
 open class KUnitKey {}
 
 //

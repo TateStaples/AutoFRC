@@ -1,7 +1,15 @@
 package kyberlib.math
 
+/**
+ * Linear Interpolator that will use a series of points to approximate a value
+ */
 class Interpolator(private val data: Map<Double, Double>) {
 
+    /**
+     * Approximate the value of x using the stored Data
+     * @param x the value to use
+     * @return an estimated y output
+     */
     fun calculate(x: Double): Double? {
 
         val nextHighest = getNext(x)
@@ -16,6 +24,10 @@ class Interpolator(private val data: Map<Double, Double>) {
 
     }
 
+    /**
+     * Get the next stored value after x
+     * @param x the value to index from
+     */
     private fun getNext(x: Double): Map.Entry<Double, Double>? {
 
         var nextHighest: Map.Entry<Double, Double>? = null
@@ -29,6 +41,10 @@ class Interpolator(private val data: Map<Double, Double>) {
 
     }
 
+    /**
+     * Get the nearest stored value before x
+     * @param x the value to index from
+     */
     private fun getPrevious(x: Double): Map.Entry<Double, Double>? {
 
         var nextLowest: Map.Entry<Double, Double>? = null

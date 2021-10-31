@@ -2,6 +2,9 @@ package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.SpeedController
 
+/**
+ * Wraps a WPI SpeedController to use the KBasicMotorController API
+ */
 class KSpeedController(private val m_speedController: SpeedController) : KBasicMotorController() {
     private companion object{
         var id = 1
@@ -14,7 +17,7 @@ class KSpeedController(private val m_speedController: SpeedController) : KBasicM
     }
     override var brakeMode: BrakeMode
         get() = false
-        set(value) {}
+        set(value) {m_speedController.stopMotor()}
     override var reversed: Boolean
         get() = m_speedController.inverted
         set(value) {m_speedController.inverted = value}

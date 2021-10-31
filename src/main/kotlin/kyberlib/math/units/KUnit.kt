@@ -5,7 +5,8 @@ import kyberlib.math.units.extensions.*
 import kotlin.math.absoluteValue
 
 /*
- * Unit system inspired by those of FalconLibrary and SaturnLibrary
+ * Unit system inspired by those of FalconLibrary and SaturnLibrary.
+ * Allows for dimensional analysis
  * @author Trevor
  */
 class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
@@ -14,6 +15,8 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
             field = value
             cancelExtraUnits()
         }
+
+    // math functions
     operator fun plus(other: KUnit<T>): KUnit<T> {
         val unit = KUnit<T>(value + other.value)
         shareUnits(unit)
@@ -42,8 +45,14 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
     val absoluteValue get() = KUnit<T>(value.absoluteValue)
     override fun compareTo(other: KUnit<T>) = value.compareTo(other.value)
 
+    /**
+     * Check if other is very close to this
+     */
     infix fun epsilonEquals(other: KUnit<T>) = value epsilonEquals other.value
 
+    /**
+     * Removes redundant units from unit name
+     */
     private fun cancelExtraUnits() {
         val seq = units.splitToSequence(' ').toList()
         if (seq.size == 1) return
@@ -88,6 +97,9 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
         this.units = string.toString()
     }
 
+    /**
+     * Asserts shared units with another KUnit
+     */
     private fun shareUnits(other: KUnit<T>) {
         other.units = units
     }
@@ -96,6 +108,8 @@ class KUnit<T>(val value: Double) : Comparable<KUnit<T>> {
         return "($value $units)"
     }
 }
+
+// combining separate units
 operator fun <T : KUnitKey, U : KUnitKey> KUnit<T>.times(other: KUnit<U>): KUnit<Mul<T, U>> {
     val unit = KUnit<Mul<T, U>>(value * other.value)
     unit.units = "$units * ${other.units}"
