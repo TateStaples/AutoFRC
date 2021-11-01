@@ -13,6 +13,8 @@ object Simulation : SubsystemBase() {
     private val time: Double
         get() = Timer.getFPGATimestamp()
     private val startTime = time
+    val elapsedTime
+        get() = time - startTime
 
     override fun periodic() {
         if (RobotBase.isReal()) {

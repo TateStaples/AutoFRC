@@ -15,10 +15,14 @@ class KRotation(val value: Double) : Rotation2d(value) {
         get() = ((rotations - rotations.toInt()) * rotations).radians
 
     fun encoderAngle(cpr: Int) = (value / AngleConversions.rotationsToRadians) * (cpr * 4)
-    fun toCircumference(radius: Length) = Length(value * radius.value)
+    fun toCircumference(radius: Length) = (radians * radius.meters).meters
     fun subtractNearest(other: Angle): Angle {
         val diff = (value - other.value + PI) % TAU - PI
         return Angle(if (diff < -PI) diff + TAU else diff)
+    }
+
+    override fun toString(): String {
+        return "($radians Radians)"
     }
 }
 

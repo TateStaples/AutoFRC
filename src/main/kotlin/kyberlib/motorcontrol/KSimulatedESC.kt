@@ -48,7 +48,7 @@ class KSimulatedESC(name: String) : KMotorController() {
     }
 
     override fun resetPosition(position: Angle) {
-        rawPosition = position
+        this.position = position
     }
 
     override fun followTarget(kmc: KBasicMotorController) {

@@ -123,11 +123,9 @@ operator fun <T : KUnitKey, U : KUnitKey> KUnit<T>.div(other: KUnit<U>): KUnit<D
 object Test {
     @JvmStatic
     fun main(args: Array<String>) {
-        println(1.meters / 1.seconds)
-        println(3.5.milesPerHour)
-        println(1.rpm)
-        println(1.meters + 1.meters)
-        println(1.rpm * 1.minutes)
-        println(3.metersPerSecond * 1.minutes)
+        println(180.degrees.toCircumference(1.meters))
+        println(1.meters.toAngle(1.meters))
+        println(1.metersPerSecond.toAngularVelocity(1.meters))
+        println(1.radiansPerSecond)
     }
 }

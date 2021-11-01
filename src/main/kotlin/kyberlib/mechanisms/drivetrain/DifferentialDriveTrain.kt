@@ -1,5 +1,6 @@
 package kyberlib.mechanisms.drivetrain
 
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
@@ -15,6 +16,7 @@ import kyberlib.math.units.extensions.*
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.Simulatable
+import kyberlib.simulation.Simulation
 
 /**
  * Stores important information for the motion of a DifferentialDrive Robot
@@ -48,7 +50,10 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     private val odometry = DifferentialDriveOdometry(0.degrees)
     private val kinematics = DifferentialDriveKinematics(configs.trackWidth.meters)
 
-    val pose
+    var pose: Pose2d
+        set(value) {
+            odometry.resetPosition(pose, gyro.heading)
+        }
         get() = odometry.poseMeters
 
     override fun drive(speeds: ChassisSpeeds) {
@@ -57,6 +62,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
 
     fun drive(speeds: DifferentialDriveWheelSpeeds) {
         leftMaster.linearVelocity = speeds.leftMetersPerSecond.metersPerSecond
+        rightMaster.linearVelocity = speeds.rightMetersPerSecond.metersPerSecond
     }
 
     override fun periodic() {
@@ -84,22 +90,40 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun simUpdate(dt: Double) {
-//        drive(ChassisSpeeds(1.0, 0.0, 0.0))
-        val leftVolt = 1.0//leftMaster.customControl!!(leftMaster)
-        val rightVolt = 1.0//leftMaster.customControl!!(leftMaster)
-//        leftMaster.voltage = leftVolt
-//        rightMaster.voltage = rightVolt
-        println("${leftMaster.percent}, ${leftMaster.voltage}, ${leftMaster.customControl!!(leftMaster)}")
-//        leftMaster.debugPrint()
+        drive(ChassisSpeeds(1.0, 0.0, 0.1))
+        val leftVolt = leftMaster.customControl!!(leftMaster)
+        val rightVolt = rightMaster.customControl!!(rightMaster)
+        leftMaster.voltage = leftVolt
+        rightMaster.voltage = rightVolt
         leftMaster.debugDashboard()
-        driveSim.setInputs(leftVolt, rightVolt)
+        rightMaster.debugDashboard()
+        driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
-        leftMaster.linearPosition = driveSim.leftPositionMeters.meters
-        leftMaster.linearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
-        rightMaster.linearPosition = driveSim.rightPositionMeters.meters
-        rightMaster.linearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
+
+        leftMaster.resetPosition(driveSim.leftPositionMeters.meters)
+        leftMaster.simLinearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
+        rightMaster.resetPosition(driveSim.rightPositionMeters.meters)
+        rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
+
+        val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
         gyro.heading = (-driveSim.heading).k
+        val prevPose = pose
         odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
+//        SmartDashboard.putString("estimated Pose", pose.toString())
+//        println("time: ${Simulation.elapsedTime}, sped: $sped, pose: $pose")
+//        println("odometry.update(${driveSim.heading}, ${driveSim.leftPositionMeters}, ${driveSim.rightPositionMeters})")
+//        leftMaster.debugDashboard()
+//        rightMaster.debugDashboard()
+        SmartDashboard.putNumber("LPos", leftMaster.linearPosition.meters)
+        SmartDashboard.putNumber("RPos", rightMaster.linearPosition.meters)
+        SmartDashboard.putNumber("LVel", leftMaster.linearVelocity.metersPerSecond)
+        SmartDashboard.putNumber("RVel", rightMaster.linearVelocity.metersPerSecond)
+        SmartDashboard.putNumber("XVel", sped.vxMetersPerSecond)
+        SmartDashboard.putNumber("YVel",sped.vyMetersPerSecond)
+        SmartDashboard.putNumber("X", pose.x)
+        SmartDashboard.putNumber("Y", pose.y)
+        SmartDashboard.putNumber("THETA", pose.rotation.degrees)
         field.robotPose = odometry.poseMeters
+        if (pose.translation.getDistance(prevPose.translation) > 3.0) 0/0
     }
 }

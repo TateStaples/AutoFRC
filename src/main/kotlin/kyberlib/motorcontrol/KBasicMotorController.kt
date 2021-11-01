@@ -44,7 +44,6 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     var percent: Double = 0.0
         get() = if (real) rawPercent else field
         set(value) {
-            controlMode = ControlMode.VOLTAGE
             if (real) rawPercent = value else field = value
         }
 
@@ -60,14 +59,14 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     var voltage: Double
         get() = percent * vbus
         set(value) {
-            value.coerceAtMost(vbus)
+            value.coerceIn(0.0 , vbus)
             percent = (value / vbus)
         }
 
     /**
      * The voltage available to the motor
      */
-    protected var vbus = if (real) RobotController.getBatteryVoltage() else 12.0
+    private val vbus = if (real) RobotController.getBatteryVoltage() else 12.0
 
     /**
      * The notifier to update the motor continuously
@@ -75,7 +74,7 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     internal val notifier = Notifier { update() }
 
     init {
-        notifier.startPeriodic(0.02)
+//        notifier.startPeriodic(0.02)
     }
     /**
      * True if this motor is following another.
@@ -147,4 +146,7 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
         )
     }
 
+    override fun toString(): String {
+        return "Motor($identifier)"
+    }
 }
