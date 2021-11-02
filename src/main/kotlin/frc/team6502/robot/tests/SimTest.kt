@@ -22,7 +22,7 @@ import kyberlib.simulation.Simulation
 class SimTest : KRobot() {
     private val leftMotor = KSimulatedESC("left")
     private val rightMotor = KSimulatedESC("right")
-    private val configs = DifferentialDriveConfigs(2.inches, 10.feet)
+    private val configs = DifferentialDriveConfigs(2.inches, 1.feet)
     private val gyro = KPigeon(1)
     val driveTrain = DifferentialDriveTrain(leftMotor, rightMotor, configs, gyro)
     val controller = KXboxController(0).apply {
@@ -42,17 +42,6 @@ class SimTest : KRobot() {
         driveTrain.drive(ChassisSpeeds(1.0, 0.0, 0.0))  // starts it driving forward
         Simulation.include(driveTrain)  // this will periodically update
 //        driveTrain.pose = Pose2d(2.meters, 2.meters, 0.degrees)
-
-        val waypoints = mutableListOf(
-            Translation2d(1.meters, 1.meters),
-            Translation2d(5.meters, 1.meters),
-            Translation2d(5.meters, 5.meters),
-            Translation2d(1.meters, 5.meters)
-        )
-        val config = TrajectoryConfig(Constants.velocity.metersPerSecond, Constants.acceleration.metersPerSecond)
-        val trajectory = TrajectoryGenerator.generateTrajectory(zeroPose, waypoints, Pose2d(1.meters, 5.meters, 180.degrees), config)
-        Simulation.field.getObject("traj").setTrajectory(trajectory)
-
     }
 
     override fun simulationPeriodic() {

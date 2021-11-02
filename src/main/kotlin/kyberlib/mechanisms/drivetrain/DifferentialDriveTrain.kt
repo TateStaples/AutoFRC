@@ -99,7 +99,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
 
         val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
         gyro.heading = driveSim.heading.k
-        odometry.update(gyro.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
+        odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
 
         leftMaster.debugDashboard()
         rightMaster.debugDashboard()
