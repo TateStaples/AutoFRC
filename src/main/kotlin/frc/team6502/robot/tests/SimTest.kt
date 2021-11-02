@@ -2,21 +2,15 @@ package frc.team6502.robot.tests
 
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.drive.AutoDrive
 import kyberlib.command.KRobot
-import kyberlib.input.controller.KXboxController
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
-import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import kyberlib.mechanisms.drivetrain.DifferentialDriveConfigs
 import kyberlib.mechanisms.drivetrain.DifferentialDriveTrain
 import kyberlib.motorcontrol.KSimulatedESC
-import kyberlib.motorcontrol.MotorType
-import kyberlib.motorcontrol.rev.KSparkMax
 import kyberlib.sensors.gyros.KPigeon
 import kyberlib.simulation.Simulation
 

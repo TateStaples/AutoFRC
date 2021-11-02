@@ -76,12 +76,21 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         println("${leftMaster.velocity}, ${rightMaster.velocity}")
     }
 
-    private lateinit var driveSim: DifferentialDrivetrainSim
+    init {
+        DifferentialDrivetrainSim(LinearSystemId.identifyDrivetrainSystem(0.0, 0.0, 0.0, 0.0),
+            DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
+            motors.first().gearRatio,  // gearing reduction
+            configs.trackWidth.meters,  // The track width
+            configs.wheelRadius.meters,  // wheel radius
+            // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
+            VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005))
+    }
+    private lateinit var driveSim: TestDriveSim
     private lateinit var field: Field2d
     fun setupSim(KvLinear: Double, KaLinear: Double, KvAngular: Double, KaAngular: Double) {
         field = Field2d()
         SmartDashboard.putData("Field", field)
-        driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
+        driveSim = TestDriveSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
             motors.first().gearRatio,  // gearing reduction
@@ -93,7 +102,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun simUpdate(dt: Double) {
-        val chassis = ChassisSpeeds(1.0, 0.0, 0.5)
+        val chassis = ChassisSpeeds(0.1, 0.0, 0.1)
         drive(chassis)
         leftMaster.voltage = leftMaster.customControl!!(leftMaster)
         rightMaster.voltage = rightMaster.customControl!!(rightMaster)
@@ -106,8 +115,8 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
 
         val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
-        gyro.heading = (-driveSim.heading).k
-        odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
+        gyro.heading = (driveSim.heading).k
+        odometry.update(gyro.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
 
         leftMaster.debugDashboard()
         rightMaster.debugDashboard()
