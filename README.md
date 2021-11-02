@@ -1,6 +1,6 @@
 # AutoFRC
 
-This is a study into creating a fully automatic FRC robot.
+This is a study into creating a fully automatic FRC robot. 
 
 This process relies on several key algorithms:
 - pose estiation: using the WpiLib DifferentialDrivePoseEstimatorClass
