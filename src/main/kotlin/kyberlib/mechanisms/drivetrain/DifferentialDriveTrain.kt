@@ -32,7 +32,7 @@ data class DifferentialDriveConfigs(val wheelRadius: Length, val trackWidth: Len
  */
 class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: Array<KMotorController>,
                              private val configs: DifferentialDriveConfigs, val gyro: KGyro) : SubsystemBase(), Simulatable,
-    Drivetrain {
+    KDrivetrain {
     constructor(leftMotor: KMotorController, rightMotor: KMotorController,
                 configs: DifferentialDriveConfigs, gyro: KGyro) : this(arrayOf(leftMotor), arrayOf(rightMotor), configs, gyro)
 
@@ -50,11 +50,14 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     private val odometry = DifferentialDriveOdometry(0.degrees)
     private val kinematics = DifferentialDriveKinematics(configs.trackWidth.meters)
 
-    var pose: Pose2d
+    override var pose: Pose2d
         set(value) {
             odometry.resetPosition(value, gyro.heading)
         }
         get() = odometry.poseMeters
+    override var heading
+        get() = gyro.heading
+        set(value) {gyro.heading = value}
 
     override fun drive(speeds: ChassisSpeeds) {
         drive(kinematics.toWheelSpeeds(speeds))
