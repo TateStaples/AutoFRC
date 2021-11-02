@@ -3,13 +3,10 @@ package kyberlib.motorcontrol
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.controller.ArmFeedforward
 import edu.wpi.first.wpilibj.controller.PIDController
-import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
-import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand
-import edu.wpi.first.wpilibj2.command.TrapezoidProfileSubsystem
-import kyberlib.math.Filters.Differentiator
+import kyberlib.math.filters.Differentiator
 import kyberlib.math.units.extensions.*
 
 typealias GearRatio = Double
