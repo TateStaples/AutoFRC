@@ -225,15 +225,14 @@ abstract class KMotorController : KBasicMotorController() {
     /**
      * Angle that the motor is at / should be at
      */
-    var position: Angle = 0.degrees
+    var position: Angle
         get() {
-            if (!real) return field
+            if (!real) return simPosition
             assert(encoderConfigured)
             return (rawPosition.value / gearRatio).radians
         }
         set(value) {
             controlMode = ControlMode.POSITION
-            if (!real) field = value
             positionSetpoint = value
         }
 
@@ -421,6 +420,16 @@ abstract class KMotorController : KBasicMotorController() {
         set(value) {
             simVelocity = linearToRotation(value)
         }
+    var simPosition: Angle = 0.degrees
+        set(value) {
+            assert(!real) {"This value should only be set from a simulation"}
+            field = value
+        }
+    var simLinearPosition: Length
+        get() = rotationToLinear(simPosition)
+        set(value) {
+            simPosition = linearToRotation(value)
+        }
 
     override fun initSendable(builder: SendableBuilder) {
         super.initSendable(builder)
@@ -437,12 +446,12 @@ abstract class KMotorController : KBasicMotorController() {
         val map = super.debugValues().toMutableMap()
         map.putAll(mapOf(
             "Angular Position (rad)" to position.radians,
-            "Angular Vel (rad/s)" to velocity.radiansPerSecond
+            "Angular Velocity (rad per s)" to velocity.radiansPerSecond
         ))
         if (linearConfigured)
             map.putAll(mapOf(
                 "Linear Position (m)" to linearPosition.meters,
-                "Linear Vel (m/s)" to linearVelocity.metersPerSecond
+                "Linear Velocity (m per s)" to linearVelocity.metersPerSecond
             ))
         return map.toMap()
     }

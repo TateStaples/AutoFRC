@@ -2,6 +2,8 @@ package kyberlib.simulation
 
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 
 /**
@@ -15,6 +17,11 @@ object Simulation : SubsystemBase() {
     private val startTime = time
     val elapsedTime
         get() = time - startTime
+    val field = Field2d()  // todo: use KField
+
+    init {
+        SmartDashboard.putData("Field", field)
+    }
 
     override fun periodic() {
         if (RobotBase.isReal()) {

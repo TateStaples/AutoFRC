@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim
-import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
@@ -17,8 +16,6 @@ import kyberlib.math.units.speed
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.Simulatable
-import kyberlib.simulation.Simulation
-import java.lang.Math.cos
 import kotlin.math.sin
 
 /**
@@ -76,21 +73,9 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         println("${leftMaster.velocity}, ${rightMaster.velocity}")
     }
 
-    init {
-        DifferentialDrivetrainSim(LinearSystemId.identifyDrivetrainSystem(0.0, 0.0, 0.0, 0.0),
-            DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
-            motors.first().gearRatio,  // gearing reduction
-            configs.trackWidth.meters,  // The track width
-            configs.wheelRadius.meters,  // wheel radius
-            // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
-            VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005))
-    }
-    private lateinit var driveSim: TestDriveSim
-    private lateinit var field: Field2d
+    private lateinit var driveSim: DifferentialDrivetrainSim
     fun setupSim(KvLinear: Double, KaLinear: Double, KvAngular: Double, KaAngular: Double) {
-        field = Field2d()
-        SmartDashboard.putData("Field", field)
-        driveSim = TestDriveSim( // Create a linear system from our characterization gains.
+        driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
             motors.first().gearRatio,  // gearing reduction
@@ -102,20 +87,18 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun simUpdate(dt: Double) {
-        val chassis = ChassisSpeeds(0.1, 0.0, 0.1)
-        drive(chassis)
         leftMaster.voltage = leftMaster.customControl!!(leftMaster)
         rightMaster.voltage = rightMaster.customControl!!(rightMaster)
         driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
 
-        leftMaster.resetPosition(driveSim.leftPositionMeters.meters)
+        leftMaster.simLinearPosition = driveSim.leftPositionMeters.meters
         leftMaster.simLinearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
-        rightMaster.resetPosition(driveSim.rightPositionMeters.meters)
+        rightMaster.simLinearPosition = driveSim.rightPositionMeters.meters
         rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
 
         val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
-        gyro.heading = (driveSim.heading).k
+        gyro.heading = driveSim.heading.k
         odometry.update(gyro.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
 
         leftMaster.debugDashboard()
@@ -125,7 +108,6 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         SmartDashboard.putNumber("X", pose.x)
         SmartDashboard.putNumber("Y", pose.y)
         SmartDashboard.putNumber("THETA", pose.rotation.radians)
-        field.robotPose = pose
 //        if (pose.translation.getDistance(prevPose.translation) > 3.0) 0/0
     }
 }
