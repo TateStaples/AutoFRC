@@ -57,6 +57,8 @@ class Robot : KRobot() {
             val jsonString = Json.encodeToString(defaultVals)
             File(slamValues).writeText(jsonString)
         }
+        val runCommand = " .\\UcoSlam\\frc_monocular.exe -camConfigPath UcoSlam\\data\\limelight.yml -params UcoSlam\\data\\fileout.yml -voc Ucoslam\\data\\orb.fbow -valJson Ucoslam\\slamValues.json\n"
+        //  .\UcoSlam\frc_monocular.exe -camConfigPath UcoSlam\data\limelight.yml -params UcoSlam\data\fileout.yml -voc Ucoslam\data\orb.fbow -valJson Ucoslam\slamValues.json
 //        "frcMonocular.exe".runCommand(File("./UcoSlam/"))
     }
 

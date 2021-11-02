@@ -13,10 +13,13 @@ import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.VecBuilder
 import kyberlib.math.units.extensions.*
+import kyberlib.math.units.speed
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.Simulatable
 import kyberlib.simulation.Simulation
+import java.lang.Math.cos
+import kotlin.math.sin
 
 /**
  * Stores important information for the motion of a DifferentialDrive Robot
@@ -52,7 +55,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
 
     var pose: Pose2d
         set(value) {
-            odometry.resetPosition(pose, gyro.heading)
+            odometry.resetPosition(value, gyro.heading)
         }
         get() = odometry.poseMeters
 
@@ -90,13 +93,10 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun simUpdate(dt: Double) {
-        drive(ChassisSpeeds(1.0, 0.0, 0.1))
-        val leftVolt = leftMaster.customControl!!(leftMaster)
-        val rightVolt = rightMaster.customControl!!(rightMaster)
-        leftMaster.voltage = leftVolt
-        rightMaster.voltage = rightVolt
-        leftMaster.debugDashboard()
-        rightMaster.debugDashboard()
+        val chassis = ChassisSpeeds(1.0, 0.0, 0.5)
+        drive(chassis)
+        leftMaster.voltage = leftMaster.customControl!!(leftMaster)
+        rightMaster.voltage = rightMaster.customControl!!(rightMaster)
         driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
 
@@ -107,23 +107,16 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
 
         val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
         gyro.heading = (-driveSim.heading).k
-        val prevPose = pose
         odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
-//        SmartDashboard.putString("estimated Pose", pose.toString())
-//        println("time: ${Simulation.elapsedTime}, sped: $sped, pose: $pose")
-//        println("odometry.update(${driveSim.heading}, ${driveSim.leftPositionMeters}, ${driveSim.rightPositionMeters})")
-//        leftMaster.debugDashboard()
-//        rightMaster.debugDashboard()
-        SmartDashboard.putNumber("LPos", leftMaster.linearPosition.meters)
-        SmartDashboard.putNumber("RPos", rightMaster.linearPosition.meters)
-        SmartDashboard.putNumber("LVel", leftMaster.linearVelocity.metersPerSecond)
-        SmartDashboard.putNumber("RVel", rightMaster.linearVelocity.metersPerSecond)
-        SmartDashboard.putNumber("XVel", sped.vxMetersPerSecond)
-        SmartDashboard.putNumber("YVel",sped.vyMetersPerSecond)
+
+        leftMaster.debugDashboard()
+        rightMaster.debugDashboard()
+        SmartDashboard.putNumber("Velocity (x)", sped.speed.metersPerSecond * kotlin.math.cos(pose.rotation.radians))
+        SmartDashboard.putNumber("Velocity (y)", sped.speed.metersPerSecond * sin(pose.rotation.radians))
         SmartDashboard.putNumber("X", pose.x)
         SmartDashboard.putNumber("Y", pose.y)
-        SmartDashboard.putNumber("THETA", pose.rotation.degrees)
-        field.robotPose = odometry.poseMeters
-        if (pose.translation.getDistance(prevPose.translation) > 3.0) 0/0
+        SmartDashboard.putNumber("THETA", pose.rotation.radians)
+        field.robotPose = pose
+//        if (pose.translation.getDistance(prevPose.translation) > 3.0) 0/0
     }
 }
