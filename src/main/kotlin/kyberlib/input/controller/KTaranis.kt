@@ -4,6 +4,7 @@ import kyberlib.input.AxisButton
 import kyberlib.input.KAxis
 import kyberlib.input.KController
 
+// todo: label these better
 /**
  * Wrapper for a Taranis controller using TAER on channels 1-4
  */

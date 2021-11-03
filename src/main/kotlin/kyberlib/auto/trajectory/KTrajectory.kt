@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil
 import kyberlib.KyberlibConfig
 import java.io.File
 
+// todo - document
 class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: KTrajectoryConfig?) : Trajectory(trajectory.states) {
     constructor(name: String, waypoints: List<Pose2d>, config: KTrajectoryConfig? = null) : this(name, generateTrajectory(waypoints, config), config)
 
