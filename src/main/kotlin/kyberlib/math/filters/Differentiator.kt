@@ -4,9 +4,12 @@ package kyberlib.math.filters
  * Gets the rate of change of a stream of values
  */
 class Differentiator : Filter() {
-    override var prevTime = 0.0
     private var lastValue: Double? = null
     private var value = 0.0
+
+    private var prevTime = 0.0
+    private val dt: Double
+        get() = time - prevTime
 
     /**
      * Return the rate of change of value in units per second

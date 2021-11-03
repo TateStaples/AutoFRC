@@ -1,7 +1,12 @@
 package kyberlib.math.filters
 
+/**
+ * Integrates a stream of data by time
+ */
 class Integrator : Filter() {
-    override var prevTime = -1.0
+    private var prevTime = 0.0
+    private val dt: Double
+        get() = time - prevTime
     private var value = 0.0
     override fun calculate(d: Double): Double {
         // right-hand approximation

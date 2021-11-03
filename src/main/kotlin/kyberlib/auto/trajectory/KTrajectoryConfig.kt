@@ -12,6 +12,9 @@ import kyberlib.math.units.extensions.feetPerSecond
 import kyberlib.math.units.extensions.metersPerSecond
 import java.io.File
 
+/**
+ * Wrapper of trajectory configs that takes in KUnits and allows for saving/loading
+ */
 class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelocity,
                              constraints: List<TrajectoryConstraint> = listOf(),
                              initialVelocity: LinearVelocity = 0.feetPerSecond, finalVelocity: LinearVelocity = 0.feetPerSecond,
@@ -26,11 +29,18 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
         addConstraints(constraints)
     }
 
+    /**
+     * Save this config to class. Leaves out constraints cause idk how to add that
+     */
     fun save(file: File) {
         file.writeText(Json.encodeToString(data))
     }
 
     companion object {
+        /**
+         * Loads config from JSON file.
+         * JSON should be written from save function
+         */
         fun load(file: File): KTrajectoryConfig {
             val data = Json.decodeFromString<TrajectoryConfigData>(file.readText())
             return KTrajectoryConfig(data.maxVelocity.metersPerSecond, data.maxAcceleration.metersPerSecond, listOf(), data.initialVelocity.metersPerSecond, data.finalVelocity.metersPerSecond, data.reversed)
@@ -38,6 +48,9 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
     }
 }
 
+/**
+ * Internal Config Data that allows for Serialization (writing to JSON)
+ */
 @Serializable
 internal data class TrajectoryConfigData(val maxVelocity: Double, val maxAcceleration: Double,
                                          val initialVelocity: Double, val finalVelocity: Double,

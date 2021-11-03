@@ -1,5 +1,6 @@
 package kyberlib.auto.pathing
 
+import kyberlib.simulation.field.KField2d
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -13,6 +14,10 @@ import javax.swing.JPanel
  * @param tree
  */
 internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
+    constructor(drawTree: Tree) : this(Pathfinder(drawTree.field).apply {
+        tree.vertices.clear()
+        tree.vertices.addAll(drawTree.vertices)
+    })
     val field = pathfinder.field
     val information = pathfinder.information
     val tree = pathfinder.tree
@@ -21,11 +26,18 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
     val frameWidth = 200
     val frameHeight = 200
 
+    /** Whether to draw the path */
     var drawPath = true
+    /** Whether to draw the Bounding Oval - shows the limits of where new nodes where helpful */
     var drawBound = true
+    /** Whether to draw the obstacles */
     var drawObstacles = true
+    /** Whether to draw the normal path nodes */
     var drawNormal = true
 
+    /**
+     * Show the drawing
+     */
     fun appear() {
         val frame = JFrame()
         frame.setSize(frameWidth, frameHeight)
@@ -55,6 +67,9 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
         if (information.currentPathLength > 0.0 && drawBound) drawPathOval(graphics)
     }
 
+    /**
+     * Draw the obstacles on the field
+     */
     private fun drawObstacles(graphics: Graphics2D) {
         for (obstacle in field.obstacles) {
             graphics.drawRect(drawingCoordinates(obstacle.x-obstacle.width), drawingCoordinates(obstacle.y-obstacle.height), drawingCoordinates(obstacle.width*2), drawingCoordinates(obstacle.height*2))
@@ -89,11 +104,14 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
             val pathNode = information.pathFound && path!!.contains(n2)
             if (drawPath && pathNode) g.color = Color.RED
             else g.color = Color.BLACK
-            if (drawPath && pathNode) g.drawLine(x1, y1, x2, y2)
+            if ((drawPath || drawNormal) && pathNode) g.drawLine(x1, y1, x2, y2)
             else if (drawNormal && !pathNode) g.drawLine(x1, y1, x2, y2)
             drawBranch(n2, g)
         }
     }
 
+    /**
+     * Convert the field coordinates to helpful pixel values
+     */
     private fun drawingCoordinates(mapValue: Double) = (mapValue/field.width * frameWidth).toInt()
 }

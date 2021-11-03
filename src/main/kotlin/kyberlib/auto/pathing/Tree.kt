@@ -85,7 +85,7 @@ class Node {
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree(private val field: KField2d) {
+class Tree(internal val field: KField2d) {
     val maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 
@@ -225,6 +225,9 @@ class Tree(private val field: KField2d) {
         optimize()
     }
 
+    /**
+     * Number of nodes in the tree
+     */
     val nodeCount: Int
         get() = vertices.size
 }

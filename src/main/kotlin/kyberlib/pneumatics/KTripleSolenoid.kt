@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.Solenoid
  *  A_____B______C
  * ||     |      ||______|
  * |______________|      |
- *
  */
 class KTripleSolenoid(val module: Int, val portA: Int, val portB: Int, val portC: Int) {
 

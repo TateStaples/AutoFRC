@@ -9,7 +9,9 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil
 import kyberlib.KyberlibConfig
 import java.io.File
 
-// todo - document
+/**
+ * Wrapper class of standard trajectory that allows for more generation options, saving / loading, and hashing
+ */
 class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: KTrajectoryConfig?) : Trajectory(trajectory.states) {
     constructor(name: String, waypoints: List<Pose2d>, config: KTrajectoryConfig? = null) : this(name, generateTrajectory(waypoints, config), config)
 
@@ -19,6 +21,11 @@ class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: K
 
     companion object {
         var generalConfig: KTrajectoryConfig? = null
+
+        /**
+         * Load a trajectory from a file
+         * @throws NoSuchFileException if it is an invalid trajectory
+         */
         fun load(name: String): KTrajectory {
             val jsonFile = File("${KyberlibConfig.TRAJECTORY_PATH}/$name.json")
             val configFile = File("${KyberlibConfig.TRAJECTORY_PATH}/${name}Config.json")
@@ -48,12 +55,18 @@ class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: K
                 config
             )
         }
-
         private fun generateTrajectory(waypoints: List<Pose2d>, newConfig: KTrajectoryConfig?): Trajectory {
             val config = putConfig(newConfig)
             return TrajectoryGenerator.generateTrajectory(waypoints, config)
         }
 
+        /**
+         * Checks whether to used the proposed Trajectory or the static one.
+         * Allows for leaving out config if static has been set.
+         * @param config nullable config value
+         * @return a valid config for trajectory generation
+         * @throws AssertionError if config is null and static is not set. Either set class config or provide one
+         */
         private fun putConfig(config: KTrajectoryConfig?): KTrajectoryConfig {
             if (config == null) {
                 assert(generalConfig != null) {"You must either provide a config or initialize the KTrajectory.config"}
@@ -61,9 +74,12 @@ class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: K
             }
             return config
         }
-
     }
 
+    /**
+     * Save the trajectory to a file
+     * @param debug print the process
+     */
     fun save(debug: Boolean = false) {
         val trajFolder = File(KyberlibConfig.TRAJECTORY_PATH)
         if (!trajFolder.exists()) {
@@ -91,19 +107,28 @@ class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: K
     }
 
     init {
+        // add to Map of trajectories
         TrajectoryManager.trajectories[name] = this
     }
 
+    /**
+     * The config that the trajectory was generated with
+     */
     private val config = putConfig(newConfig)
-
 
     private val hash
         get() = hashCode()
 
+    /**
+     * Creates a hash to determine uniqueness of trajectories
+     */
     override fun hashCode(): Int {
         return "${states.hashCode()},${config.hashCode()}".hashCode()
     }
 
+    /**
+     * Checks if two trajectories are identical
+     */
     override fun equals(other: Any?): Boolean {
         return hash == other.hashCode()
     }
