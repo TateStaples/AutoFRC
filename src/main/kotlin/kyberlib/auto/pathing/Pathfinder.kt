@@ -12,6 +12,10 @@ import kyberlib.simulation.field.Obstacle
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+/**
+ * Class that generates optimal pathes between various locations on a field
+ * @param field KField2d that contains the dimensions of the field and is updated with the obstacles
+ */
 class Pathfinder(val field: KField2d) {
     internal val tree = Tree(field)
     private val random = Random(4)
@@ -152,7 +156,7 @@ class Pathfinder(val field: KField2d) {
 
 
 /**
- * A way to test tree functionality
+ * A way to test pathfinding functionality
  */
 object PathingTest {
     lateinit var start: Translation2d
