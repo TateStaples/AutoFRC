@@ -39,11 +39,20 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
 
     // ------ low-level write methods ----- //
     /**
+     * Sets the voltage without changing the control mode
+     */
+    protected fun safeSetVoltage(voltage: Double) {
+        val prevMode = controlMode
+        this.voltage = voltage
+        controlMode = prevMode
+    }
+    /**
      * What percent output is currently being applied?
      */
     var percent: Double = 0.0
         get() = if (real) rawPercent else field
         set(value) {
+            controlMode = ControlMode.VOLTAGE
             if (real) rawPercent = value else field = value
         }
 
@@ -73,9 +82,6 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
      */
     internal val notifier = Notifier { update() }
 
-    init {
-//        notifier.startPeriodic(0.02)
-    }
     /**
      * True if this motor is following another.
      */
@@ -137,7 +143,7 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
      */
     override fun initSendable(builder: SendableBuilder) {
         builder.setSmartDashboardType("Encoder")
-        builder.addDoubleProperty("Voltage", this::voltage, null)
+        builder.addDoubleProperty("Voltage", this::voltage) { this.voltage = it }
     }
 
     override fun debugValues(): Map<String, Any?> {

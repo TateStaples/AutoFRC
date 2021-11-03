@@ -26,6 +26,9 @@ enum class MotorType {
     BRUSHLESS, BRUSHED
 }
 
+/**
+ * The type update goal the motor is going for
+ */
 enum class ControlMode {
     VELOCITY, POSITION, VOLTAGE, NULL
 }
@@ -282,6 +285,7 @@ abstract class KMotorController : KBasicMotorController() {
         private set(value) {
             field = value
             if(!closedLoopConfigured && real) rawPosition = value
+            else updateVoltage()
         }
 
     /**
@@ -291,6 +295,7 @@ abstract class KMotorController : KBasicMotorController() {
         private set(value) {
             field = value
             if (!closedLoopConfigured && real) rawVelocity = value
+            else updateVoltage()
         }
 
     /**
@@ -333,12 +338,11 @@ abstract class KMotorController : KBasicMotorController() {
     }
 
     /**
-     * Updates the voltage from customControl and updates followers
+     * Updates the voltage after changing position / velocity setpoint
      */
-    override fun update() {
-        super.update()
-        println("updating")
-        if (customControl != null) voltage = customControl!!(this)
+    private fun updateVoltage() {
+        if (!isFollower && customControl != null)
+            safeSetVoltage(customControl!!(this))
     }
 
     // ----- meta information ----- //
@@ -414,9 +418,7 @@ abstract class KMotorController : KBasicMotorController() {
         }
     var simLinearVelocity: LinearVelocity
         get() = rotationToLinear(simVelocity)
-        set(value) {
-            simVelocity = linearToRotation(value)
-        }
+        set(value) { simVelocity = linearToRotation(value) }
     var simPosition: Angle = 0.degrees
         set(value) {
             assert(!real) {"This value should only be set from a simulation"}
@@ -424,20 +426,7 @@ abstract class KMotorController : KBasicMotorController() {
         }
     var simLinearPosition: Length
         get() = rotationToLinear(simPosition)
-        set(value) {
-            simPosition = linearToRotation(value)
-        }
-
-    override fun initSendable(builder: SendableBuilder) {
-        super.initSendable(builder)
-        if (linearConfigured) {
-            builder.addDoubleProperty("Velocity (m/s)", { linearVelocity.metersPerSecond }, null)
-            builder.addDoubleProperty("Position (m)", { linearPosition.meters }, null)
-        } else {
-            builder.addDoubleProperty("Velocity (rpm)", { velocity.rpm }, null)
-            builder.addDoubleProperty("Position (rot)", { position.rotations }, null)
-        }
-    }
+        set(value) { simPosition = linearToRotation(value) }
 
     final override fun debugValues(): Map<String, Any?> {
         val map = super.debugValues().toMutableMap()
