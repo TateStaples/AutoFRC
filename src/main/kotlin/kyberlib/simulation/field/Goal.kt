@@ -11,6 +11,9 @@ import kyberlib.math.units.extensions.degrees
  * A custom field object that has a position and linked command
  */
 class Goal(val name: String, val position: Translation2d, val uponArrival: Command? = null) {
+    /**
+     * Command to execute when trying to complete this gaol
+     */
     val command: Command
         get() {
             val pathCommand = AutoDrive(Pose2d(position, 0.degrees))

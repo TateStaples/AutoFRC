@@ -40,10 +40,6 @@ object RobotContainer {
 
     init {
         // initialize subsystems here:
-        /**
-         * The location manager of the robot. Tracks location and odometry updates.
-         * Also does some pathing.
-         */
         Navigation.apply { gyro = RobotContainer.gyro }
         Drivetrain
         PathPlanner

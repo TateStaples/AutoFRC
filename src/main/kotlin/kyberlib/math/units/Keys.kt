@@ -5,10 +5,11 @@ package kyberlib.math.units
  */
 open class KUnitKey {}
 
-//
+// combinations of units (doesn't work beyond one change - see testing for potential workarounds)
 class Mul<T : KUnitKey, U : KUnitKey> : KUnitKey() {}
 class Div<T : KUnitKey, U : KUnitKey> : KUnitKey()
 
+// static object representing unit type
 object Unitless : KUnitKey()
 object Radian : KUnitKey()  // base unit for angle
 object Meter : KUnitKey()  // base unit for length

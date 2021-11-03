@@ -7,6 +7,10 @@ import kotlin.math.pow
  */
 class Polynomial(vararg val coeffs: Double, val variableName: Char = 'x') {
     val degree = coeffs.size
+
+    /**
+     * Solve the polynomial for the given value
+     */
     fun eval(x: Double): Double {
         var total = 0.0
         for (i in coeffs.indices) {

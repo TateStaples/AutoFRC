@@ -33,18 +33,28 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     // changing this will normalize the top speed that a motor can have
     var maxVelocity = 0.metersPerSecond
 
+    // controls
     private val kinematics = MecanumDriveKinematics(locations[0], locations[1], locations[2], locations[3])
     private val odometry = MecanumDriveOdometry(kinematics, gyro.heading)
 
+    // useful info
     private val mecanumDriveWheelSpeeds
         get() = MecanumDriveWheelSpeeds(frontLeft.linearVelocity.metersPerSecond, frontRight.linearVelocity.metersPerSecond, backLeft.linearVelocity.metersPerSecond, backRight.linearVelocity.metersPerSecond)
+    override var pose: Pose2d
+        set(value) { odometry.resetPosition(value, gyro.heading) }
+        get() = odometry.poseMeters
+    override var heading
+        get() = gyro.heading
+        set(value) {gyro.heading = value}
 
+    // drive functions
     override fun drive(speeds: ChassisSpeeds) {
         drive(speeds, false)
     }
 
     fun drive(speeds: ChassisSpeeds, fieldRelative: Boolean = false) {
         if (fieldRelative) {
+            // field relative means x, y of the field instead of forward, side from the robot
             val adjusted = ChassisSpeeds.fromFieldRelativeSpeeds(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, gyro.heading)
             drive(kinematics.toWheelSpeeds(adjusted))
         }
@@ -67,9 +77,4 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     override fun debug() {
         println(motors.map { it.linearVelocity }.toString())
     }
-
-    override var pose: Pose2d = zeroPose
-        get() = odometry.poseMeters
-    override var heading: KRotation = 0.degrees
-        get() = gyro.heading
 }

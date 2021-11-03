@@ -3,6 +3,12 @@ package kyberlib
 import java.io.File
 import java.io.IOException
 
+// random misc functions
+
+/**
+ * Executes string as command in terminal
+ * @param workingDir the directory the terminal will be located
+ */
 fun String.runCommand(workingDir: File) {
     try {
         val parts = this.split("\\s".toRegex())

@@ -2,21 +2,20 @@ package kyberlib.simulation.field
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
 
 /**
- * Updated Field class to implement new behaviours
- *
- * Should now be able to dynamically load obstacles and objectives
- * This allows the robot where it can and should go
+ * Updated Field class to implement new behaviours.
+ * Includes storing obstacles and goals.
+ * @param width how wide the field is (x)
+ * @param height how long the field is (y)
  * @author TateStaples
  */
-class KField2d : Field2d() {
+class KField2d(val width: Length = 4.3569128.meters, val height: Length = 2.8275026.meters) : Field2d() {
     val obstacles = ArrayList<Obstacle>()
     val goals = ArrayList<Goal>()
-    val width = 4.3569128.meters.value
-    val height = 2.8275026.meters.value
 
     /**
      * Checks if a position is not obstructed
@@ -51,6 +50,9 @@ class KField2d : Field2d() {
         return false
     }
 
+    /**
+     * Whether line between two points hits an obstacle
+     */
     private fun hitObstacle(point1: Translation2d, point2: Translation2d): Boolean {
         for (obstacle in obstacles) {
             if (obstacle.contains(point1, point2)) return true
@@ -58,7 +60,10 @@ class KField2d : Field2d() {
         return false
     }
 
-    private fun inBoundaries(point: Translation2d) = point.x in 0.0..width && point.y in 0.0..height
+    /**
+     * Whether point within the field
+     */
+    private fun inBoundaries(point: Translation2d) = point.x in 0.0..width.meters && point.y in 0.0..height.meters
 
     private val sameDistance = 1.feet
 

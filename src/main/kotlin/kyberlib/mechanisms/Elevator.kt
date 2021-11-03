@@ -22,6 +22,9 @@ class Elevator(vararg val motors: KMotorController, radius: Length, initialPosit
         }
     }
 
+    /**
+     * The linear Position of where the elevator should be
+     */
     var position: Length
         get() = master.linearPosition
         set(value) {

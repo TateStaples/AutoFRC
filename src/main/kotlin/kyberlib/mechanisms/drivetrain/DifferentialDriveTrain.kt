@@ -47,9 +47,11 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
             motor.radius = configs.wheelRadius
     }
 
+    // control values
     private val odometry = DifferentialDriveOdometry(0.degrees)
     private val kinematics = DifferentialDriveKinematics(configs.trackWidth.meters)
 
+    // useful information
     override var pose: Pose2d
         set(value) {
             odometry.resetPosition(value, gyro.heading)
@@ -59,6 +61,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         get() = gyro.heading
         set(value) {gyro.heading = value}
 
+    // drive functions
     override fun drive(speeds: ChassisSpeeds) {
         drive(kinematics.toWheelSpeeds(speeds))
     }

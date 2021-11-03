@@ -4,6 +4,9 @@ import edu.wpi.first.wpilibj.controller.PIDController
 import kyberlib.math.invertIf
 import kyberlib.math.units.extensions.*
 
+/**
+ * Raw simulated motor.
+ */
 class KSimulatedESC(name: String) : KMotorController() {
 
     private val posController = PIDController(0.0, 0.0, 0.0)

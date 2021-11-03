@@ -11,13 +11,23 @@ import kyberlib.math.units.extensions.LinearVelocity
 import kyberlib.math.units.extensions.metersPerSecond
 import kotlin.math.PI
 
-class DifferentialSwerveModule(location: Translation2d, private val gearRatio: GearRatio, wheelRadius: Length,
+/**
+ * Untested Class to control differential swerve module.
+ * @param location offset from center of rotation in the Chassis
+ * @param wheelRadius the radius of the module's wheel
+ * @param topMotor the first motor of the dif swerve
+ * @param bottomMotor the second motor of the dif swerve
+ */
+class DifferentialSwerveModule(location: Translation2d, wheelRadius: Length,
                                private val topMotor: KMotorController, private val bottomMotor: KMotorController
                                         ) : SwerveModule(location) {
 
     private val rotationPID = PIDController(0.07, 0.00, 0.01)
     private val feedforward = SimpleMotorFeedforward(0.0, 0.0, 0.0)
 
+    /**
+     * Custom control for each motor. Finds what voltage the motors should be.
+     */
     private fun differentialControl(it: KMotorController): Double {
         val goal = stateSetpoint
         val ff = feedforward.calculate(it.linearVelocity.metersPerSecond, it.linearAcceleration.metersPerSecond)
@@ -26,14 +36,10 @@ class DifferentialSwerveModule(location: Translation2d, private val gearRatio: G
         val rotCorrection = rotationPID.calculate(rotationError.radians, goal.angle.radians)
         return ff + velCorrection + rotCorrection
     }
+
     init {
         topMotor.customControl = { it: KMotorController -> differentialControl(it) }
         bottomMotor.customControl = { it: KMotorController -> differentialControl(it) }
-    }
-
-    private val wheelCircumference: Length
-    init {
-        wheelCircumference = wheelRadius * PI * 2.0
     }
 
     override var rotation: Rotation2d
@@ -55,9 +61,4 @@ class DifferentialSwerveModule(location: Translation2d, private val gearRatio: G
         set(value) {
             stateSetpoint.speedMetersPerSecond = value.metersPerSecond
         }
-
-
-    override fun debug() {
-
-    }
 }

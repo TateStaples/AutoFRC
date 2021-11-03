@@ -4,7 +4,7 @@ import kyberlib.math.epsilonEquals
 import kyberlib.math.units.extensions.*
 import kotlin.math.absoluteValue
 
-/*
+/**
  * Unit system inspired by those of FalconLibrary and SaturnLibrary.
  * Allows for dimensional analysis
  * @author Trevor
@@ -120,7 +120,7 @@ operator fun <T : KUnitKey, U : KUnitKey> KUnit<T>.div(other: KUnit<U>): KUnit<D
 }
 
 
-object Test {
+object KUnitTests {
     @JvmStatic
     fun main(args: Array<String>) {
         println(180.degrees.toCircumference(1.meters))

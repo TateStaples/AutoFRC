@@ -16,7 +16,7 @@ import kyberlib.math.units.transform
 import org.photonvision.PhotonCamera
 
 /**
- * Testing Photon vision stuff
+ * Camera that updates global position and uses HSV thresholding
  */
 object Photon : SubsystemBase() {
     // camera setups

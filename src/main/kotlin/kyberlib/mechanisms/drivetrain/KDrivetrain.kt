@@ -1,6 +1,7 @@
 package kyberlib.mechanisms.drivetrain
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
+import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import kyberlib.math.units.extensions.KRotation
 
@@ -19,7 +20,7 @@ interface KDrivetrain {
     fun debug()
 
     var pose: Pose2d
-    val position
+    val position: Translation2d
         get() = pose.translation
     var heading: KRotation
 }

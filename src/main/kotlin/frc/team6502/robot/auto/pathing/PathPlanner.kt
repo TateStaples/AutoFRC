@@ -8,6 +8,7 @@ import frc.team6502.robot.auto.Navigation
 import kyberlib.auto.pathing.Node
 import kyberlib.auto.pathing.Tree
 import kyberlib.math.units.extensions.feet
+import kyberlib.math.units.extensions.meters
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -124,8 +125,8 @@ object PathPlanner {
         var x: Double
         var y: Double
         do {
-            x = random.nextDouble(field.width)
-            y = random.nextDouble(field.width)
+            x = random.nextDouble(field.width.meters)
+            y = random.nextDouble(field.width.meters)
         } while(!field.inField(x, y))  // the convertions here might cause issues
         return Translation2d(x, y)
     }

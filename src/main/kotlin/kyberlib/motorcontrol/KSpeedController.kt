@@ -15,7 +15,7 @@ class KSpeedController(private val m_speedController: SpeedController) : KBasicM
         id += 1
 
     }
-    override var brakeMode: BrakeMode
+    override var brakeMode: BrakeMode  // this doesn't work
         get() = false
         set(value) {m_speedController.stopMotor()}
     override var reversed: Boolean

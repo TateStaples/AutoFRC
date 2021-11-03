@@ -36,6 +36,9 @@ class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
         return box.contains(point2d)
     }
 
+    /**
+     * Whether obstacle contains line between two points
+     */
     fun contains(point1: Translation2d, point2: Translation2d): Boolean {
 //        val adj1 = normalize(point1)
 //        val adj2 = normalize(point2)
@@ -44,6 +47,7 @@ class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
         val line = Line2D.Double(adj1.x, adj1.y, adj2.x, adj2.y)
         return line.intersects(box)
     }
+
 
     private fun normalize(point: Translation2d): Translation2d {
         val centered = point.minus(position)

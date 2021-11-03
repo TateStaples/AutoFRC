@@ -14,6 +14,10 @@ import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.towards
 
+/**
+ * Automatically path and drive to a pose when called
+ * @param targetPose the pose to drive to
+ */
 class AutoDrive(var targetPose: Pose2d) : CommandBase() {
     constructor(position: Translation2d) : this(Pose2d(position, 0.degrees)) {
         rotationInvariant = true
