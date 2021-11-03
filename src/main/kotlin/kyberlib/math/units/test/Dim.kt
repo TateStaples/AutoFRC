@@ -4,7 +4,7 @@ package kyberlib.math.units.test
  * Tate was messing around trying to have completely dynamic SI unit math.
  * Doesn't really work without creating a mess
  */
-open class Dimension {
+open class Dim {
     // the power of each unit
     open val angle = 0
     open val length = 0
@@ -32,9 +32,9 @@ open class Dimension {
         return string.toString()
     }
 
-    operator fun times(other: Dimension): Dimension {
+    operator fun times(other: Dim): Dim {
         val caller = this
-        return object : Dimension() {
+        return object : Dim() {
             override val angle = caller.angle + other.angle
             override val length = caller.length + other.length
             override val time = caller.time + other.time
@@ -46,9 +46,9 @@ open class Dimension {
         }
     }
 
-    operator fun div(other: Dimension): Dimension {
+    operator fun div(other: Dim): Dim {
         val caller = this
-        return object : Dimension() {
+        return object : Dim() {
             override val angle = caller.angle - other.angle
             override val length = caller.length - other.length
             override val time = caller.time - other.time
@@ -61,15 +61,15 @@ open class Dimension {
     }
 }
 
-object Unitless: Dimension()  // unitless Unit
-object Radian : Dimension() { override val angle = 1 }  // base unit for angle
-object Meter : Dimension() { override val length = 1 }   // base unit for length
-object Second : Dimension() { override val time = 1 }   // base unit for time
-object Kelvin : Dimension() { override val temperature = 1 }   // base unit for temp
-object Mole : Dimension() { override val amount = 1 }   // base unit for amount
-object Amp : Dimension() { override val current = 1 }   // base unit for current
-object Candela : Dimension() { override val luminosity = 1 }   // base unit for luminosity
-object Kilogram : Dimension() { override val mass = 1 }   // base unit for mass
+object Unitless: Dim()  // unitless Unit
+object Radian : Dim() { override val angle = 1 }  // base unit for angle
+object Meter : Dim() { override val length = 1 }   // base unit for length
+object Second : Dim() { override val time = 1 }   // base unit for time
+object Kelvin : Dim() { override val temperature = 1 }   // base unit for temp
+object Mole : Dim() { override val amount = 1 }   // base unit for amount
+object Amp : Dim() { override val current = 1 }   // base unit for current
+object Candela : Dim() { override val luminosity = 1 }   // base unit for luminosity
+object Kilogram : Dim() { override val mass = 1 }   // base unit for mass
 
 val unitKeyMap = mapOf(
     Radian::class.simpleName to Radian,

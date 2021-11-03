@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.*
 import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.numbers.*
 import frc.team6502.robot.Constants
-import frc.team6502.robot.auto.pathing.utils.KField2d
+import kyberlib.simulation.field.KField2d
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.feet
@@ -120,8 +120,7 @@ object Navigation : SubsystemBase() {
      * Update position based on estimated motion
      */
     private fun update() {  // estimate motion
-        val pose2d: Pose2d
-        pose2d = if (Constants.MECANUM) mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
+        val pose2d = if (Constants.MECANUM) mecEstimator.update(heading, Drivetrain.mecWheelSpeeds)
                 else difEstimator.update(heading, Drivetrain.difWheelSpeeds, Drivetrain.leftPos, Drivetrain.rightPos)
         if (Constants.DEBUG)
             SmartDashboard.putString("pose", pose2d.string)

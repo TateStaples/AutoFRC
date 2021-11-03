@@ -1,27 +1,21 @@
-package frc.team6502.robot.auto.pathing
+package kyberlib.auto.pathing
 
-//import kyberlib.simulation.field.KField2d
-import edu.wpi.first.wpilibj.geometry.Rotation2d
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
-import frc.team6502.robot.auto.Navigation
-import kyberlib.auto.pathing.Node
-import kyberlib.auto.pathing.Tree
+import kyberlib.auto.trajectory.KTrajectory
+import kyberlib.math.units.Translation2d
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
-import kotlin.math.cos
-import kotlin.math.sin
+import kyberlib.simulation.field.KField2d
+import kyberlib.simulation.field.Obstacle
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-/**
- * Object to manage pathfinding functions.
- * Implements RTT* in order to find the most efficient route
- * @author TateStaples
- */
-object PathPlanner {
-    val field = Navigation.field // test edit
-    private val tree = Tree(field)
+class Pathfinder(val field: KField2d) {
+    internal val tree = Tree(field)
     private val random = Random(4)
+    internal lateinit var information: PathingInformation
 
     var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
@@ -30,22 +24,22 @@ object PathPlanner {
         get() = endNode?.let { tree.trace(it) }
 
     /** how many nodes to create before giving up finding target */
-    private const val explorationDepth = 5000
+    private val explorationDepth = 5000
     /** how many nodes to dedicate to optimization */
-    private const val optimizationDepth = 1000
+    private val optimizationDepth = 1000
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
      * @param pose2d the pose that you want the robot to get to
      * @return a trajectory that will track your robot to the goal target
      */
-    fun pathTo(position: Translation2d, currentPosition: Translation2d): Trajectory {
-        if (tree.nodeCount > 0 && position != Information.endPosition)
+    fun pathTo(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
+        if (tree.nodeCount > 0 && startPose2d.translation != information.endPosition)
             reset()
         if (tree.nodeCount > 0)
             tree.pruneInformed()
-        loadTree(position, currentPosition)
-        return treeToTrajectory()
+        loadTree(startPose2d.translation, endPose2d.translation)
+        return treeToTrajectory(startPose2d, endPose2d)
     }
 
     /**
@@ -53,33 +47,33 @@ object PathPlanner {
      * @param trajectory the old trajectory that may need correction
      * @return a trajectory that won't collide with any of the updated obstacles
      */
-    fun updateTrajectory(trajectory: Trajectory, currentPosition: Translation2d): Trajectory {
+    fun updateTrajectory(trajectory: Trajectory, currentPose: Pose2d): Trajectory {
         tree.pruneBlocked()
         if (tree.vertices.contains(endNode!!)) // this is not optimal if moving obstacles
             return trajectory
-
-        return pathTo(trajectory.states.last().poseMeters.translation, currentPosition)
+        return pathTo(trajectory.states.last().poseMeters, currentPose)
     }
 
     /**
      * Converts a navigation tree into a path for the robot to follow
      * @return a trajectory that follows the Tree recommended path
      */
-    private fun treeToTrajectory(): Trajectory {
-        return Navigation.trajectory(*path!!.map{it.position}.toTypedArray())  // test edit
+    private fun treeToTrajectory(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
+        if (!pathFound) return Trajectory()
+        return KTrajectory("Pathfinder path", startPose2d, path!!.map { it.position }, endPose2d)  // test edit
 //        return Trajectory()
     }
 
     /**
      * Creates the initial tree of nodes
      */
-    internal fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
+    private fun loadTree(startPosition: Translation2d, endPosition: Translation2d) {  // to allow dynamic movement, maybe startPoint = goal and end is robot
         // look @ BIT*
         // current version is Informed RRT*
         pathFound = false
         if (tree.nodeCount == 0)
             tree.addNode(Node(startPosition))
-        Information.setup(startPosition, endPosition)
+        information = PathingInformation(startPosition, endPosition)
         for (i in tree.nodeCount..explorationDepth) {
             if (pathFound) break
             val point = randomPoint()
@@ -107,11 +101,11 @@ object PathPlanner {
 //        println(node)
         tree.addNode(node)
         tree.optimize(node)
-        val endDis = new.getDistance(Information.endPosition)
+        val endDis = new.getDistance(information.endPosition)
         if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
             pathFound = true
             endNode = node
-            Information.update()
+            information.update(path!!.first().pathLengthFromRoot)
             println("path found")
         }
     }
@@ -135,18 +129,16 @@ object PathPlanner {
      * This is done because once a rough path is found, no nodes outside the oval can improve the path
      */
     private fun informedPoint(): Translation2d {
-        val theta = random.nextDouble(2*Math.PI)
+        val theta = random.nextDouble(2 * Math.PI)
         val rho = sqrt(random.nextDouble(1.0))
-        val point = Information.get(rho, theta)
-        return point
+        return information.get(rho, theta)
     }
 
     /**
      * Illustrate to tree of values
      */
     fun drawTreePath() {
-        val drawingMult = 200
-        println("not currently available")
+        TreeIllustration(this).appear()
     }
 
     /**
@@ -156,45 +148,40 @@ object PathPlanner {
         tree.vertices.clear()
         path?.clear()
     }
+}
 
-    /**
-     * Information regard what sample of points can be used to further optimize the current path
-     */
-    private object Information {
-        lateinit var startPosition: Translation2d
-        lateinit var endPosition: Translation2d
-        lateinit var center: Translation2d
-        var currentPathLength = 0.0
-        var dis = 0.0
-        var width = currentPathLength
-        var height = 0.0
-        lateinit var shifted: Translation2d
-        lateinit var rotation: Rotation2d
 
-        fun setup(startPosition: Translation2d, endPosition: Translation2d) {
-            this.startPosition = startPosition
-            this.endPosition = endPosition
-            center = startPosition.plus(endPosition).div(2.0)  // average
-            dis = startPosition.getDistance(endPosition)
-            shifted = endPosition.minus(startPosition)
-            rotation = Rotation2d(shifted.x, shifted.y)
+/**
+ * A way to test tree functionality
+ */
+object PathingTest {
+    lateinit var start: Translation2d
+    lateinit var end: Translation2d
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val PathPlanner = Pathfinder(KField2d())
+        // look @ informed RRT* and BIT*
+        // current version in RRT
+        start = Translation2d(1.feet, 1.feet)
+        end = Translation2d(6.feet, 6.feet)
+//
+//        println(testO.contains(start, end))
+        for (i in 0..5) {
+            val p = PathPlanner.randomPoint()
+            val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
+            if (o.contains(start) || o.contains(end)) continue
+            PathPlanner.field.obstacles.add(o)
         }
-
-        fun update() {
-            currentPathLength = path!![0].pathLengthFromRoot.coerceAtLeast(dis)
-            width = currentPathLength
-            height = sqrt(currentPathLength * currentPathLength - dis * dis)
-        }
-
-        fun get(rho: Double, theta: Double): Translation2d {
-            val x = cos(theta) * width/2 * rho
-            val y = sin(theta) * height/2 * rho
-            val rotated = Translation2d(x, y).rotateBy(rotation)
-            return rotated.plus(center)
-        }
-
-        fun debug() {
-            println("start: $startPosition, end: $endPosition, w: $width, h: $height center: $center, dis: $dis, rotation: $rotation")
-        }
+//        val testO = Obstacle(Pose2d(3.feet, 5.feet, 0.degrees), 1.feet.meters, 1.feet.meters)
+//        PathPlanner.field.obstacles.add(testO)
+        println("field setup")
+        PathPlanner.pathTo(Pose2d(start, 0.degrees), Pose2d(end, 0.degrees))
+        println("tree loaded")
+//        println(PathPlanner.path!!.size)
+        PathPlanner.drawTreePath()
+        println(PathPlanner.path)
+        println(PathPlanner.path!!.map { PathPlanner.field.inField(it.position)})
+        println(PathPlanner.field.obstacles)
     }
 }

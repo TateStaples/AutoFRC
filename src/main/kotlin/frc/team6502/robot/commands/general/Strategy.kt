@@ -1,10 +1,10 @@
 package frc.team6502.robot.commands.general
 
 import frc.team6502.robot.auto.Navigation
-import frc.team6502.robot.auto.pathing.TravelingSalesman
 import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.drive.Search
+import kyberlib.auto.pathing.TravelingSalesman
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches

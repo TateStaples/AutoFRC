@@ -1,12 +1,16 @@
 package kyberlib.mechanisms.drivetrain
 
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveWheelSpeeds
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import kyberlib.math.units.extensions.KRotation
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.metersPerSecond
+import kyberlib.math.units.zeroPose
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 
@@ -15,7 +19,7 @@ import kyberlib.sensors.gyros.KGyro
  * @param packages pairs of <wheelPosition, wheel motor> (currently requires 4 motors in frontLeft, frontRight, backLeft, backRight order)
  * @param gyro a KGyro that will provide heading information
  */
-class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, private val gyro: KGyro) : Drivetrain, SubsystemBase() {
+class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, private val gyro: KGyro) : KDrivetrain, SubsystemBase() {
     init {
         assert(packages.size == 4) { "the pre-made drivetrain only accepts 4 wheel mecanum drives" }
     }
@@ -30,7 +34,7 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     var maxVelocity = 0.metersPerSecond
 
     private val kinematics = MecanumDriveKinematics(locations[0], locations[1], locations[2], locations[3])
-    val odometry = MecanumDriveOdometry(kinematics, gyro.heading)
+    private val odometry = MecanumDriveOdometry(kinematics, gyro.heading)
 
     private val mecanumDriveWheelSpeeds
         get() = MecanumDriveWheelSpeeds(frontLeft.linearVelocity.metersPerSecond, frontRight.linearVelocity.metersPerSecond, backLeft.linearVelocity.metersPerSecond, backRight.linearVelocity.metersPerSecond)
@@ -63,4 +67,9 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     override fun debug() {
         println(motors.map { it.linearVelocity }.toString())
     }
+
+    override var pose: Pose2d = zeroPose
+        get() = odometry.poseMeters
+    override var heading: KRotation = 0.degrees
+        get() = gyro.heading
 }

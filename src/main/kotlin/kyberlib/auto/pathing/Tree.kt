@@ -1,7 +1,7 @@
-package frc.team6502.robot.auto.pathing
+package kyberlib.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import frc.team6502.robot.auto.pathing.utils.KField2d
+import kyberlib.simulation.field.KField2d
 import java.util.function.Predicate
 
 /**
