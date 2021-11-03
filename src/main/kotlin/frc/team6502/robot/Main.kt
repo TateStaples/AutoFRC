@@ -1,6 +1,5 @@
 package frc.team6502.robot
 
-import frc.team6502.robot.tests.SimTest
 import frc.team6502.robot.tests.VisionRobotTestbed
 
 /**
@@ -13,7 +12,7 @@ class Main() {
          */
         @JvmStatic
         fun main(args: Array<String>) {
-            SimTest().initialize()
+            VisionRobotTestbed().initialize()
         }
     }
 }

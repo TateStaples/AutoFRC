@@ -11,12 +11,11 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.VecBuilder
+import kyberlib.input.controller.KXboxController
 import kyberlib.math.units.extensions.*
-import kyberlib.math.units.speed
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.Simulatable
-import kotlin.math.sin
 
 /**
  * Stores important information for the motion of a DifferentialDrive Robot
@@ -72,7 +71,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     }
 
     override fun periodic() {
-        odometry.update(gyro.heading, leftMaster.linearVelocity.metersPerSecond, rightMaster.linearVelocity.metersPerSecond)
+        odometry.update(gyro.heading, leftMaster.linearPosition.meters, rightMaster.linearPosition.meters)
     }
 
     override fun debug() {
@@ -84,36 +83,36 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
-            motors.first().gearRatio,  // gearing reduction
-            configs.trackWidth.meters,  // The track width
-            configs.wheelRadius.meters,  // wheel radius
+            1.0,  // gearing reduction
+            1.0,  // The track width
+            0.1,  // wheel radius
             // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
             VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
         )
     }
 
+    lateinit var controller: KXboxController
     override fun simUpdate(dt: Double) {
+        // get voltage
         leftMaster.voltage = leftMaster.customControl!!(leftMaster)
         rightMaster.voltage = rightMaster.customControl!!(rightMaster)
+
+        // update the sim with new inputs
         driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
 
+        // update the motors with what they should be
         leftMaster.simLinearPosition = driveSim.leftPositionMeters.meters
         leftMaster.simLinearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
         rightMaster.simLinearPosition = driveSim.rightPositionMeters.meters
         rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
-
-        val sped = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(driveSim.leftVelocityMetersPerSecond, driveSim.rightVelocityMetersPerSecond))
         gyro.heading = driveSim.heading.k
-        odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
 
+        // log the values
         leftMaster.debugDashboard()
         rightMaster.debugDashboard()
-        SmartDashboard.putNumber("Velocity (x)", sped.speed.metersPerSecond * kotlin.math.cos(pose.rotation.radians))
-        SmartDashboard.putNumber("Velocity (y)", sped.speed.metersPerSecond * sin(pose.rotation.radians))
         SmartDashboard.putNumber("X", pose.x)
         SmartDashboard.putNumber("Y", pose.y)
         SmartDashboard.putNumber("THETA", pose.rotation.radians)
-//        if (pose.translation.getDistance(prevPose.translation) > 3.0) 0/0
     }
 }
