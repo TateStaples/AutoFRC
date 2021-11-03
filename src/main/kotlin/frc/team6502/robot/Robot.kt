@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kyberlib.command.Debuggable
 import kyberlib.command.KRobot
 import kyberlib.math.units.zeroPose
 import kyberlib.runCommand
@@ -53,7 +54,7 @@ class Robot : KRobot() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
         val saveFile = File(slamValues)
         if (!saveFile.exists()) {
-            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0, true)
+            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0, 1)
             val jsonString = Json.encodeToString(defaultVals)
             File(slamValues).writeText(jsonString)
         }
@@ -76,7 +77,7 @@ class Robot : KRobot() {
         val mat = Mat()
         CameraServer.getInstance().video.grabFrame(mat)
         Imgcodecs.imwrite("slam.jpg", mat)
-        deserialized.newImgTime = Timer.getFPGATimestamp()
+        deserialized.newImageTime = Timer.getFPGATimestamp()
         val jsonString = Json.encodeToString(deserialized)
         println(jsonString)
         File(slamValues).writeText(jsonString)
@@ -84,7 +85,18 @@ class Robot : KRobot() {
 }
 
 @Serializable
-data class SlamValues(
+data class SlamValues (
     var X:Double, var Y: Double, var THETA: Double, var outputImgTime: Double,
-    var newImgTime: Double, var running: Boolean
-)
+    var newImageTime: Double, var running: Int) : Debuggable() {
+
+    override fun debugValues(): Map<String, Any> {
+        return mapOf(
+            "x" to X,
+            "y" to Y,
+            "theta" to THETA,
+            "out" to outputImgTime,
+            "new" to newImageTime,
+            "running" to running,
+        )
+    }
+}

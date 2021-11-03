@@ -1,6 +1,7 @@
 package frc.team6502.robot.tests
 
 import edu.wpi.cscore.HttpCamera
+import edu.wpi.cscore.VideoCamera
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
@@ -14,7 +15,9 @@ import kyberlib.sensors.Limelight
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.imgcodecs.Imgcodecs
+import org.opencv.videoio.VideoCapture
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class VisionRobotTestbed : KRobot() {
     private val url = "http://10.65.2.11"  // http://10.TE.AM.11:5800
@@ -41,10 +44,15 @@ class VisionRobotTestbed : KRobot() {
     private val outputTimeEntry = table.getEntry("OUTPUT TIME")
     private var prevOutputTime = -1.0
 
-    override fun simulationInit() {
+    init {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
+    }
+
+    val cap = VideoCapture("UcoSlam/data/out.mp4")
+
+    override fun simulationInit() {
         if (!slamValues.exists()) {
-            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0, true)
+            val defaultVals = SlamValues(0.0, 0.0, 0.0,0.0, 0.0, 1)
             val jsonString = Json.encodeToString(defaultVals)
             slamValues.writeText(jsonString)
         }
@@ -53,24 +61,28 @@ class VisionRobotTestbed : KRobot() {
 
     override fun simulationPeriodic() {
         // read to SLAM output
-        val deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
+        var deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
         if (prevOutputTime != deserialized.outputImgTime) {
             prevOutputTime = deserialized.outputImgTime
             xEntry.setNumber(deserialized.X)
             yEntry.setNumber(deserialized.Y)
             thetaEntry.setNumber(deserialized.THETA)
             outputTimeEntry.setNumber(deserialized.outputImgTime)
+            slamValues.writeText(Json.encodeToString(deserialized))
+
         }
 
         // write the SLAM input
         val mat = Mat()
-        CameraServer.getInstance().video.grabFrame(mat)
+        TimeUnit.SECONDS.sleep((1.0 / 2.0).toLong())
+//        CameraServer.getInstance().video.grabFrame(mat)
+        cap.read(mat)
+        deserialized = Json.decodeFromString(slamValues.readText())
         if (!mat.empty()) {
             Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", mat)
-            deserialized.newImgTime = Timer.getFPGATimestamp()
+            deserialized.newImageTime = Timer.getFPGATimestamp()
         }
-        val jsonString = Json.encodeToString(deserialized)
-        println(jsonString)
-        slamValues.writeText(jsonString)
+        deserialized.debugDashboard()
+        slamValues.writeText(Json.encodeToString(deserialized))
     }
 }
