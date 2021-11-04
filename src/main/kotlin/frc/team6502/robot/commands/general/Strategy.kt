@@ -40,7 +40,7 @@ object Strategy {
      */
     private fun shoot() {
         CommandManager.enqueue(AutoDrive(goalPose))
-        CommandManager.enqueue(Shoot)
+        CommandManager.enqueue(Shoot())
     }
 
     /**
