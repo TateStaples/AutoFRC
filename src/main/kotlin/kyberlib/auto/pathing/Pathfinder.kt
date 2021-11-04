@@ -7,6 +7,7 @@ import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
+import kyberlib.math.units.extensions.meters
 import kyberlib.simulation.field.KField2d
 import kyberlib.simulation.field.Obstacle
 import kotlin.math.sqrt
@@ -122,8 +123,8 @@ class Pathfinder(val field: KField2d) {
         var x: Double
         var y: Double
         do {
-            x = random.nextDouble(field.width)
-            y = random.nextDouble(field.width)
+            x = random.nextDouble(field.width.meters)
+            y = random.nextDouble(field.width.meters)
         } while(!field.inField(x, y))  // the convertions here might cause issues
         return Translation2d(x, y)
     }

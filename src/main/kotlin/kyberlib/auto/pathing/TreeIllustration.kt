@@ -1,6 +1,6 @@
 package kyberlib.auto.pathing
 
-import kyberlib.simulation.field.KField2d
+import kyberlib.math.units.extensions.meters
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -113,5 +113,5 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
     /**
      * Convert the field coordinates to helpful pixel values
      */
-    private fun drawingCoordinates(mapValue: Double) = (mapValue/field.width * frameWidth).toInt()
+    private fun drawingCoordinates(mapValue: Double) = (mapValue /field.width.meters * frameWidth).toInt()
 }
