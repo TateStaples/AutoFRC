@@ -28,7 +28,7 @@ class KSimulatedESC(name: String) : KMotorController() {
 
     override fun configureEncoder(config: KEncoderConfig) = true
 
-    override val identifier = name
+    override var identifier = name
 
     override var brakeMode: BrakeMode = false
 

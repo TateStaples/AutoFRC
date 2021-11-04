@@ -28,7 +28,7 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
                             ) : KMotorController() {
 
     // ----- low-level stuff ----- //
-    override val identifier: String = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
+    public override var identifier: String = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
 
     private val _spark = CANSparkMax(canId, when (motorType) {
         BRUSHLESS -> MotorType.kBrushless
