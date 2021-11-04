@@ -6,7 +6,7 @@ targetFocus: -1.
 minKFConfidence: 6.0000002384185791e-01
 maxNewPoints: 350
 targetWidth: 1.
-maxFeatures: 4000
+maxFeatures: 6000
 nthreads_feature_detector: 2
 nOctaveLevels: 8
 scaleFactor: 1.2000000476837158e+00

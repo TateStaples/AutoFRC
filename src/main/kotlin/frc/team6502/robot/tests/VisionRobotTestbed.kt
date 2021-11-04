@@ -11,10 +11,13 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kyberlib.command.KRobot
+import kyberlib.runCommand
 import kyberlib.sensors.Limelight
 import org.opencv.core.Core
 import org.opencv.core.Mat
+import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
+import org.opencv.imgproc.Imgproc
 import org.opencv.videoio.VideoCapture
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -69,20 +72,35 @@ class VisionRobotTestbed : KRobot() {
             thetaEntry.setNumber(deserialized.THETA)
             outputTimeEntry.setNumber(deserialized.outputImgTime)
             slamValues.writeText(Json.encodeToString(deserialized))
-
         }
 
         // write the SLAM input
         val mat = Mat()
-        TimeUnit.SECONDS.sleep((1.0 / 2.0).toLong())
+        TimeUnit.SECONDS.sleep((1.0 / 3.0).toLong())
 //        CameraServer.getInstance().video.grabFrame(mat)
         cap.read(mat)
+        val resized = Mat()
+        Imgproc.resize(mat, resized, Size(320.0, 240.0))
         deserialized = Json.decodeFromString(slamValues.readText())
         if (!mat.empty()) {
-            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", mat)
+            println("writing image")
+            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", resized)
             deserialized.newImageTime = Timer.getFPGATimestamp()
+            slamValues.writeText(Json.encodeToString(resized))
         }
         deserialized.debugDashboard()
-        slamValues.writeText(Json.encodeToString(deserialized))
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
