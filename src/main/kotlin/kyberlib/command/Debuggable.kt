@@ -42,7 +42,7 @@ abstract class Debuggable {
      * The name of the group of values.
      * Defaults to the name of the calling class
      */
-    protected open val identifier: String
+    protected open var identifier: String = ""
         get() = javaClass.simpleName
 
     /**

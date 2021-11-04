@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.filters.Differentiator
+import kyberlib.math.invertIf
 import kyberlib.math.units.extensions.*
 
 typealias GearRatio = Double
@@ -256,7 +257,7 @@ abstract class KMotorController : KBasicMotorController() {
         }
         set(value) {
             controlMode = ControlMode.VELOCITY
-            velocitySetpoint = value
+            velocitySetpoint = value.radiansPerSecond.invertIf { reversed }.radiansPerSecond
         }
 
     var linearVelocity: LinearVelocity

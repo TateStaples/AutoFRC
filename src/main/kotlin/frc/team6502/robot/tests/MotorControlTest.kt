@@ -36,26 +36,33 @@ class MotorControlTest: KRobot() {
             deadband = 0.2
         }
 
-        rightBumper.whileActiveOnce(Shoot)
-        leftBumper.whileActiveOnce(Intake)
+        rightBumper.whileActiveOnce(Shoot())
+        leftBumper.whileActiveOnce(Intake())
     }
 
     val feedforward = SimpleMotorFeedforward(Constants.DRIVE_KS, Constants.DRIVE_KV, Constants.DRIVE_KA)
     val frontLeftMotor = KSparkMax(Constants.LEFT_FRONT_ID, MotorType.BRUSHLESS).apply {
         addFeedforward(feedforward)
         radius = Constants.WHEEL_RADIUS
+        gearRatio = 1.0/20.0
+        identifier = "left"
     }
     val frontRightMotor = KSparkMax(Constants.RIGHT_FRONT_ID, MotorType.BRUSHLESS).apply {
         addFeedforward(feedforward)
         radius = Constants.WHEEL_RADIUS
+        gearRatio = 1.0/20.0
+        identifier = "right"
+        reversed = true
     }
     val backLeftMotor = KSparkMax(Constants.LEFT_BACK_ID, MotorType.BRUSHLESS).apply {
         follow(frontLeftMotor)
         radius = Constants.WHEEL_RADIUS
+        gearRatio = 1.0/20.0
     }
     val backRightMotor = KSparkMax(Constants.RIGHT_BACK_ID, MotorType.BRUSHLESS).apply {
         follow(frontRightMotor)
         radius = Constants.WHEEL_RADIUS
+        gearRatio = 1.0/20.0
     }
     val leftMotors = arrayOf<KMotorController>(frontLeftMotor, backLeftMotor)
     val rightMotors = arrayOf<KMotorController>(frontRightMotor, backRightMotor)
@@ -64,8 +71,8 @@ class MotorControlTest: KRobot() {
     val drivetrain = DifferentialDriveTrain(leftMotors, rightMotors, driveConfig, gyro)
 
     override fun teleopPeriodic() {
-        val forward = controller.leftY.value
-        val turn = controller.rightX.value
+        val forward = controller.leftY.value.coerceAtMost(1.0)
+        val turn = controller.rightX.value.coerceAtMost(1.0)
         println("Controls - $forward, $turn")
         val speeds = ChassisSpeeds(forward, 0.0, turn)
         drivetrain.drive(speeds)
