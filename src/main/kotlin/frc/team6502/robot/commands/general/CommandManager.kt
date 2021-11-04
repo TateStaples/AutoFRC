@@ -1,6 +1,7 @@
 package frc.team6502.robot.commands.general
 
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.drive.DefaultDrive
@@ -26,6 +27,9 @@ object CommandManager : Command {
      * Also check if the command is done.
      */
     override fun execute() {
+        if (activeCommand != null)
+            SmartDashboard.putString("active command", activeCommand!!.javaClass.simpleName)
+        else SmartDashboard.putString("active command", "null")
         if (!Constants.AUTO) {
             DefaultDrive.execute()
             return

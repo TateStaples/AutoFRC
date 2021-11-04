@@ -41,6 +41,8 @@ object PathPlanner {
      * @return a trajectory that will track your robot to the goal target
      */
     fun pathTo(position: Translation2d, currentPosition: Translation2d): Trajectory {
+        return Navigation.trajectory(currentPosition, position)
+        // todo: fix implementation (should work in sims)
         if (tree.nodeCount > 0 && position != Information.endPosition)
             reset()
         if (tree.nodeCount > 0)

@@ -5,6 +5,7 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.general.CommandManager
 import kotlinx.serialization.Serializable
@@ -32,9 +33,13 @@ class Robot : KRobot() {
 
     override fun autonomousInit() {
         Constants.AUTO = true
-        val drive1 = AutoDrive(Translation2d(0.0, 3.0))  // Drives here
+        Navigation.pose = zeroPose
+        val traj = Navigation.trajectory(Translation2d(1.0,0.0), Translation2d(1.0, 2.0))
+        val drive1 = AutoDrive(traj)  // Drives here
+//        val seq = CommandManager.sequence(drive1, Intake())
 //        val drive2 = AutoDrive(Translation2d(10.0, 3.0))  // drives here
         CommandManager.enqueue(drive1)
+        CommandManager.enqueue(Intake())
     }
 
     override fun teleopInit() {
