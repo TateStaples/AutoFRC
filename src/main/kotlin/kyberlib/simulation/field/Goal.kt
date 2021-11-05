@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj2.command.Command
 import frc.team6502.robot.commands.drive.AutoDrive
-import frc.team6502.robot.commands.general.CommandManager
+import kyberlib.command.CommandManager
 import kyberlib.math.units.extensions.degrees
 
 /**

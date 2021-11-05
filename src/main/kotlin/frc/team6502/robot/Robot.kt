@@ -7,6 +7,7 @@ import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.auto.cv.SlamBridge
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.drive.AutoDrive
+import frc.team6502.robot.commands.drive.DefaultDrive
 import kyberlib.command.CommandManager
 import kyberlib.command.KRobot
 import kyberlib.math.units.zeroPose
@@ -30,6 +31,7 @@ class Robot : KRobot() {
         val drive1 = AutoDrive(traj)  // Drives here
 //        val seq = CommandManager.sequence(drive1, Intake())
 //        val drive2 = AutoDrive(Translation2d(10.0, 3.0))  // drives here
+        CommandManager.clear()
         CommandManager.enqueue(drive1)
         CommandManager.enqueue(Intake())
     }
@@ -37,5 +39,7 @@ class Robot : KRobot() {
     override fun teleopInit() {
         Constants.AUTO = false
         Navigation.pose = zeroPose
+        CommandManager.clear()
+        CommandManager.enqueue(DefaultDrive)
     }
 }

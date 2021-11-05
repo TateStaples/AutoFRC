@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.general.CommandManager
+import kyberlib.command.CommandManager
 import kyberlib.math.filters.Differentiator
 import kyberlib.math.units.extensions.*
 import kotlin.math.PI

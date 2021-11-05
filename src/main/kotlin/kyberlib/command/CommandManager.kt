@@ -1,11 +1,7 @@
-package frc.team6502.robot.commands.general
+package kyberlib.command
 
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
-import frc.team6502.robot.Constants
-import frc.team6502.robot.commands.drive.DefaultDrive
-import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 
 
@@ -30,18 +26,15 @@ object CommandManager : Command {
         if (activeCommand != null)
             SmartDashboard.putString("active command", activeCommand!!.javaClass.simpleName)
         else SmartDashboard.putString("active command", "null")
-        if (!Constants.AUTO) {
-            DefaultDrive.execute()
-            return
-        }
         if (activeCommand == null && queue.isEmpty()) {
 //            Strategy.plan()
-            Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.0))
+//            Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.0))
             return
         }
         if (activeCommand == null) activeCommand = next()
         activeCommand!!.execute()
         if (activeCommand!!.isFinished) {
+            activeCommand!!.end(false)
             activeCommand = next()
         }
     }
@@ -134,7 +127,7 @@ object CommandManager : Command {
      * All the requirements that the current command queue will use
      */
     override fun getRequirements(): MutableSet<Subsystem> {
-        val set = mutableSetOf<Subsystem>(Drivetrain)
+        val set = mutableSetOf<Subsystem>()
         activeCommand?.let { set.addAll(it.requirements) }
         for (command in queue)
             set.addAll(command.requirements)
