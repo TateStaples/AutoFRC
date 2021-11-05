@@ -36,7 +36,7 @@ object Drive : SubsystemBase(), Simulatable {
     val rightMaster  = KSparkMax(Constants.RIGHT_FRONT_ID, MotorType.BRUSHLESS).apply {
         identifier = "rightMaster"
         brakeMode = true
-        reversed = false
+        reversed = true
         currentLimit = 40
     }
     private val leftFollower  = KSparkMax(Constants.LEFT_BACK_ID, MotorType.BRUSHLESS).apply {
@@ -65,9 +65,9 @@ object Drive : SubsystemBase(), Simulatable {
                 radius = Constants.WHEEL_RADIUS
                 currentLimit = 40
 
-                kP = Constants.DRIVE_P
-                kI = Constants.DRIVE_I
-                kD = Constants.DRIVE_D
+//                kP = Constants.DRIVE_P
+//                kI = Constants.DRIVE_I
+//                kD = Constants.DRIVE_D
 
                 addFeedforward(feedforward)
             }

@@ -50,10 +50,11 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
      * What percent output is currently being applied?
      */
     var percent: Double = 0.0
-        get() = if (real) rawPercent else field
+        get() = if (real) rawPercent.invertIf { reversed } else field
         set(value) {
+            val adjusted = value
             controlMode = ControlMode.VOLTAGE
-            if (real) rawPercent = value else field = value
+            if (real) rawPercent = adjusted else field = adjusted
         }
 
     /**

@@ -72,7 +72,7 @@ abstract class KMotorController : KBasicMotorController() {
     var gearRatio: GearRatio = 1.0
         set(value) {
             field = value
-            writeMultipler(gearRatio.rpm.rotationsPerSecond, gearRatio)
+//            writeMultipler(gearRatio.rpm.rotationsPerSecond, gearRatio)
         }
 
     /**
@@ -230,7 +230,7 @@ abstract class KMotorController : KBasicMotorController() {
         get() {
             if (!real) return simPosition
             assert(encoderConfigured)
-            return (rawPosition.value / gearRatio).radians
+            return (rawPosition.value * gearRatio).radians
         }
         set(value) {
             controlMode = ControlMode.POSITION
@@ -251,13 +251,13 @@ abstract class KMotorController : KBasicMotorController() {
                 return simVelocity
             }
             assert(encoderConfigured)
-            val vel = rawVelocity / gearRatio
+            val vel = rawVelocity * gearRatio
             acceleration = accelerationCalculator.calculate(vel.radiansPerSecond).radiansPerSecond
             return vel
         }
         set(value) {
             controlMode = ControlMode.VELOCITY
-            velocitySetpoint = value.radiansPerSecond.invertIf { reversed }.radiansPerSecond
+            velocitySetpoint = value
         }
 
     var linearVelocity: LinearVelocity
