@@ -20,8 +20,6 @@ class Robot : KRobot() {
     override fun robotInit() {
         // initialize RobotContainer and by extension subsystems
         RobotContainer
-
-        if (RobotBase.isReal()) Photon() else SlamBridge()
     }
 
     override fun autonomousInit() {

@@ -1,8 +1,10 @@
 package frc.team6502.robot
 
+import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.Navigation
 import frc.team6502.robot.auto.cv.Photon
+import frc.team6502.robot.auto.cv.SlamBridge
 import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.balls.Shoot
@@ -22,14 +24,14 @@ object RobotContainer {
      */
     val controller = KXboxController(0).apply {
         rightX.apply {
-            rate = -5 * PI
+            maxVal = -5 * PI
             expo = 73.0
             deadband = 0.1
         }
 
         // throttle
         leftY.apply {
-            rate = -12.0
+            maxVal = -2.0
             expo = 20.0
             deadband = 0.2
         }
@@ -43,7 +45,7 @@ object RobotContainer {
         Navigation.apply { gyro = RobotContainer.gyro }
         Drivetrain
         PathPlanner
-        Photon
+        if (RobotBase.isReal()) Photon() else SlamBridge()
 
         SmartDashboard.putBoolean("AUTO", Constants.AUTO)
         SmartDashboard.putBoolean("DEBUG", Constants.DEBUG)

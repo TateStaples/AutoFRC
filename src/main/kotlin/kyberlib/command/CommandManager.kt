@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
 import java.util.*
 
-
+// todo: either rework entirely or delete and use normal scheduling
 /**
  * The main auto command manager.
  * Allows scheduling when to do what.
