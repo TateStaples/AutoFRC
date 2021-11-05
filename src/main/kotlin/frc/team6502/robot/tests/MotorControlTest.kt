@@ -24,14 +24,14 @@ class MotorControlTest: KRobot() {
      */
     val controller = KXboxController(0).apply {
         rightX.apply {
-            rate = -5 * PI
+            maxVal = -5 * PI
             expo = 73.0
             deadband = 0.1
         }
 
         // throttle
         leftY.apply {
-            rate = -12.0
+            maxVal = -2.0
             expo = 20.0
             deadband = 0.2
         }
