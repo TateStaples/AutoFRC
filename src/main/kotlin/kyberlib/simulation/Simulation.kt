@@ -9,7 +9,12 @@ import kyberlib.simulation.field.KField2d
 /**
  * Simulation that will run a loop to update simulatable objects
  */
-object Simulation : SubsystemBase() {
+class Simulation : SubsystemBase() {
+    companion object {
+        var instance: Simulation = TODO()
+            get() { return if(field is Nothing) Simulation() else field }
+    }
+    init { instance = this }
     private val sims = ArrayList<Simulatable>()
 
     // stores time values

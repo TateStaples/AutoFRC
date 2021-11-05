@@ -14,6 +14,7 @@ import kyberlib.mechanisms.drivetrain.DifferentialDriveTrain
 import kyberlib.motorcontrol.KSimulatedESC
 import kyberlib.sensors.gyros.KPigeon
 import kyberlib.simulation.Simulation
+import kotlin.math.PI
 
 class SimTest : KRobot() {
     private val leftMotor = KSimulatedESC("left")
@@ -23,10 +24,16 @@ class SimTest : KRobot() {
     val driveTrain = DifferentialDriveTrain(leftMotor, rightMotor, configs, gyro)
     val controller = KXboxController(0).apply {
         rightX.apply {
+            maxVal = -5 * PI
+            expo = 73.0
             deadband = 0.1
         }
+
+        // throttle
         leftY.apply {
-            deadband = 0.1
+            maxVal = -2.0
+            expo = 20.0
+            deadband = 0.2
         }
     }
 
@@ -36,8 +43,8 @@ class SimTest : KRobot() {
         rightMotor.addFeedforward(ff)
         driveTrain.setupSim(Constants.DRIVE_KV, Constants.DRIVE_KA, 1.5, 0.3)  // this is a physical representation of the drivetrain
         driveTrain.drive(ChassisSpeeds(1.0, 0.0, 0.0))  // starts it driving forward
-        Simulation.include(driveTrain)  // this will periodically update
-        driveTrain.controller = controller
+        Simulation()
+        Simulation.instance!!.include(driveTrain)  // this will periodically update
 //        driveTrain.pose = Pose2d(2.meters, 2.meters, 0.degrees)
     }
 
@@ -49,6 +56,6 @@ class SimTest : KRobot() {
         driveTrain.drive(ChassisSpeeds(forward * Constants.velocity.metersPerSecond, 0.0, turn))
 //        driveTrain.drive(ChassisSpeeds(0.0, 0.0, 1.0))
 
-        Simulation.field.robotPose = driveTrain.pose
+        Simulation.instance!!.field.robotPose = driveTrain.pose
     }
 }
