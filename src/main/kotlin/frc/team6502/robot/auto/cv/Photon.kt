@@ -8,19 +8,19 @@ import edu.wpi.first.wpilibj.geometry.Transform2d
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.auto.Navigation
 import kyberlib.math.units.Pose2d
+import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.radians
 import kyberlib.math.units.transform
 import org.photonvision.PhotonCamera
 
 /**
- * Camera that updates global position and uses HSV thresholding
+ * Camera that sends images back to robot for global position updates and HSV thresholding
  */
-object Photon : SubsystemBase() {
+class Photon : SubsystemBase() {
     // camera setups
-    private const val url = "http://10.65.2.11"
+    private val url = "http://10.65.2.11"
     private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
     private val camera = PhotonCamera("$url:5800")
     private val cameraOffset = Pose2d(3.inches, 0.inches, 0.degrees)
@@ -47,7 +47,7 @@ object Photon : SubsystemBase() {
     /**
      * Uses the Limelight's HSV thresholding to detect yellow balls
      */
-    fun targetUpdate() {
+    private fun targetUpdate() {
         val res = camera.latestResult
         if (res.hasTargets()) {
             val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
@@ -63,7 +63,7 @@ object Photon : SubsystemBase() {
      * Checks the output of the UcoSlam in Network Tables.
      * Then it applies those results to the pose estimator
      */
-    fun slamUpdate() {
+    private fun slamUpdate() {
         val updateTime = outputTimeEntry.getDouble(0.0)
         if (updateTime != lastUpdate && lastUpdate != 0.0) {
             val x  = (xEntry.getDouble(0.0) * unitConversion).meters
