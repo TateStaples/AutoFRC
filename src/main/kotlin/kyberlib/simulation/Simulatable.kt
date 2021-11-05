@@ -10,4 +10,7 @@ interface Simulatable {
      * @param dt how long since the last update
      */
     fun simUpdate(dt: Double)
+
+    val real: Boolean
+        get() = Simulation.real
 }

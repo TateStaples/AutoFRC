@@ -429,7 +429,7 @@ abstract class KMotorController : KBasicMotorController() {
         get() = rotationToLinear(simPosition)
         set(value) { simPosition = linearToRotation(value) }
 
-    final override fun debugValues(): Map<String, Any?> {
+    override fun debugValues(): Map<String, Any?> {
         val map = super.debugValues().toMutableMap()
         map.putAll(mapOf(
             "Angular Position (rad)" to position.radians,
@@ -440,6 +440,7 @@ abstract class KMotorController : KBasicMotorController() {
                 "Linear Position (m)" to linearPosition.meters,
                 "Linear Velocity (m per s)" to linearVelocity.metersPerSecond
             ))
+//        map["PID"] = PID
         return map.toMap()
     }
 

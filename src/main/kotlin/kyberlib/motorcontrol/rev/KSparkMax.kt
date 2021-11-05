@@ -30,61 +30,68 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
     // ----- low-level stuff ----- //
     public override var identifier: String = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
 
-    private val _spark = CANSparkMax(canId, when (motorType) {
+    private val _spark = if (real) CANSparkMax(canId, when (motorType) {
         BRUSHLESS -> MotorType.kBrushless
         BRUSHED -> MotorType.kBrushed
-    })
+    }) else null
     private var _enc: CANEncoder? = null
-    private val _pid = _spark.pidController
+    private val _pid = _spark?.pidController
 
     init {
-        _spark.restoreFactoryDefaults()
+        if (real)
+           _spark!!.restoreFactoryDefaults()
         // running NEO with integrated encoder
         if (motorType == BRUSHLESS) {
             encoderConfig = KEncoderConfig(42, EncoderType.NEO_HALL)
         }
     }
 
-    override var brakeMode
-        get() = _spark.idleMode == CANSparkMax.IdleMode.kBrake
+    override var brakeMode = false
+        get() = if(real) _spark!!.idleMode == CANSparkMax.IdleMode.kBrake else field
         set(value) {
-            _spark.idleMode = if(value) CANSparkMax.IdleMode.kBrake else CANSparkMax.IdleMode.kCoast
+            if (real)
+                _spark!!.idleMode = if(value) CANSparkMax.IdleMode.kBrake else CANSparkMax.IdleMode.kCoast
+            else field = value
         }
 
     override var rawPercent
-        get() = _spark.appliedOutput
-        set(value) {_spark.set(value)}
+        get() = _spark!!.appliedOutput
+        set(value) {_spark!!.set(value)}
 
-    override var reversed: Boolean
-        get() = _spark.inverted
-        set(value) {_spark.inverted = value}
+    // todo: change this setting to have internal call
+    override var reversed: Boolean = false
+        get() = if(real) _spark!!.inverted else field
+        set(value) {
+            _spark?.inverted = value
+            field = value
+        }
 
     override var rawVelocity: AngularVelocity
         get() = _enc!!.velocity.rpm
         set(value) {
-            _pid.setReference(value.rpm, ControlType.kVelocity, 0, 0.0, CANPIDController.ArbFFUnits.kVoltage)
+            _pid!!.setReference(value.rpm, ControlType.kVelocity, 0, 0.0, CANPIDController.ArbFFUnits.kVoltage)
         }
 
     override var rawPosition: Angle
         get() = _enc!!.position.rotations
         set(value) {
-            _pid.setReference(value.rotations, ControlType.kPosition, 0, 0.0, CANPIDController.ArbFFUnits.kVoltage)
+            _pid!!.setReference(value.rotations, ControlType.kPosition, 0, 0.0, CANPIDController.ArbFFUnits.kVoltage)
         }
 
     override var currentLimit: Int = -1
         set(value) {
-            _spark.setSmartCurrentLimit(value)
+            _spark?.setSmartCurrentLimit(value)
             field = value
         }
 
     override fun configureEncoder(config: KEncoderConfig): Boolean {
         return when {
             config.type == EncoderType.NEO_HALL && motorType == BRUSHLESS -> {
-                _enc = _spark.encoder
+                _enc = _spark?.encoder
                 true
             }
             config.type == EncoderType.QUADRATURE && motorType == BRUSHED -> {
-                _enc = _spark.getEncoder(com.revrobotics.EncoderType.kQuadrature, config.cpr)
+                _enc = _spark?.getEncoder(com.revrobotics.EncoderType.kQuadrature, config.cpr)
                 _enc?.inverted = config.reversed
                 true
             }
@@ -95,9 +102,9 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
     }
 
     override fun writePid(p: Double, i: Double, d: Double) {
-        _pid.p = p
-        _pid.i = i
-        _pid.d = d
+        _pid?.p = p
+        _pid?.i = i
+        _pid?.d = d
     }
 
     override fun writeMultipler(mv: Double, mp: Double) {
@@ -106,8 +113,8 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
     }
 
     override fun followTarget(kmc: KBasicMotorController) {
-        if (kmc is KSparkMax) {
-            _spark.follow(kmc._spark, reversed)
+        if (kmc is KSparkMax && real) {
+            _spark?.follow(kmc._spark, reversed)
         } else {
             kmc.followers.add(this)
             kmc.notifier.startPeriodic(0.005)

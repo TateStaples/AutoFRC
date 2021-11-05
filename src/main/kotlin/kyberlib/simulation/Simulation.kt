@@ -11,10 +11,15 @@ import kyberlib.simulation.field.KField2d
  */
 class Simulation : SubsystemBase() {
     companion object {
-        var instance: Simulation = TODO()
-            get() { return if(field is Nothing) Simulation() else field }
+        val instance: Simulation
+            get() { return if(internal == null) Simulation() else internal!! }
+        private var internal: Simulation? = null
+
+        val real:Boolean
+            get() = RobotBase.isReal()
     }
-    init { instance = this }
+    init { internal = this }
+
     private val sims = ArrayList<Simulatable>()
 
     // stores time values
@@ -26,9 +31,10 @@ class Simulation : SubsystemBase() {
         get() = time - startTime
 
     // field to draw robot
-    val field = KField2d()
+    val field = KField2d
 
     init {
+        assert(!real) {"should not be simulating from real robot"}
         SmartDashboard.putData("Field", field)
     }
 
@@ -36,11 +42,6 @@ class Simulation : SubsystemBase() {
      * Update all the attached simulatables
      */
     override fun periodic() {
-        if (RobotBase.isReal()) {
-            println("incorrectly called Simulation.kt")
-            return
-        }
-
         if (prevTime < 0) {
             prevTime = time
             return
