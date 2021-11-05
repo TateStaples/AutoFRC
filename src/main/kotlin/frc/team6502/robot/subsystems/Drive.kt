@@ -28,23 +28,27 @@ object Drive : SubsystemBase(), Simulatable {
 
     // motors
     val leftMaster = KSparkMax(Constants.LEFT_FRONT_ID, MotorType.BRUSHLESS).apply {
+        identifier = "leftMaster"
         brakeMode = true
         reversed = false
         currentLimit = 40
     }
     val rightMaster  = KSparkMax(Constants.RIGHT_FRONT_ID, MotorType.BRUSHLESS).apply {
+        identifier = "rightMaster"
         brakeMode = true
-        reversed = true
+        reversed = false
         currentLimit = 40
     }
     private val leftFollower  = KSparkMax(Constants.LEFT_BACK_ID, MotorType.BRUSHLESS).apply {
+        identifier = "leftFollow"
         brakeMode = true
         reversed = false
         currentLimit = 40
         follow(leftMaster)
     }
     private val rightFollower = KSparkMax(Constants.RIGHT_BACK_ID, MotorType.BRUSHLESS).apply {
-        reversed = true
+        identifier = "rightFollow"
+        reversed = false
         currentLimit = 40
         follow(rightMaster)
     }
@@ -74,14 +78,6 @@ object Drive : SubsystemBase(), Simulatable {
      * Do important math specific to your chassis
      */
     val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
-
-    /**
-     * Setup the default command for the system
-     */
-    init {
-        defaultCommand = CommandManager
-    }
-
     /**
      * A list of important variables the rest of the code needs easy access to
      */
@@ -105,26 +101,32 @@ object Drive : SubsystemBase(), Simulatable {
      * @param speeds DifferentialDriveWheelsSpeeds that have instruction for how fast each side should go
      */
     private fun drive(speeds: DifferentialDriveWheelSpeeds) {
+        val adjusted = speeds.normalize(Constants.velocity.metersPerSecond)
         leftMaster.linearVelocity = speeds.leftMetersPerSecond.metersPerSecond
         rightMaster.linearVelocity = speeds.rightMetersPerSecond.metersPerSecond
     }
 
     override fun periodic() {
         Navigator.instance!!.update(chassisSpeeds)
+        leftMaster.debugDashboard()
+        rightMaster.debugDashboard()
+        leftFollower.debugDashboard()
+        rightFollower.debugDashboard()
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
-    fun setupSim(KvAngular: Double = 1.5, KaAngular: Double, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
+    fun setupSim(KvAngular: Double = 1.5, KaAngular: Double = 0.3, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
         driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
-            1.0,  // gearing reduction
-            1.0,  // The track width
-            0.1,  // wheel radius
+            leftMaster.gearRatio,  // gearing reduction
+            kinematics.trackWidthMeters,  // The track width
+            leftMaster.radius!!.meters,  // wheel radius
             // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
             VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
         )
     }
+    // todo: default command
 
     override fun simUpdate(dt: Double) {
         // update the sim with new inputs
