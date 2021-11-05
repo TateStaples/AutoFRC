@@ -3,6 +3,10 @@ package kyberlib.auto.pathing
 
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import kyberlib.odd
+import java.util.*
+import kotlin.collections.ArrayList
+
 
 // https://github.com/ReadyPlayer2/TSP
 typealias Waypoint = Translation2d
@@ -12,6 +16,10 @@ typealias Route = ArrayList<Waypoint>
 /**
  * Implementation of various Traveling Saleman Problem Solution.
  * This is about finding the optimal path that goes to a list of points
+ *
+ * Sources:
+ * - https://web.stanford.edu/class/cme334/docs/2012-11-14-Firouz_TSP.pdf
+ * - https://github.com/ReadyPlayer2/TSP
  */
 class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
     constructor(vararg waypoints: Translation2d) : this(waypoints.toMutableList())
@@ -49,6 +57,100 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
         // Calculate
         permute()
         return findShortestPermutation(permutations)
+    }
+
+    /**
+     * Calculates the optimal path uses recursive permutation. Faster solve but uses storage.
+     */
+    fun dynamic(): Route {
+        // https://www.geeksforgeeks.org/travelling-salesman-problem-set-1/
+        // O(n^2 * 2^n)
+        return Route(dynamicRecursive(waypoints.toTypedArray()).first.toMutableList())
+    }
+    private fun dynamicRecursive(points: Array<Waypoint?>): Pair<Array<Waypoint?>, Double> {
+        if (points.size == 2) return Pair(points, points.first()!!.getDistance(points.last()))
+        var bestRoute = arrayOfNulls<Waypoint>(points.size-1);
+        var shortestPath = Double.MAX_VALUE
+        points.forEach {
+            val pointsCopy = points.toMutableList()
+            pointsCopy.remove(it)
+            val subRecursion = dynamicRecursive(pointsCopy.toTypedArray())
+            val path = subRecursion.first
+            val pathLength = subRecursion.second
+            if (pathLength < shortestPath) {
+                bestRoute = path
+                shortestPath = pathLength
+            }
+
+        }
+        return Pair(bestRoute, shortestPath)
+    }
+
+    fun simulatedAnnealing() {}
+    fun localSearch() {}
+    fun genetic() {}
+    fun antColony() {
+        // https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms
+    }
+
+    fun christofides(): Route {
+        // https://en.wikipedia.org/wiki/Christofides_algorithm
+
+        // 1) create Minimal Spanning Tree
+        val MST = prim(waypoints)
+
+        // get the odd nodes
+        val odds = MST.vertices.filter { it.nodeLengthFromRoot.odd }
+
+        // Form the subgraph of G using only the vertices of O
+        val subgraph = Tree().apply {
+            vertices.addAll(odds)
+            dense()
+        }
+
+        // todo: continue
+        // 2) Construct a minimum-weight perfect matching M in this subgraph
+        // 3) Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
+        // 4) Calculate Euler tour - https://www.geeksforgeeks.org/euler-tour-tree/
+        val tour = Route()
+
+        // remove repeated visits
+        return Route(tour.toSet())
+    }
+
+    /**
+     * Creates a minimum spanning tree using Prim's algorithm
+     */
+    private fun prim(verts: MutableList<Waypoint>): Tree {
+        // https://www.geeksforgeeks.org/prims-minimum-spanning-tree-mst-greedy-algo-5/
+        val nodeCount = verts.size
+        val nodes = verts.map { Node(it) }
+        val startingNode = nodes.first()
+
+        val unvisitedNodes = verts.toMutableList()
+        val visitedNodes = mutableListOf(startingNode)
+        unvisitedNodes.remove(startingNode)
+
+        val graph = Tree(null)
+        while (visitedNodes.size != nodeCount) {
+//             we mask non-exist edges with -- so it doesn't crash the argmin
+            var bestPair = Pair(visitedNodes.first(), unvisitedNodes.first())
+            var shortestDistance = Double.POSITIVE_INFINITY
+            visitedNodes.forEach { start ->
+                unvisitedNodes.forEach { end ->
+                    val distance = start.position.getDistance(end)
+                    if (distance < shortestDistance) {
+                        shortestDistance = distance
+                        bestPair = Pair(start, end)
+                    }
+                }
+            }
+            val newNode = Node(bestPair.second, bestPair.first)
+            graph.addNode(newNode)
+            unvisitedNodes.remove(bestPair.second)
+            visitedNodes.add(newNode)
+        }
+        return graph
     }
 
     private var permutationMin = Double.MAX_VALUE
@@ -114,6 +216,10 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
         return sum
     }
 }
+
+internal class MinimalSpanningTree(verts: ArrayList<Waypoint>) {
+}
+
 
 
 /**

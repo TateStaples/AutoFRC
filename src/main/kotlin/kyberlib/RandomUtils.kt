@@ -23,3 +23,9 @@ fun String.runCommand(workingDir: File) {
         e.printStackTrace()
     }
 }
+
+val Int.even: Boolean
+    get() = this.rem(2) == 0
+
+val Int.odd: Boolean
+    get() = !even

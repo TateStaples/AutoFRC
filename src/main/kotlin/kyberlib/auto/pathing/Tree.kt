@@ -17,8 +17,8 @@ class Node {
             for (child in children)
                 child.pathLengthFromRoot = pathLengthFromRoot + child.distance
         }
-    private var nodeLengthFromRoot: Int
-    val children = ArrayList<Node>()
+    var nodeLengthFromRoot: Int
+    var children = ArrayList<Node>()
     private var distance = 0.0
 
     var parent: Node? = null
@@ -39,6 +39,14 @@ class Node {
         }
     val orphaned
         get() = parent == null
+
+    val connected: Set<Node>
+        get() {
+            val set = children.toMutableSet()
+            if (parent != null)
+                set.add(parent!!)
+            return set.toSet()
+        }
 
     /**
      * This is the constructor for the root node of the tree.
@@ -85,7 +93,7 @@ class Node {
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree(internal val field: KField2d?) {
+class Tree(internal val field: KField2d? = null) {
     var maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 
@@ -143,6 +151,22 @@ class Tree(internal val field: KField2d?) {
     private fun optimize() {
         for (node in vertices) optimize(node)
     }
+
+    /**
+     * Reeorganize the tree into a dense graph with no root
+     */
+    fun dense() {
+        vertices.forEach {
+            it.parent = null
+            it.nodeLengthFromRoot = 0
+            it.pathLengthFromRoot = 0.0
+        }
+        vertices.forEach {
+            it.children = vertices
+        }
+
+    }
+
 
     /**
      * Returns all nodes in the tree within a certain range
