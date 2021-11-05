@@ -21,7 +21,7 @@ import kotlin.random.Random
  */
 object PathPlanner {
     val field = Navigation.field // test edit
-    private val tree = Tree(field)
+    private val tree = Tree()
     private val random = Random(4)
 
     var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node

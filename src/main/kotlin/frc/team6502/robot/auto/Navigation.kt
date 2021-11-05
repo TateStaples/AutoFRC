@@ -34,7 +34,7 @@ object Navigation : SubsystemBase() {
     /**
      * The field data of the field the robot is on
      */
-    val field = KField2d()
+    val field = KField2d
     lateinit var gyro: KGyro
 
     val fieldTraj: FieldObject2d = field.getObject("traj")

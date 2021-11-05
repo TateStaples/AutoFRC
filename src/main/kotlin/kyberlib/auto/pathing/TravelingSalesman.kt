@@ -131,7 +131,7 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
         val visitedNodes = mutableListOf(startingNode)
         unvisitedNodes.remove(startingNode)
 
-        val graph = Tree(null)
+        val graph = Tree()
         while (visitedNodes.size != nodeCount) {
 //             we mask non-exist edges with -- so it doesn't crash the argmin
             var bestPair = Pair(visitedNodes.first(), unvisitedNodes.first())

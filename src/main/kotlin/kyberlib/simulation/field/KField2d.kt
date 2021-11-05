@@ -13,9 +13,11 @@ import kyberlib.math.units.extensions.meters
  * @param height how long the field is (y)
  * @author TateStaples
  */
-class KField2d(val width: Length = 4.3569128.meters, val height: Length = 2.8275026.meters) : Field2d() {
+object KField2d : Field2d() {
     val obstacles = ArrayList<Obstacle>()
     val goals = ArrayList<Goal>()
+    var width: Length = 4.3569128.meters
+    var height: Length = 2.8275026.meters
 
     /**
      * Checks if a position is not obstructed

@@ -93,7 +93,8 @@ class Node {
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree(internal val field: KField2d? = null) {
+class Tree() {
+    val field = KField2d
     var maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 

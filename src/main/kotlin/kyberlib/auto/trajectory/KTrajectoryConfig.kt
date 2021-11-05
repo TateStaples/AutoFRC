@@ -2,7 +2,6 @@ package kyberlib.auto.trajectory
 
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig
 import edu.wpi.first.wpilibj.trajectory.constraint.TrajectoryConstraint
-import frc.team6502.robot.SlamValues
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

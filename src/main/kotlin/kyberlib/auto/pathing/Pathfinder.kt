@@ -17,8 +17,9 @@ import kotlin.random.Random
  * Class that generates optimal pathes between various locations on a field
  * @param field KField2d that contains the dimensions of the field and is updated with the obstacles
  */
-class Pathfinder(val field: KField2d) {
-    internal val tree = Tree(field)
+class Pathfinder {
+    val field = KField2d
+    internal val tree = Tree()
     private val random = Random(4)
     internal lateinit var information: PathingInformation
 
@@ -165,7 +166,7 @@ object PathingTest {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val PathPlanner = Pathfinder(KField2d())
+        val PathPlanner = Pathfinder()
         // look @ informed RRT* and BIT*
         // current version in RRT
         start = Translation2d(1.feet, 1.feet)

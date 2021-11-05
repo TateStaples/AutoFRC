@@ -1,6 +1,7 @@
 package kyberlib.auto.pathing
 
 import kyberlib.math.units.extensions.meters
+import kyberlib.simulation.field.KField2d
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -14,11 +15,14 @@ import javax.swing.JPanel
  * @param tree
  */
 internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
-    constructor(drawTree: Tree) : this(Pathfinder(drawTree.field).apply {
+    // todo: update calls to this
+    // make field object
+    // tree, field, optional: path & info
+    constructor(drawTree: Tree) : this(Pathfinder().apply {
         tree.vertices.clear()
         tree.vertices.addAll(drawTree.vertices)
     })
-    val field = pathfinder.field
+    val field = KField2d
     val information = pathfinder.information
     val tree = pathfinder.tree
     val path = pathfinder.path
