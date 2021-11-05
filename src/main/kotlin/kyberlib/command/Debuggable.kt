@@ -7,10 +7,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
  * Inheritable class that grants multiple types of debugging
  */
 abstract class Debuggable {
+    companion object {
+        var debugging = true
+    }
+
     /**
      * Debugs all the values into a group in the SmartDashboard
      */
     fun debugDashboard() {
+        if (!debugging) return
         val map = debugValues()
         for (info in map) {
             val path = "$identifier/${info.key}"
@@ -29,14 +34,21 @@ abstract class Debuggable {
      * Prints out all the values in a neat way
      */
     fun debugPrint() {
-        val map = debugValues()
-        val stringBuilder = StringBuilder()
-        stringBuilder.append("$identifier - ")
-        for (info in map) {
-            stringBuilder.append("${info.key}: ${info.value}, ")
-        }
-        println(stringBuilder.toString())
+        if (!debugging) return
+        println(debugString)
     }
+
+    private val debugString: String
+        get() {
+            val map = debugValues()
+            val stringBuilder = StringBuilder()
+            stringBuilder.append("$identifier - ")
+            for (info in map) {
+                val string = if (info.value is Debuggable) "(${(info.value as Debuggable).debugString})" else info.value.toString()
+                stringBuilder.append("${info.key}: ${string}, ")
+            }
+            return stringBuilder.toString()
+        }
 
     /**
      * The name of the group of values.

@@ -85,8 +85,8 @@ class Node {
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree(internal val field: KField2d) {
-    val maxBranchLength = 0.5
+class Tree(internal val field: KField2d?) {
+    var maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 
     /**
@@ -152,7 +152,7 @@ class Tree(internal val field: KField2d) {
     private fun nearNodes(point: Translation2d): ArrayList<Node> {
         val nodes = ArrayList<Node>()
         for (node in vertices) {
-            if (node.position.getDistance(point) < maxBranchLength && field.inField(point, node.position))
+            if (node.position.getDistance(point) < maxBranchLength && (field == null || field.inField(point, node.position)))
                 nodes.add(node)
         }
         return nodes
@@ -186,6 +186,7 @@ class Tree(internal val field: KField2d) {
      * Prune the tree with updated obstacle information
      */
     fun pruneBlocked() {
+        if (field == null) return
         prune { field.inField(it.position)}
     }
 
