@@ -91,12 +91,7 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         )
     }
 
-    lateinit var controller: KXboxController
     override fun simUpdate(dt: Double) {
-        // get voltage
-        leftMaster.voltage = leftMaster.customControl!!(leftMaster)
-        rightMaster.voltage = rightMaster.customControl!!(rightMaster)
-
         // update the sim with new inputs
         driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
         driveSim.update(dt)
