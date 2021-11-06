@@ -2,6 +2,7 @@ package kyberlib.simulation.field
 
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
+import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
@@ -18,6 +19,14 @@ object KField2d : Field2d() {
     val goals = ArrayList<Goal>()
     var width: Length = 4.3569128.meters
     var height: Length = 2.8275026.meters
+
+    var trajectory: Trajectory? = null
+        set(value) {
+            if (value == null)
+                getObject("traj").setPoses()
+            else getObject("traj").setTrajectory(value)
+        }
+
 
     /**
      * Checks if a position is not obstructed

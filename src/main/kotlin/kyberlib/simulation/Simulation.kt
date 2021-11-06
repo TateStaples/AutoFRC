@@ -29,6 +29,8 @@ class Simulation : SubsystemBase() {
     private val startTime = time
     val elapsedTime
         get() = time - startTime
+    val dt
+        get() = time - prevTime
 
     // field to draw robot
     val field = KField2d

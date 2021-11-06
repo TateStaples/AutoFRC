@@ -1,10 +1,7 @@
 package frc.team6502.robot
 
-import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import frc.team6502.robot.auto.Navigation
-import frc.team6502.robot.auto.cv.Photon
-import frc.team6502.robot.auto.cv.SlamBridge
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.drive.DefaultDrive

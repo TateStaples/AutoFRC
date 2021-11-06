@@ -2,6 +2,7 @@ package kyberlib.command
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
+import frc.team6502.robot.subsystems.Drivetrain
 import java.util.*
 
 // todo: either rework entirely or delete and use normal scheduling
@@ -127,7 +128,7 @@ object CommandManager : Command {
      * All the requirements that the current command queue will use
      */
     override fun getRequirements(): MutableSet<Subsystem> {
-        val set = mutableSetOf<Subsystem>()
+        val set = mutableSetOf<Subsystem>(Drivetrain)
         activeCommand?.let { set.addAll(it.requirements) }
         for (command in queue)
             set.addAll(command.requirements)

@@ -18,7 +18,6 @@ import kotlin.math.PI
  */
 object RobotContainer {
     private val gyro = KPigeon(Constants.PIGEON_PORT)
-
     /**
      * The main user input device of robot
      */
@@ -42,7 +41,7 @@ object RobotContainer {
 
     init {
         // initialize subsystems here:
-        Navigation.apply { gyro = RobotContainer.gyro }
+        Navigation
         Drivetrain
         PathPlanner
         if (RobotBase.isReal()) Photon() else SlamBridge()

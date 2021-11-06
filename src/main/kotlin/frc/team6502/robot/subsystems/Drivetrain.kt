@@ -1,132 +1,92 @@
 package frc.team6502.robot.subsystems
 
-import com.revrobotics.CANSparkMax
-import com.revrobotics.CANSparkMaxLowLevel
-import edu.wpi.first.wpilibj.controller.PIDController
-import edu.wpi.first.wpilibj.controller.ProfiledPIDController
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
-import edu.wpi.first.wpilibj.geometry.Translation2d
-import edu.wpi.first.wpilibj.kinematics.*
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
-import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim
+import edu.wpi.first.wpilibj.system.plant.DCMotor
+import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import edu.wpi.first.wpiutil.math.VecBuilder
 import frc.team6502.robot.Constants
+import kyberlib.auto.Navigator
 import kyberlib.command.CommandManager
-import kyberlib.math.filters.Differentiator
-import kyberlib.math.units.extensions.*
-import kotlin.math.PI
+import kyberlib.math.units.extensions.k
+import kyberlib.math.units.extensions.meters
+import kyberlib.math.units.extensions.metersPerSecond
+import kyberlib.motorcontrol.MotorType
+import kyberlib.motorcontrol.rev.KSparkMax
+import kyberlib.simulation.Simulatable
 
-/**
- * Holds the motors and controllers in charge of moving the robot chassis
- */
-object Drivetrain : SubsystemBase() {
-    // motors
-    private val leftFront = CANSparkMax(Constants.LEFT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-        setSmartCurrentLimit(40)
-    }
-    private val rightFront  = CANSparkMax(Constants.RIGHT_FRONT_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = true
-        setSmartCurrentLimit(40)
-    }
-    private val leftBack  = CANSparkMax(Constants.LEFT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-        setSmartCurrentLimit(40)
-        if (!Constants.MECANUM) follow(leftFront)
-    }
-    private val rightBack = CANSparkMax(Constants.RIGHT_BACK_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = true
-        setSmartCurrentLimit(40)
-        if (!Constants.MECANUM) follow(rightFront)
-    }
-    private val motors = arrayOf(leftFront, leftBack, rightFront, rightBack)
-
-    /**
-     * Configure all the encoders with proper gear ratios
-     */
-    init {
-        val circumference = Constants.WHEEL_RADIUS.meters * 2 * PI
-        for (motor in motors) {
-            motor.encoder.apply {
-                velocityConversionFactor = (circumference * Constants.DRIVE_GEAR_RATIO).rpm.rotationsPerSecond
-                positionConversionFactor = circumference * Constants.DRIVE_GEAR_RATIO
-            }
-            val pid = motor.pidController
-            pid.apply {
-                p = Constants.DRIVE_P
-                i = Constants.DRIVE_I
-                d = Constants.DRIVE_D
-            }
-        }
-    }
-
-    /**
-     * Location of each of the wheels relative to the center of the robot.
-     * Important for mecanum control
-     */
-    private val robotWidth = 8.686.inches
-    private val robotLength = 5.75.inches
-    private val frontLeftPosition = Translation2d(-robotWidth.meters, robotLength.meters)
-    private val frontRightPosition = Translation2d(robotWidth.meters, robotLength.meters)
-    private val backLeftPosition = Translation2d(-robotWidth.meters, -robotLength.meters)
-    private val backRightPosition = Translation2d(robotWidth.meters, -robotLength.meters)
-
-    /**
-     * Do important math specific to your chassis
-     */
-    val difKinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
-    val mecKinematics = MecanumDriveKinematics(frontLeftPosition, frontRightPosition, backLeftPosition, backRightPosition)
-
-    /**
-     * Keep real time calculation of the acceleration of each side of drivetrain
-     */
-    private val leftAccelCalculator = Differentiator()
-    private val rightAccelCalculator = Differentiator()
+object Drivetrain : SubsystemBase(), Simulatable {
 
     /**
      * A forward projection of how much voltage to apply to get desired velocity and acceleration
      */
     private val feedforward = SimpleMotorFeedforward(Constants.DRIVE_KS, Constants.DRIVE_KV, Constants.DRIVE_KA)
 
-    val leftPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
-    val rightPID = PIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D)
-    val rotationPID = ProfiledPIDController(Constants.DRIVE_P, Constants.DRIVE_I, Constants.DRIVE_D, TrapezoidProfile.Constraints(1.0, 1.0))
+    // motors
+    val leftMaster = KSparkMax(Constants.LEFT_FRONT_ID, MotorType.BRUSHLESS).apply {
+        identifier = "leftMaster"
+        brakeMode = true
+        reversed = false
+        currentLimit = 40
+    }
+    val rightMaster  = KSparkMax(Constants.RIGHT_FRONT_ID, MotorType.BRUSHLESS).apply {
+        identifier = "rightMaster"
+        brakeMode = true
+        reversed = true
+        currentLimit = 40
+    }
+    private val leftFollower  = KSparkMax(Constants.LEFT_BACK_ID, MotorType.BRUSHLESS).apply {
+        identifier = "leftFollow"
+        brakeMode = true
+        reversed = false
+        currentLimit = 40
+        follow(leftMaster)
+    }
+    private val rightFollower = KSparkMax(Constants.RIGHT_BACK_ID, MotorType.BRUSHLESS).apply {
+        identifier = "rightFollow"
+        reversed = false
+        currentLimit = 40
+        follow(rightMaster)
+    }
+    private val motors = arrayOf(leftMaster, rightMaster)
 
     /**
-     * Setup the default command for the system
+     * Configure all the encoders with proper gear ratios
      */
     init {
-        defaultCommand = CommandManager
+//        defaultCommand = CommandManager
+        for (motor in motors) {
+            motor.apply {
+                brakeMode = true
+                gearRatio = Constants.DRIVE_GEAR_RATIO
+                radius = Constants.WHEEL_RADIUS
+                currentLimit = 40
+
+                kP = Constants.DRIVE_P
+                kI = Constants.DRIVE_I
+                kD = Constants.DRIVE_D
+
+                addFeedforward(feedforward)
+            }
+        }
     }
 
     /**
+     * Do important math specific to your chassis
+     */
+    val kinematics = DifferentialDriveKinematics(Constants.TRACK_WIDTH)
+    /**
      * A list of important variables the rest of the code needs easy access to
      */
-    private val leftFrontVel get() = leftFront.encoder.velocity
-    private val rightFrontVel get() = rightFront.encoder.velocity
-    private val leftBackVel get() = leftBack.encoder.velocity
-    private val rightBackVel get() = rightBack.encoder.velocity
-    val leftVel get() = leftFrontVel
-    val rightVel get() = rightFrontVel
-    val leftPos get() = leftFront.encoder.position
-    val rightPos get() = rightFront.encoder.position
-    var difWheelSpeeds
-        get() = DifferentialDriveWheelSpeeds(leftVel, rightVel)
-        set(value) {drive(value)}
-    var mecWheelSpeeds
-        get() = MecanumDriveWheelSpeeds(leftFrontVel, rightFrontVel, leftBackVel, rightBackVel)
+    var wheelSpeeds: DifferentialDriveWheelSpeeds
+        get() = DifferentialDriveWheelSpeeds(leftMaster.linearVelocity.metersPerSecond, rightMaster.linearVelocity.metersPerSecond)
         set(value) {drive(value)}
     var chassisSpeeds: ChassisSpeeds
-        get() = if (Constants.MECANUM) mecKinematics.toChassisSpeeds(mecWheelSpeeds)
-                else difKinematics.toChassisSpeeds(difWheelSpeeds)
+        get() = kinematics.toChassisSpeeds(wheelSpeeds)
         set(value) {drive(value)}
 
     /**
@@ -134,9 +94,7 @@ object Drivetrain : SubsystemBase() {
      * @param speeds the velocity you want the robot to start moving
      */
     fun drive (speeds: ChassisSpeeds) {
-        if (Constants.DEBUG) debug()
-        if (Constants.MECANUM) drive(mecKinematics.toWheelSpeeds(speeds))
-        else drive(difKinematics.toWheelSpeeds(speeds))
+        drive(kinematics.toWheelSpeeds(speeds))
     }
 
     /**
@@ -144,63 +102,47 @@ object Drivetrain : SubsystemBase() {
      * @param speeds DifferentialDriveWheelsSpeeds that have instruction for how fast each side should go
      */
     private fun drive(speeds: DifferentialDriveWheelSpeeds) {
-        val leftSpeed = speeds.leftMetersPerSecond
-        val rightSpeed = speeds.rightMetersPerSecond
-
-        val lPID = leftPID.calculate(leftFront.encoder.velocity, leftSpeed)
-        val lFF = feedforward.calculate(leftSpeed, leftAccelCalculator.calculate(leftSpeed))
-        val rPID = rightPID.calculate(rightFront.encoder.velocity, rightSpeed)
-        val rFF = feedforward.calculate(rightSpeed, rightAccelCalculator.calculate(rightSpeed))
-        if (Constants.DEBUG)
-            debug()
-//        driveVolts(lPID + lFF, rPID + rFF)
-
-//        leftFront.set(leftSpeed)
-//        rightFront.set(rightSpeed)
-        leftFront.setVoltage(lPID + lFF)
-        rightFront.setVoltage(rPID + rFF)
-    }
-
-    /**
-     * Drive a Mecanum robot at specific speeds
-     * @param speeds the wheel speeds to move the Mecanum robot
-     */
-    private fun drive(speeds: MecanumDriveWheelSpeeds) {
         speeds.normalize(Constants.velocity.metersPerSecond)
-        leftFront.set(speeds.frontLeftMetersPerSecond)
-        leftBack.set(speeds.rearLeftMetersPerSecond)
-        rightFront.set(speeds.frontRightMetersPerSecond)
-        rightBack.set(speeds.rearRightMetersPerSecond)
+        leftMaster.linearVelocity = speeds.leftMetersPerSecond.metersPerSecond
+        rightMaster.linearVelocity = speeds.rightMetersPerSecond.metersPerSecond
     }
 
-    /**
-     * Display the important values of all the encoders.
-     *
-     * Values: Position, Velocity, Voltage, Current, inverted
-     */
-    private fun logEncoders() {
-        val names = arrayListOf("Left Front", "Left Back", "Right Front", "Right Back")
-        for (info in motors.zip(names)) {
-            val motor = info.first
-            val encoder = motor.encoder
-            val name = info.second
-            SmartDashboard.putNumber("$name Position", encoder.position)
-            SmartDashboard.putNumber("$name Velocity", encoder.velocity)
-            SmartDashboard.putNumber("$name Voltage", motor.appliedOutput)
-            SmartDashboard.putNumber("$name Current", motor.outputCurrent)
-            SmartDashboard.putBoolean("$name Inverted", encoder.inverted)
-        }
+    override fun periodic() {
+        Navigator.instance!!.update(chassisSpeeds)
+        leftMaster.debugDashboard()
+        rightMaster.debugDashboard()
+        leftFollower.debugDashboard()
+        rightFollower.debugDashboard()
     }
 
-    /**
-     * Log important debugging values
-     */
-    private fun debug() {
-        SmartDashboard.putNumber("Left Error", leftPID.positionError)
-        SmartDashboard.putNumber("Right Error", rightPID.positionError)
-//        leftPID.initSendable()
+    private lateinit var driveSim: DifferentialDrivetrainSim
+    fun setupSim(KvAngular: Double = 3.5, KaAngular: Double = 0.1, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
+        driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
+            LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
+            DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
+            leftMaster.gearRatio,  // gearing reduction
+            kinematics.trackWidthMeters,  // The track width
+            leftMaster.radius!!.meters,  // wheel radius
+            // The standard deviations for measurement noise: x (m), y (m), heading (rad), L/R vel (m/s), L/R pos (m)
+            VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+        )
+    }
+    // todo: default command
 
-        logEncoders()
+    override fun simUpdate(dt: Double) {
+        // update the sim with new inputs
+        driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
+        driveSim.update(dt)
 
+        // update the motors with what they should be
+        leftMaster.simLinearPosition = driveSim.leftPositionMeters.meters
+        leftMaster.simLinearVelocity = driveSim.leftVelocityMetersPerSecond.metersPerSecond
+        rightMaster.simLinearPosition = driveSim.rightPositionMeters.meters
+        rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
+        Navigator.instance!!.heading = driveSim.heading.k
+
+        // log the values
+        leftMaster.debugDashboard()
+        rightMaster.debugDashboard()
     }
 }

@@ -17,7 +17,7 @@ import kotlin.random.Random
  * Class that generates optimal pathes between various locations on a field
  * @param field KField2d that contains the dimensions of the field and is updated with the obstacles
  */
-class Pathfinder {
+open class Pathfinder {
     val field = KField2d
     internal val tree = Tree()
     private val random = Random(4)

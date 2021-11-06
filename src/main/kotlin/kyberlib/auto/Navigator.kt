@@ -16,7 +16,7 @@ import kyberlib.math.units.zeroPose
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.field.KField2d
 
-class Navigator(val gyro: KGyro, startPose: Pose2d = zeroPose) {
+open class Navigator(val gyro: KGyro, startPose: Pose2d = zeroPose) {
     companion object {
         var instance: Navigator? = null
     }
