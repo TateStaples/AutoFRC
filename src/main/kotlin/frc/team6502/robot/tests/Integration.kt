@@ -1,16 +1,19 @@
 package frc.team6502.robot.tests
 
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.button.Trigger
 import frc.team6502.robot.Constants
 import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.auto.pathing.PathPlanner
 import frc.team6502.robot.commands.Zap
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.command.CommandManager
 import kyberlib.command.KRobot
 import kyberlib.input.controller.KXboxController
+import kyberlib.math.units.extensions.degrees
 import kyberlib.simulation.Simulation
 import kyberlib.simulation.field.KField2d
 import kotlin.math.PI
@@ -50,19 +53,22 @@ class Integration : KRobot() {
         Constants.AUTO = false
         val forward = controller.leftY.value
         val turn = controller.rightX.value
-        SmartDashboard.putNumber("forward", forward)
-        SmartDashboard.putNumber("turn", turn)
         Drivetrain.drive(ChassisSpeeds(forward, 0.0, turn))
     }
 
     override fun autonomousInit() {
         Constants.AUTO = true
-        val traj = navigation.trajectory(Translation2d(1.0,0.0), Translation2d(1.0, 2.0))
-        val drive1 = AutoDrive(traj)  // Drives here
+        val traj = PathPlanner.pathTo(navigation.pose, Pose2d(2.0, 2.0, 0.degrees))
+        val drive1 = AutoDrive(Pose2d(2.0, 2.0, 180.degrees))  // Drives here
+        val drive2 = AutoDrive(Translation2d(1.0, 3.0))
 //        CommandManager.enqueue(drive1)
         drive1.schedule()
+        drive2.schedule()
     }
 
+    override fun robotInit() {
+        navigation.pose = Pose2d(1.0, 1.0, 0.degrees)
+    }
     override fun robotPeriodic() {
         KField2d.robotPose = navigation.pose
     }

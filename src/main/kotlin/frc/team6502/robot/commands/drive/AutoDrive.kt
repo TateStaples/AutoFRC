@@ -43,7 +43,7 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
         if (rotationInvariant)
             targetPose = Pose2d(targetPose.translation, Navigation.position.towards(targetPose.translation))
         if (!this::trajectory.isInitialized)
-            trajectory = PathPlanner.pathTo(targetPose, Navigation.pose)
+            trajectory = PathPlanner.pathTo(Navigation.pose, targetPose)
         KField2d.trajectory = trajectory
     }
 

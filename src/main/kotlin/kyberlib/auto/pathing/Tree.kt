@@ -26,7 +26,7 @@ class Node {
          * Should update the previous parent and change the pathLength to root
          */
         set(value) {
-            if (parent != null) {
+            if (parent != null && value != null) {
                 parent!!.children.remove(this)
             }
             if (value != null && nodeLengthFromRoot != 0) {
@@ -71,7 +71,7 @@ class Node {
         this.position = position
         pathLengthFromRoot = -10.0
         nodeLengthFromRoot = -10
-        this.parent = parent // this should set the pathLengthFromRoot
+        this.parent = parent // this should set the pathLengthFromRoot and nodeLen
         this.informed = informed
     }
 
@@ -85,15 +85,16 @@ class Node {
 
     override fun toString(): String {
         return "node($position)"
-//        return hashCode().toString()
     }
 }
 
+// todo: make more general graph
+// todo: spline based planning
 /**
  * A tree class to represent to points and connections of the RRT pathfinder
  * @author TateStaples
  */
-class Tree() {
+class Tree {
     val field = KField2d
     var maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
@@ -115,7 +116,7 @@ class Tree() {
      * @
      */
     fun nearestNode(point: Translation2d): Node? {
-        var minDis = Double.POSITIVE_INFINITY
+        var minDis = Double.MAX_VALUE
         var bestNode: Node? = null
         var dis: Double
         for (node in vertices) {
@@ -177,7 +178,7 @@ class Tree() {
     private fun nearNodes(point: Translation2d): ArrayList<Node> {
         val nodes = ArrayList<Node>()
         for (node in vertices) {
-            if (node.position.getDistance(point) < maxBranchLength && (field == null || field.inField(point, node.position)))
+            if (node.position.getDistance(point) < maxBranchLength && field.inField(point, node.position))
                 nodes.add(node)
         }
         return nodes
@@ -211,8 +212,7 @@ class Tree() {
      * Prune the tree with updated obstacle information
      */
     fun pruneBlocked() {
-        if (field == null) return
-        prune { field.inField(it.position)}
+        prune { field.inField(it.position) }
     }
 
     /**
@@ -220,31 +220,30 @@ class Tree() {
      */
     private fun prune(condition: Predicate<Node>) {
         // remove the offending nodes
-        for (node in vertices) {
-            if (condition.test(node)) {
-                vertices.remove(node)
-                node.breakBranch()
-            }
+        vertices.filter {
+            val output = condition.test(it)
+            if (output) it.breakBranch()
+            output
         }
 
         // find which nodes have been cut off by the pruning
-        val orphans = vertices.filter { it.orphaned } as ArrayList<Node>
+        val orphans = vertices.filter { it.orphaned }.toMutableSet()
         var adopted = 1
 
         // find ways to reconfigure the tree
         while (adopted > 0) {
             adopted = 0
-            for (orphan in orphans) {
+            orphans.forEach { orphan ->
                 val nearby = nearNodes(orphan.position)
                 for (node in nearby) {
                     if (!node.orphaned) {
                         orphan.parent = node
                         adopted += 1
-                        orphans.remove(orphan)
                         break
                     }
                 }
             }
+            orphans.filter { !it.orphaned }
         }
         // get rid of nodes that can't reconnect to the tree
         vertices.removeAll(orphans)

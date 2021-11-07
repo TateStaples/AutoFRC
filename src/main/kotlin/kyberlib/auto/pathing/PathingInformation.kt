@@ -37,8 +37,9 @@ internal class PathingInformation(val startPosition: Translation2d, val endPosit
      * Update the information with a new path
      * @param currentPathLength the shortest distance found to path between the two points
      */
-    fun update(currentPathLength: Double) {
-        this.currentPathLength = currentPathLength
+    fun update(bestPathLength: Double) {
+        println("pathLen: $bestPathLength")
+        this.currentPathLength = bestPathLength.coerceAtLeast(dis)
     }
 
     /**
@@ -59,7 +60,7 @@ internal class PathingInformation(val startPosition: Translation2d, val endPosit
      * Print all the values for debugging purposes.
      * Should not be used during competition
      */
-    fun debug() {
+    private fun debug() {
         println("start: $startPosition, end: $endPosition, w: $width, h: $height center: $center, dis: $dis, rotation: $rotation")
     }
 }

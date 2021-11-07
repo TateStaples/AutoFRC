@@ -4,10 +4,12 @@ import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.auto.trajectory.KTrajectory
+import kyberlib.auto.trajectory.KTrajectoryConfig
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
+import kyberlib.math.units.extensions.metersPerSecond
 import kyberlib.simulation.field.KField2d
 import kyberlib.simulation.field.Obstacle
 import kotlin.math.sqrt
@@ -20,24 +22,25 @@ import kotlin.random.Random
 open class Pathfinder {
     val field = KField2d
     internal val tree = Tree()
-    private val random = Random(4)
+    private val random = Random(6)
     internal lateinit var information: PathingInformation
 
     var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
     var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
-    val path: ArrayList<Node>?  // the working path of points to get from robot position to target goal
+    val path: ArrayList<Node>?   // the working path of points to get from robot position to target goal
         get() = endNode?.let { tree.trace(it) }
 
     /** how many nodes to create before giving up finding target */
     private val explorationDepth = 5000
     /** how many nodes to dedicate to optimization */
-    private val optimizationDepth = 1000
+    private val optimizationDepth = 100
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
-     * @param pose2d the pose that you want the robot to get to
-     * @return a trajectory that will track your robot to the goal target
+     * @param startPose2d the start location
+     * @param endPose2d the end location
+     * @return trajectory to get from start to end
      */
     fun pathTo(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
         if (tree.nodeCount > 0 && startPose2d.translation != information.endPosition)
@@ -66,8 +69,31 @@ open class Pathfinder {
      */
     private fun treeToTrajectory(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
         if (!pathFound) return Trajectory()
-        return KTrajectory("Pathfinder path", startPose2d, path!!.map { it.position }, endPose2d)  // test edit
+        val smooth = smoothPath()
+        smooth.removeFirst()
+        smooth.removeLast()
+        println("start: $startPose2d, through: $smooth, end: $endPose2d")
+        return KTrajectory("Pathfinder path", startPose2d, smooth, endPose2d)  // test edit
 //        return Trajectory()
+    }
+
+    private fun smoothPath(): ArrayList<Translation2d> {
+        val points = path!!.map { it.position }.reversed()
+        var improvement = true
+        val newPoints = ArrayList<Translation2d>()
+        newPoints.add(points.first())
+        var firstIndex = 0
+        while (improvement) {
+            improvement = false
+            for (i in (firstIndex+1 until points.size).reversed()) {
+                if (i > firstIndex && KField2d.inField(points[i], newPoints.last())) {
+                    newPoints.add(points[i])
+                    firstIndex = i
+                    improvement = true
+                }
+            }
+        }
+        return newPoints
     }
 
     /**
@@ -85,8 +111,12 @@ open class Pathfinder {
             val point = randomPoint()
             addPoint(point)
         }
-        for (i in tree.vertices.count { it.informed }..optimizationDepth)
-            addPoint(informedPoint())
+        if (information.pathFound)
+            for (i in tree.vertices.count { it.informed }..optimizationDepth) {
+                val informed = informedPoint()
+                addPoint(informed)
+            }
+        else println("path not found")
     }
 
     /**
@@ -104,15 +134,14 @@ open class Pathfinder {
             return
         }
         val node = Node(new, parent = nearest, informed = pathFound)
-//        println(node)
         tree.addNode(node)
         tree.optimize(node)
         val endDis = new.getDistance(information.endPosition)
         if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
             pathFound = true
             endNode = node
-            information.update(path!!.first().pathLengthFromRoot)
             println("path found")
+            information.update(path!!.last().pathLengthFromRoot)
         }
     }
 
@@ -166,14 +195,13 @@ object PathingTest {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        KTrajectory.generalConfig = KTrajectoryConfig(2.metersPerSecond, 1.metersPerSecond)
         val PathPlanner = Pathfinder()
         // look @ informed RRT* and BIT*
         // current version in RRT
-        start = Translation2d(1.feet, 1.feet)
-        end = Translation2d(6.feet, 6.feet)
-//
-//        println(testO.contains(start, end))
-        for (i in 0..5) {
+        start = Translation2d(0.meters, 0.meters)
+        end = Translation2d(2.meters, 2.meters)
+        for (i in 0..0) {
             val p = PathPlanner.randomPoint()
             val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
             if (o.contains(start) || o.contains(end)) continue

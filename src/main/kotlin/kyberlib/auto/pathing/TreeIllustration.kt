@@ -14,18 +14,15 @@ import javax.swing.JPanel
  * Draws a basic Tree without showing the obstacles
  * @param tree
  */
-internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
-    // todo: update calls to this
-    // make field object
-    // tree, field, optional: path & info
-    constructor(drawTree: Tree) : this(Pathfinder().apply {
-        tree.vertices.clear()
-        tree.vertices.addAll(drawTree.vertices)
-    })
+internal class TreeIllustration(val tree: Tree) : JPanel() {
+    constructor(pathfinder: Pathfinder) : this(pathfinder.tree) {
+        information = pathfinder.information
+        if (pathfinder.pathFound)
+            path = pathfinder.path!!
+    }
     val field = KField2d
-    val information = pathfinder.information
-    val tree = pathfinder.tree
-    val path = pathfinder.path
+    var information: PathingInformation? = null
+    var path: Collection<Node> = emptySet()
 
     val frameWidth = 200
     val frameHeight = 200
@@ -58,17 +55,19 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
      * Puts the branches onto a graphics window
      */
     private fun draw(graphics: Graphics2D) {
-        val start = information.startPosition
-        val end = information.endPosition
         graphics.color = Color.BLACK
         if (drawObstacles) drawObstacles(graphics)
         if (drawNormal || drawPath) drawBranch(tree.vertices[0], graphics)
-        graphics.color = Color.GREEN
-        // draw startPoint
-        graphics.drawOval(drawingCoordinates(start.x), drawingCoordinates(start.y), 10, 10)
-        // draw endPoint
-        graphics.drawOval(drawingCoordinates(end.x), drawingCoordinates(end.y), 10, 10)
-        if (information.currentPathLength > 0.0 && drawBound) drawPathOval(graphics)
+        if (information != null) {
+            val start = information!!.startPosition
+            val end = information!!.endPosition
+            graphics.color = Color.GREEN
+            // draw startPoint
+            graphics.drawOval(drawingCoordinates(start.x), drawingCoordinates(start.y), 10, 10)
+            // draw endPoint
+            graphics.drawOval(drawingCoordinates(end.x), drawingCoordinates(end.y), 10, 10)
+            if (information != null && information!!.currentPathLength > 0.0 && drawBound) drawPathOval(graphics)
+        }
     }
 
     /**
@@ -85,14 +84,14 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
      * Any point outside of this oval cannot be useful
      */
     private fun drawPathOval(graphics: Graphics2D) {
-        val center = information.center
-        val width = information.width
-        val height = information.height
+        val center = information!!.center
+        val width = information!!.width
+        val height = information!!.height
         val oval = Ellipse2D.Double(drawingCoordinates(center.x-width/2.0).toDouble(), drawingCoordinates(center.y-height/2).toDouble(), drawingCoordinates(width).toDouble(), drawingCoordinates(height).toDouble())
         graphics.color = Color.BLUE
         graphics.rotate(
-            information.rotation.radians, drawingCoordinates(center.x).toDouble(), drawingCoordinates(
-                information.center.y).toDouble())
+            information!!.rotation.radians, drawingCoordinates(center.x).toDouble(), drawingCoordinates(
+                information!!.center.y).toDouble())
         graphics.draw(oval)
     }
 
@@ -105,7 +104,7 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
         for (n2 in n.children) {
             val x2 = drawingCoordinates(n2.position.x)
             val y2 = drawingCoordinates(n2.position.y)
-            val pathNode = information.pathFound && path!!.contains(n2)
+            val pathNode = path.contains(n2)
             if (drawPath && pathNode) g.color = Color.RED
             else g.color = Color.BLACK
             if ((drawPath || drawNormal) && pathNode) g.drawLine(x1, y1, x2, y2)
@@ -117,5 +116,5 @@ internal class TreeIllustration(pathfinder: Pathfinder) : JPanel() {
     /**
      * Convert the field coordinates to helpful pixel values
      */
-    private fun drawingCoordinates(mapValue: Double) = (mapValue /field.width.meters * frameWidth).toInt()
+    private fun drawingCoordinates(mapValue: Double) = (mapValue / field.width.meters * 1000).toInt()
 }
