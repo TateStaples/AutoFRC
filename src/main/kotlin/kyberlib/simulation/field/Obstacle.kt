@@ -3,7 +3,6 @@ package kyberlib.simulation.field
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import java.awt.Rectangle
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -24,7 +23,11 @@ class Obstacle(val pose: Pose2d, val width: Double, val height: Double) {
         get() = pose.rotation
     val position: Translation2d
         get() = pose.translation
-    val box = Rectangle2D.Double(x-width, y-height, width*2, height*2)
+    private val box = Rectangle2D.Double(x-width, y-height, width*2, height*2)
+
+    init {
+        KField2d.getObject("obstacles").poses.add(pose)
+    }
 
     /**
      * Checks if a point falls within the obstacles hitbox

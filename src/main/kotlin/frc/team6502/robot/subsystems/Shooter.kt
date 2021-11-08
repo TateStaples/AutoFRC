@@ -1,9 +1,11 @@
 package frc.team6502.robot.subsystems
 
-import com.revrobotics.CANSparkMax
-import com.revrobotics.CANSparkMaxLowLevel
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.Constants
+import frc.team6502.robot.subsystems.Shooter.intake
+import frc.team6502.robot.subsystems.Shooter.shooterMotor
+import kyberlib.motorcontrol.MotorType
+import kyberlib.motorcontrol.rev.KSparkMax
 
 /**
  * This controls the ball pipeline.
@@ -11,16 +13,14 @@ import frc.team6502.robot.Constants
  * @property shooterMotor motor that releases balls
  */
 object Shooter : SubsystemBase() {
-    val intake = CANSparkMax(Constants.INTAKE_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-        setSmartCurrentLimit(40)
+    val intake = KSparkMax(Constants.INTAKE_ID, MotorType.BRUSHLESS).apply {
+        brakeMode = true
+        reversed = false
+        currentLimit = 40
     }
-    val shooterMotor = CANSparkMax(Constants.SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless).apply {
-        restoreFactoryDefaults()
-        idleMode = CANSparkMax.IdleMode.kBrake
-        inverted = false
-        setSmartCurrentLimit(40)
+    val shooterMotor = KSparkMax(Constants.SHOOTER_ID, MotorType.BRUSHLESS).apply {
+        brakeMode = true
+        reversed = false
+        currentLimit = 40
     }
 }

@@ -10,18 +10,16 @@ class KSpeedController(private val m_speedController: SpeedController) : KBasicM
         var id = 1
     }
 
-    val my_id = id
-    init {
-        id += 1
+    private val myId = id
+    init { id += 1 }
 
-    }
     override var brakeMode: BrakeMode  // this doesn't work
         get() = false
-        set(value) {m_speedController.stopMotor()}
+        set(value) {}
     override var reversed: Boolean
         get() = m_speedController.inverted
         set(value) {m_speedController.inverted = value}
-    override var identifier: String = "KSpeedController #$my_id"
+    override var identifier: String = "KSpeedController #$myId"
     override var rawPercent: Double
         get() = m_speedController.get()
         set(value) {m_speedController.set(value)}

@@ -2,8 +2,11 @@ package kyberlib.command
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
+import frc.team6502.robot.commands.general.Strategy
 import frc.team6502.robot.subsystems.Drivetrain
+import frc.team6502.robot.subsystems.Shooter
 import java.util.*
+import kotlin.collections.ArrayList
 
 // todo: either rework entirely or delete and use normal scheduling
 /**
@@ -11,7 +14,10 @@ import java.util.*
  * Allows scheduling when to do what.
  */
 object CommandManager : Command {
-    private val queue = LinkedList<Command>()  // change to list by Subsystem
+    init {
+        schedule(false)
+    }
+    private val queue = ArrayList<Command>()  // change to list by Subsystem
 
     var activeCommand: Command? = null
         set(value) {
@@ -28,8 +34,8 @@ object CommandManager : Command {
             SmartDashboard.putString("active command", activeCommand!!.javaClass.simpleName)
         else SmartDashboard.putString("active command", "null")
         if (activeCommand == null && queue.isEmpty()) {
-//            Strategy.plan()
-//            Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.0))
+            Strategy.plan()
+            Drivetrain.stop()
             return
         }
         if (activeCommand == null) activeCommand = next()
@@ -65,8 +71,7 @@ object CommandManager : Command {
      */
     fun next(remove: Boolean = true): Command? {
         if (queue.isEmpty()) return null
-        val command = if (remove) queue.poll() else queue.peek()
-        return command
+        return if (remove) queue.removeFirstOrNull() else queue.firstOrNull()
     }
 
     /**
@@ -79,7 +84,9 @@ object CommandManager : Command {
     /**
      * Empty all queued commands
      */
-    fun clear() { queue.clear() }
+    fun clear() {
+        queue.clear()
+    }
 
     // ---------- manipulate commands --------- //
     /**
@@ -96,11 +103,12 @@ object CommandManager : Command {
      */
     fun index(commandType: Class<Command>): List<Int> {
         val indices = ArrayList<Int>()
-        for ((index, command) in queue.withIndex()) {
-            if (command.javaClass == commandType) indices.add(index)
-        }
+        for ((index, command) in queue.withIndex())
+            if (command.javaClass == commandType)
+                indices.add(index)
         return indices
     }
+
     /**
      * Check if two commands are the same
      * @return boolean of whether they are the same
@@ -128,10 +136,10 @@ object CommandManager : Command {
      * All the requirements that the current command queue will use
      */
     override fun getRequirements(): MutableSet<Subsystem> {
-        val set = mutableSetOf<Subsystem>(Drivetrain)
-        activeCommand?.let { set.addAll(it.requirements) }
-        for (command in queue)
-            set.addAll(command.requirements)
+        val set = mutableSetOf<Subsystem>(Drivetrain, Shooter)  // todo: make not bad
+//        activeCommand?.let { set.addAll(it.requirements) }
+//        for (command in queue)
+//            set.addAll(command.requirements)
         return set
     }
 }

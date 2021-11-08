@@ -6,7 +6,8 @@ import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Transform2d
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.commands.balls.Intake
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
@@ -53,8 +54,8 @@ class Photon : SubsystemBase() {
             val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
             for (target in res.targets) {
                 val camToTargetTrans: Transform2d = target.cameraToTarget
-                val estimatedPosition = Navigation.pose.plus(camToTargetTrans)
-                Navigation.field.addGoal(estimatedPosition.translation, imageCaptureTime, "ball")
+                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
+                RobotContainer.navigation.field.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
             }
         }
     }
@@ -71,7 +72,7 @@ class Photon : SubsystemBase() {
             val theta  = thetaEntry.getDouble(0.0).radians
             val slamPose = Pose2d(x, y, theta)
             val adjustedPose = slamPose.transformBy(cameraOffset.transform)
-            Navigation.update(adjustedPose, updateTime)
+            RobotContainer.navigation.update(adjustedPose, updateTime)
         }
         lastUpdate = updateTime
     }

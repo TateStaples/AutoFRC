@@ -1,7 +1,5 @@
 package frc.team6502.robot
 
-import frc.team6502.robot.tests.Integration
-
 /**
  * Entry point. DO NOT TOUCH THIS FILE.
  */
@@ -12,7 +10,7 @@ class Main() {
          */
         @JvmStatic
         fun main(args: Array<String>) {
-            Integration().initialize()
+            Robot().initialize()
         }
     }
 }

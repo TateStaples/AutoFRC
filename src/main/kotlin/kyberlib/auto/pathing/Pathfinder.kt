@@ -10,6 +10,7 @@ import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.metersPerSecond
+import kyberlib.math.units.towards
 import kyberlib.simulation.field.KField2d
 import kyberlib.simulation.field.Obstacle
 import kotlin.math.sqrt
@@ -43,12 +44,22 @@ open class Pathfinder {
      * @return trajectory to get from start to end
      */
     fun pathTo(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
-        if (tree.nodeCount > 0 && startPose2d.translation != information.endPosition)
-            reset()
-        if (tree.nodeCount > 0)
-            tree.pruneInformed()
-        loadTree(startPose2d.translation, endPose2d.translation)
+        resetTree(startPose2d.translation, endPose2d.translation)
         return treeToTrajectory(startPose2d, endPose2d)
+    }
+
+    fun pathTo(startPose2d: Pose2d, endPosition: Translation2d): Trajectory {
+        resetTree(startPose2d.translation, endPosition)
+        return treeToTrajectory(startPose2d, endPosition)
+    }
+
+    private fun resetTree(startPosition: Translation2d, endPosition: Translation2d) {
+        if (tree.nodeCount > 0 && endPosition != information.endPosition) {
+            println("resetting tree")
+            reset()
+            tree.pruneInformed()
+        }
+        loadTree(startPosition, endPosition)
     }
 
     /**
@@ -72,9 +83,18 @@ open class Pathfinder {
         val smooth = smoothPath()
         smooth.removeFirst()
         smooth.removeLast()
-        println("start: $startPose2d, through: $smooth, end: $endPose2d")
+//        println("start: $startPose2d, through: $smooth, end: $endPose2d")
         return KTrajectory("Pathfinder path", startPose2d, smooth, endPose2d)  // test edit
-//        return Trajectory()
+    }
+
+    private fun treeToTrajectory(startPose2d: Pose2d, endPosition: Translation2d): Trajectory {
+        if (!pathFound) return Trajectory()
+        val smooth = smoothPath()
+        smooth.removeFirst()
+        smooth.removeLast()
+//        println("start: $startPose2d, through: $smooth, end: $endPose2d")
+        val endRotation = if(smooth.isEmpty()) startPose2d.translation.towards(endPosition) else smooth.last().towards(endPosition)
+        return KTrajectory("Pathfinder path", startPose2d, smooth, Pose2d(endPosition, endRotation))  // test edit
     }
 
     private fun smoothPath(): ArrayList<Translation2d> {
@@ -107,7 +127,7 @@ open class Pathfinder {
             tree.addNode(Node(startPosition))
         information = PathingInformation(startPosition, endPosition)
         for (i in tree.nodeCount..explorationDepth) {
-            if (pathFound) break
+            if (information.pathFound) break
             val point = randomPoint()
             addPoint(point)
         }
@@ -140,7 +160,7 @@ open class Pathfinder {
         if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
             pathFound = true
             endNode = node
-            println("path found")
+            println("path found = $path")
             information.update(path!!.last().pathLengthFromRoot)
         }
     }

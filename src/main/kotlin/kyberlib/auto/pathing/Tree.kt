@@ -95,7 +95,6 @@ class Node {
  * @author TateStaples
  */
 class Tree {
-    val field = KField2d
     var maxBranchLength = 0.5
     val vertices = ArrayList<Node>()
 
@@ -178,7 +177,7 @@ class Tree {
     private fun nearNodes(point: Translation2d): ArrayList<Node> {
         val nodes = ArrayList<Node>()
         for (node in vertices) {
-            if (node.position.getDistance(point) < maxBranchLength && field.inField(point, node.position))
+            if (node.position.getDistance(point) < maxBranchLength && KField2d.inField(point, node.position))
                 nodes.add(node)
         }
         return nodes
@@ -212,7 +211,7 @@ class Tree {
      * Prune the tree with updated obstacle information
      */
     fun pruneBlocked() {
-        prune { field.inField(it.position) }
+        prune { KField2d.inField(it.position) }
     }
 
     /**

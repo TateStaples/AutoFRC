@@ -3,7 +3,7 @@ package frc.team6502.robot.commands.drive
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj2.command.CommandBase
-import frc.team6502.robot.auto.Navigation
+import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 
 /**
@@ -20,7 +20,7 @@ object Search : CommandBase() {
 
     private var previousFoundBalls = 0
     private val foundBalls
-        get() = Navigation.field.goals.size
+        get() = RobotContainer.navigation.field.goals.size
 
     init {
         addRequirements(Drivetrain)
@@ -32,7 +32,7 @@ object Search : CommandBase() {
     }
 
     override fun execute() {
-        Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.5))
+        Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 1.5))
         if (previousFoundBalls != foundBalls) {
             previousFoundBalls = foundBalls
             lastDetectedBallTime = time

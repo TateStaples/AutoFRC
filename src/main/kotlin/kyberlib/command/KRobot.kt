@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 
 open class KRobot(private val period: Double = 0.02) {
-
     var enabled = false
         private set
 
@@ -20,7 +19,7 @@ open class KRobot(private val period: Double = 0.02) {
 
         override fun robotInit() {
             HAL.report(FRCNetComm.tResourceType.kResourceType_Language, FRCNetComm.tInstances.kLanguage_Kotlin)
-//            LiveWindow.disableAllTelemetry()
+            LiveWindow.disableAllTelemetry()
             this@KRobot.robotInit()
         }
 

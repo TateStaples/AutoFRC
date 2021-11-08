@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.VecBuilder
 import frc.team6502.robot.Constants
 import kyberlib.auto.Navigator
-import kyberlib.command.CommandManager
 import kyberlib.math.units.extensions.k
 import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.metersPerSecond
@@ -107,6 +106,11 @@ object Drivetrain : SubsystemBase(), Simulatable {
         rightMaster.linearVelocity = speeds.rightMetersPerSecond.metersPerSecond
     }
 
+    fun stop() {
+        leftMaster.voltage = 0.0
+        rightMaster.voltage = 0.0
+    }
+
     override fun periodic() {
         Navigator.instance!!.update(chassisSpeeds)
         leftMaster.debugDashboard()
@@ -116,7 +120,7 @@ object Drivetrain : SubsystemBase(), Simulatable {
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
-    fun setupSim(KvAngular: Double = 3.5, KaAngular: Double = 0.08, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
+    fun setupSim(KvAngular: Double = 5.5, KaAngular: Double = 0.5, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
         driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
             LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
@@ -127,7 +131,6 @@ object Drivetrain : SubsystemBase(), Simulatable {
             VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
         )
     }
-    // todo: default command
 
     override fun simUpdate(dt: Double) {
         // update the sim with new inputs

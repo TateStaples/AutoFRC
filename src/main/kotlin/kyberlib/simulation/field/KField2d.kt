@@ -3,6 +3,8 @@ package kyberlib.simulation.field
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
+import edu.wpi.first.wpilibj2.command.Command
 import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
 import kyberlib.math.units.extensions.meters
@@ -17,14 +19,15 @@ import kyberlib.math.units.extensions.meters
 object KField2d : Field2d() {
     val obstacles = ArrayList<Obstacle>()
     val goals = ArrayList<Goal>()
-    var width: Length = 4.3569128.meters
-    var height: Length = 2.8275026.meters
+    var width: Length = 4.36.meters
+    var height: Length = 2.9.meters
 
     var trajectory: Trajectory? = null
         set(value) {
             if (value == null)
                 getObject("traj").setPoses()
             else getObject("traj").setTrajectory(value)
+            field = value
         }
 
 
@@ -76,7 +79,7 @@ object KField2d : Field2d() {
      */
     private fun inBoundaries(point: Translation2d) = point.x in 0.0..width.meters && point.y in 0.0..height.meters
 
-    private val sameDistance = 1.feet
+    private val sameDistance = 0.5.feet
 
     /**
      * Adds a goal to the field. Checks to prevent duplicates
@@ -84,11 +87,10 @@ object KField2d : Field2d() {
      * @param time the time that the observation of the position was made
      * @param name the name of the type of goal
      */
-    fun addGoal(estimatedPosition: Translation2d, time: Double, name: String) {
+    fun addGoal(estimatedPosition: Translation2d, time: Double, name: String, uponArrival: Command? = null) {
         val similarGoals = goals.filter { it.name == name }
         if (similarGoals.any { it.position.getDistance(estimatedPosition) < sameDistance.value })  // TODO: this bad
             return
-        val newGoal = Goal(name, estimatedPosition)
-        goals.add(newGoal)
+        Goal(name, estimatedPosition, uponArrival)
     }
 }
