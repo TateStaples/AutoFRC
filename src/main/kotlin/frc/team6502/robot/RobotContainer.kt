@@ -40,7 +40,7 @@ object RobotContainer {
     init {
         // initialize subsystems here:
         Drivetrain
-        if (RobotBase.isReal()) Photon() else SlamBridge()
+        if (RobotBase.isReal()) Photon()
 
         SmartDashboard.putBoolean("AUTO", Constants.AUTO)
         SmartDashboard.putBoolean("DEBUG", Constants.DEBUG)
