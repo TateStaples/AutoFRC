@@ -49,7 +49,7 @@ class VisionRobotTestbed : KRobot() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
     }
 
-    val cap = VideoCapture("UcoSlam/data/out.mp4")
+//    val cap = VideoCapture("UcoSlam/data/out.mp4")
 
     override fun simulationInit() {
         if (!slamValues.exists()) {
@@ -74,17 +74,16 @@ class VisionRobotTestbed : KRobot() {
 
         // write the SLAM input
         val mat = Mat()
-        TimeUnit.SECONDS.sleep((1.0 / 3.0).toLong())
-//        CameraServer.getInstance().video.grabFrame(mat)
-        cap.read(mat)
-        val resized = Mat()
-        Imgproc.resize(mat, resized, Size(320.0, 240.0))
+//        TimeUnit.SECONDS.sleep((1.0 / 3.0).toLong())
+        CameraServer.getInstance().video.grabFrame(mat)
+//        cap.read(mat)
+//        Imgproc.resize(mat, resized, Size(320.0, 240.0))
         deserialized = Json.decodeFromString(slamValues.readText())
         if (!mat.empty()) {
             println("writing image")
-            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", resized)
+            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", mat)
             deserialized.newImageTime = Timer.getFPGATimestamp()
-            slamValues.writeText(Json.encodeToString(resized))
+            slamValues.writeText(Json.encodeToString(deserialized))
         }
         deserialized.debugDashboard()
     }

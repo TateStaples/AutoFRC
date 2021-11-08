@@ -64,13 +64,13 @@ class SlamBridge : SubsystemBase() {
 //        TimeUnit.SECONDS.sleep((1.0 / 3.0).toLong())
         CameraServer.getInstance().video.grabFrame(mat)
 //        cap.read(mat)
-        val resized = Mat()
-        Imgproc.resize(mat, resized, Size(320.0, 240.0))
+//        val resized = Mat()
+//        Imgproc.resize(mat, resized, Size(320.0, 240.0))
         deserialized = Json.decodeFromString(slamValues.readText())
         if (!mat.empty()) {
-            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", resized)
+            Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", mat)
             deserialized.newImageTime = Timer.getFPGATimestamp()
-            slamValues.writeText(Json.encodeToString(resized))
+            slamValues.writeText(Json.encodeToString(deserialized))
         }
         deserialized.debugDashboard()
     }

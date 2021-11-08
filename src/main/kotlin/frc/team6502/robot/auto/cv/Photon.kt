@@ -37,7 +37,7 @@ class Photon : SubsystemBase() {
     private var unitConversion = 1.0  // TODO: figure out how to tune it
 
     init {
-        CameraServer.getInstance().addCamera(video)
+        CameraServer.getInstance().startAutomaticCapture(video)
     }
 
     override fun periodic() {
