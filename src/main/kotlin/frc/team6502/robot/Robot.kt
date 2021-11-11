@@ -22,26 +22,22 @@ class Robot : KRobot() {
     }
 
     override fun teleopInit() {
-        Constants.AUTO = false
         CommandManager.clear()
         KField2d.trajectory = null
         CommandManager.enqueue(DefaultDrive())
     }
 
     override fun autonomousInit() {
-        Constants.AUTO = true
         CommandManager.clear()
         Strategy.plan()
     }
 
-    override fun robotInit() {
-        RobotContainer.navigation.pose = Pose2d(0.1, 0.1, 0.degrees)
-    }
     override fun robotPeriodic() {
         KField2d.robotPose = RobotContainer.navigation.pose
     }
 
     override fun simulationInit() {
+        RobotContainer.navigation.pose = Pose2d(0.1, 0.1, 0.degrees)
         for (x in arrayOf(1.0, 2.0, 3.0)) {
             for (y in arrayOf(1.0, 2.0))
                 KField2d.addGoal(Translation2d(x, y), 0.0, "ball", Intake())

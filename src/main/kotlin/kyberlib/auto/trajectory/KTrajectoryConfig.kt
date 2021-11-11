@@ -21,6 +21,8 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
                         ) : TrajectoryConfig(maxVelocity.metersPerSecond, maxAcceleration.metersPerSecond) {
     private val data = TrajectoryConfigData(maxVelocity.metersPerSecond, maxAcceleration.metersPerSecond, initialVelocity.metersPerSecond, finalVelocity.metersPerSecond, reversed)
 
+    private constructor(data: TrajectoryConfigData) : this(data.maxVelocity.metersPerSecond, data.maxAcceleration.metersPerSecond, emptyList(), data.initialVelocity.metersPerSecond, data.finalVelocity.metersPerSecond, data.reversed)
+
     init {
         isReversed = reversed
         startVelocity = initialVelocity.metersPerSecond
@@ -34,6 +36,8 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
     fun save(file: File) {
         file.writeText(Json.encodeToString(data))
     }
+
+    fun copy(): KTrajectoryConfig = KTrajectoryConfig(data)
 
     companion object {
         /**

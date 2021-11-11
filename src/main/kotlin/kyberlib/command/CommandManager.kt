@@ -86,6 +86,7 @@ object CommandManager : Command {
      */
     fun clear() {
         queue.clear()
+        terminate()
     }
 
     // ---------- manipulate commands --------- //

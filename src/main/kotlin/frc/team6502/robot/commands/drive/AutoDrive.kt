@@ -51,8 +51,7 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
     }
 
     override fun end(interrupted: Boolean) {
-        Drivetrain.leftMaster.voltage = 0.0
-        Drivetrain.rightMaster.voltage = 0.0
+        Drivetrain.stop()
     }
 
     override fun isFinished(): Boolean {

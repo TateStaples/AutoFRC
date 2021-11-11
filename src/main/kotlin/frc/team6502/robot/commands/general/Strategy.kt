@@ -24,7 +24,6 @@ object Strategy {
      * When all the queued commands are done, it requests here what to do next
      */
     fun plan() {
-        println("collected balled: $collectedBalls, found balls: $foundBalls")
         if (collectedBalls > 0) shoot()
         else if (foundBalls > 0) collectBalls()
         else searchForBalls()
@@ -52,9 +51,7 @@ object Strategy {
         val goals = RobotContainer.navigation.field.goals.filter { it.name == "ball" }
         val points = goals.map { it.position }
         val route = TravelingSalesman(points.toMutableList()).bruteForce()
-        println("collection route: $route, points: $points")
         for (waypoint in route) {
-            println(waypoint)
             val goal = goals.find { it.position == waypoint }!!
             val command = goal.command
             CommandManager.enqueue(command)
