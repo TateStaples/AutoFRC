@@ -1,9 +1,7 @@
 package frc.team6502.robot
 
 import edu.wpi.first.wpilibj.RobotBase
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import frc.team6502.robot.auto.cv.Photon
-import frc.team6502.robot.auto.cv.SlamBridge
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.auto.Navigator
 import kyberlib.auto.pathing.Pathfinder
@@ -15,7 +13,7 @@ import kotlin.math.PI
  * Contains all Robot subsystems and sensors
  */
 object RobotContainer {
-    private val gyro = KPigeon(Constants.PIGEON_PORT)
+    private val gyro = KPigeon(Constants.PIGEON_PORT)  // todo: figure out why KPigeon crash mac
     val controller = KXboxController(0).apply {
         rightX.apply {
             maxVal = -PI
@@ -41,10 +39,6 @@ object RobotContainer {
         // initialize subsystems here:
         Drivetrain
         if (RobotBase.isReal()) Photon()
-
-        SmartDashboard.putBoolean("AUTO", Constants.AUTO)
-        SmartDashboard.putBoolean("DEBUG", Constants.DEBUG)
-        SmartDashboard.putBoolean("MECANUM", Constants.MECANUM)
     }
 
 }
