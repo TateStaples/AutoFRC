@@ -42,8 +42,8 @@ object Constants{
     val WHEEL_RADIUS = (3.25 / 2.0).inches
     const val DRIVE_GEAR_RATIO = 1.0 / 20.0
 
-    const val RAMSETE_BETA = 0.7
-    const val RAMSETE_ZETA = 0.1
+    const val RAMSETE_BETA = 2.0
+    const val RAMSETE_ZETA = 0.7
 
     // drive constraints
     val acceleration = 2.metersPerSecond
