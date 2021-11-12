@@ -35,7 +35,6 @@ interface Debug {
     fun debugDashboard(previousPath: String = "", id: String = identifier) {
         if (!debugging) return
         val map = debugValues()
-        println("debugging $id into $previousPath")
         sendMapToDashboard(map, "$previousPath/$id")
     }
 
