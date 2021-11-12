@@ -21,10 +21,15 @@ class Robot : KRobot() {
         }
     }
 
+    override fun disabledInit() {
+//        CommandManager.clear()
+        Drivetrain.stop()
+    }
+
     override fun teleopInit() {
         CommandManager.clear()
         KField2d.trajectory = null
-        CommandManager.enqueue(DefaultDrive())
+        CommandManager.enqueue(DefaultDrive)
     }
 
     override fun autonomousInit() {

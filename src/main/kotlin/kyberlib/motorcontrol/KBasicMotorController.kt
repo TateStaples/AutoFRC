@@ -2,13 +2,13 @@ package kyberlib.motorcontrol
 
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
-import kyberlib.command.Debuggable
+import kyberlib.command.Debug
 import kyberlib.math.invertIf
 
 /**
  * A basic motor controller. No closed-loop control
  */
-abstract class KBasicMotorController : Sendable, Debuggable() {
+abstract class KBasicMotorController : Sendable, Debug {
     protected var controlMode = ControlMode.NULL
     // ------ configs ----- //
     /**
@@ -24,7 +24,7 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     /**
      * If enabled, the motor controller will print additional information to stdout.
      */
-    var debug = false
+    var debug = false  // todo: deprecated
 
     /**
      * The prefix used by this motor for logging of errors and debug information.
@@ -126,30 +126,20 @@ abstract class KBasicMotorController : Sendable, Debuggable() {
     }
 
     /**
-     * Logs an error to the driver station window
-     */
-    fun logError(text: String) {
-        DriverStation.reportError("[$identifier] $text", false)
-    }
-
-    /**
-     * Logs debug information to the driver station window if debug=true
-     */
-    fun logDebug(text: String) {
-        if (debug) println("[$identifier] $text")
-    }
-
-    /**
      * Converts motor in sendable graphics widget
      */
     override fun initSendable(builder: SendableBuilder) {
         builder.setSmartDashboardType("Encoder")
         builder.addDoubleProperty("Voltage", this::voltage) { this.voltage = it }
+        builder.addBooleanProperty("brake mode", this::brakeMode, this::brakeMode::set)
+        builder.addBooleanProperty("reversed", this::reversed, this::reversed::set)
     }
 
     override fun debugValues(): Map<String, Any?> {
         return mapOf(
-            "Voltage" to voltage
+            "Voltage" to voltage,
+            "brake mode" to brakeMode,
+            "reversed" to reversed
         )
     }
 

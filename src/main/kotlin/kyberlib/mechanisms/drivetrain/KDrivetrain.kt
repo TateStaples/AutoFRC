@@ -14,13 +14,9 @@ interface KDrivetrain {
      */
     fun drive(speeds: ChassisSpeeds)
 
-    /**
-     * Prints relevant values for debugging
-     */
-    fun debug()
-
     var pose: Pose2d
     val position: Translation2d
         get() = pose.translation
     var heading: KRotation
+    val chassisSpeeds: ChassisSpeeds
 }

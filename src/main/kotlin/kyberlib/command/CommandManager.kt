@@ -1,19 +1,16 @@
 package kyberlib.command
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.commands.general.Strategy
 import frc.team6502.robot.subsystems.Drivetrain
 import frc.team6502.robot.subsystems.Shooter
-import java.util.*
-import kotlin.collections.ArrayList
 
 // todo: either rework entirely or delete and use normal scheduling
 /**
  * The main auto command manager.
  * Allows scheduling when to do what.
  */
-object CommandManager : Command {
+object CommandManager : Command, Debug {
     init {
         schedule(false)
     }
@@ -30,9 +27,7 @@ object CommandManager : Command {
      * Also check if the command is done.
      */
     override fun execute() {
-        if (activeCommand != null)
-            SmartDashboard.putString("active command", activeCommand!!.javaClass.simpleName)
-        else SmartDashboard.putString("active command", "null")
+        debugDashboard()
         if (activeCommand == null && queue.isEmpty()) {
             Strategy.plan()
             Drivetrain.stop()
@@ -123,8 +118,8 @@ object CommandManager : Command {
     /**
      * returns a string name of command
      */
-    private fun describe(command: Command): String {
-        return command.javaClass.simpleName
+    private fun describe(command: Command?): String {
+        return if (command != null) command.javaClass.simpleName else "null"
     }
 
     // ---------- general command stuff --------- //
@@ -142,6 +137,14 @@ object CommandManager : Command {
 //        for (command in queue)
 //            set.addAll(command.requirements)
         return set
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "commandName" to describe(activeCommand),
+            "activeCommand" to activeCommand,
+            "queue" to queue
+        )
     }
 }
 

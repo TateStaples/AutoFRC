@@ -16,6 +16,12 @@ val Pose2d.string: String
 fun Pose2d(x: Length, y:Length, rotation: Angle): Pose2d = Pose2d(x.meters, y.meters, rotation)
 val Pose2d.transform: Transform2d
     get() = this.minus(zeroPose)
+val Pose2d.debugValues: Map<String, Any?>
+    get() = mapOf(
+        "x (m)" to x,
+        "y (m)" to y,
+        "theta (rad)" to rotation.radians
+    )
 val zeroPose = Pose2d(0.0, 0.0, 0.degrees)
 
 // Translation2d
@@ -31,3 +37,9 @@ fun Translation2d.towards(translation2d: Translation2d): Rotation2d {
 
 val ChassisSpeeds.speed: LinearVelocity
         get() = sqrt(vxMetersPerSecond * vxMetersPerSecond + vyMetersPerSecond * vyMetersPerSecond).metersPerSecond
+val ChassisSpeeds.debugValues: Map<String, Any?>
+    get() = mapOf(
+        "forward (m per s)" to vxMetersPerSecond,
+        "strafe (m per s)" to vyMetersPerSecond,
+        "turn (rad per s)" to omegaRadiansPerSecond,
+    )

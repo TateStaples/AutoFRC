@@ -11,7 +11,9 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.VecBuilder
+import kyberlib.command.Debug
 import kyberlib.input.controller.KXboxController
+import kyberlib.math.units.debugValues
 import kyberlib.math.units.extensions.*
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.sensors.gyros.KGyro
@@ -29,9 +31,9 @@ data class DifferentialDriveConfigs(val wheelRadius: Length, val trackWidth: Len
  * @param configs information about the physical desciption of this drivetrain
  * @param gyro KGyro to provide heading information
  */
-class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: Array<KMotorController>,
+class DifferentialDriveTrain(private val leftMotors: Array<KMotorController>, private val rightMotors: Array<KMotorController>,
                              private val configs: DifferentialDriveConfigs, val gyro: KGyro) : SubsystemBase(), Simulatable,
-    KDrivetrain {
+    KDrivetrain, Debug {
     constructor(leftMotor: KMotorController, rightMotor: KMotorController,
                 configs: DifferentialDriveConfigs, gyro: KGyro) : this(arrayOf(leftMotor), arrayOf(rightMotor), configs, gyro)
 
@@ -59,6 +61,8 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
     override var heading
         get() = gyro.heading
         set(value) {gyro.heading = value}
+    override val chassisSpeeds: ChassisSpeeds
+        get() = kinematics.toChassisSpeeds(DifferentialDriveWheelSpeeds(leftMaster.linearVelocity.metersPerSecond, rightMaster.linearVelocity.metersPerSecond))
 
     // drive functions
     override fun drive(speeds: ChassisSpeeds) {
@@ -72,10 +76,6 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
 
     override fun periodic() {
         odometry.update(gyro.heading, leftMaster.linearPosition.meters, rightMaster.linearPosition.meters)
-    }
-
-    override fun debug() {
-        println("${leftMaster.velocity}, ${rightMaster.velocity}")
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
@@ -109,5 +109,17 @@ class DifferentialDriveTrain(leftMotors: Array<KMotorController>, rightMotors: A
         SmartDashboard.putNumber("X", pose.x)
         SmartDashboard.putNumber("Y", pose.y)
         SmartDashboard.putNumber("THETA", pose.rotation.radians)
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        val map = mutableMapOf(
+            "pose" to pose.debugValues,
+            "speed" to chassisSpeeds.debugValues,
+            "leftMaster" to leftMaster,
+            "rightMaster" to rightMaster
+        )
+        leftMotors.forEachIndexed { index, motor -> if (index != 0) map["leftFollow$index"] = motor }
+        rightMotors.forEachIndexed { index, motor -> if (index != 0) map["rightFollow$index"] = motor }
+        return map.toMap()
     }
 }

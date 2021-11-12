@@ -21,8 +21,11 @@ typealias Route = ArrayList<Waypoint>
  * - https://web.stanford.edu/class/cme334/docs/2012-11-14-Firouz_TSP.pdf
  * - https://github.com/ReadyPlayer2/TSP
  */
-class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
-    constructor(vararg waypoints: Translation2d) : this(waypoints.toMutableList())
+class TravelingSalesman(
+    private val waypoints: MutableList<Translation2d>,
+    private val startPosition: Waypoint? = null, private val endPosition: Waypoint? = null)
+{
+    constructor(vararg waypoints: Translation2d, startPosition: Waypoint? = null, endPosition: Waypoint? = null) : this(waypoints.toMutableList(), startPosition, endPosition)
     /**
      * Calculate the shortest route by trying every combination O(n!)
      */
@@ -35,10 +38,11 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
      * Calculates shortest route using nearest neighbour algorithm
      */
     fun nearestNeighbour(): Route {
+        // Note: doesn't work with required end point
         // New route with start as Stoke
-        val availableCities = this.waypoints.toMutableList()
-        val route = Route().apply { add(this@TravelingSalesman.waypoints.last()) }
-        availableCities.remove(route[0])
+        val availableCities = waypoints.toMutableList()
+        val route = Route()
+        val first = startPosition ?: availableCities.removeFirst()
         while (route.size < this.waypoints.size) {
             val currentCity = route.last()
             val nearestCity = availableCities.minByOrNull { it.getDistance(currentCity) }
@@ -48,6 +52,7 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
                 availableCities.remove(nearestCity)
             } else break
         }
+        if (endPosition != null) route.add(endPosition)
         return route
     }
     /**
@@ -125,9 +130,9 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
         // https://www.geeksforgeeks.org/prims-minimum-spanning-tree-mst-greedy-algo-5/
         val nodeCount = verts.size
         val nodes = verts.map { Node(it) }
-        val startingNode = nodes.first()
+        val startingNode: Node = nodes.first()
 
-        val unvisitedNodes = verts.toMutableList()
+        val unvisitedNodes = nodes.toMutableList()
         val visitedNodes = mutableListOf(startingNode)
         unvisitedNodes.remove(startingNode)
 
@@ -138,14 +143,14 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
             var shortestDistance = Double.POSITIVE_INFINITY
             visitedNodes.forEach { start ->
                 unvisitedNodes.forEach { end ->
-                    val distance = start.position.getDistance(end)
+                    val distance = start.position.getDistance(end.position)
                     if (distance < shortestDistance) {
                         shortestDistance = distance
                         bestPair = Pair(start, end)
                     }
                 }
             }
-            val newNode = Node(bestPair.second, bestPair.first)
+            val newNode = Node(bestPair.second.position, bestPair.first)
             graph.addNode(newNode)
             unvisitedNodes.remove(bestPair.second)
             visitedNodes.add(newNode)
@@ -161,8 +166,11 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
      * @param r: optional starting route, defaults to empty
      * @param isBruteForce: whether to try all options or only better options, defaults to false
      */
-    private fun permute(r: Route = Route(), isBruteForce: Boolean = false) {
-        if (r.size != waypoints.size) {
+    private fun permute(r: Route = if (startPosition != null) Route(listOf(startPosition)) else Route(),
+                        isBruteForce: Boolean = false) {
+        val maxSize = if (startPosition == null) waypoints.size else waypoints.size + 1
+//        println("Max: $maxSize, size: ${r.size}")
+        if (r.size != maxSize) {
             for (city in waypoints) {
                 if (r.contains(city)) continue
                 // copy
@@ -188,6 +196,7 @@ class TravelingSalesman(val waypoints: MutableList<Translation2d>) {
             }
         }
         else {
+            if (endPosition != null) r.add(endPosition)
             permutations.add(r)
             if (!isBruteForce && cost(r) < permutationMin) {
                 permutationMin = cost(r)

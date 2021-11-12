@@ -8,14 +8,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kyberlib.command.Debuggable
+import kyberlib.command.Debug
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Size
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 /**
  * Bridge between the robot and UcoSlam algorithm.
@@ -80,7 +79,7 @@ class SlamBridge : SubsystemBase() {
 @Serializable
 data class SlamValues (
     var X:Double, var Y: Double, var THETA: Double, var outputImgTime: Double,
-    var newImageTime: Double, var running: Int) : Debuggable() {
+    var newImageTime: Double, var running: Int) : Debug {
 
     override fun debugValues(): Map<String, Any> {
         return mapOf(

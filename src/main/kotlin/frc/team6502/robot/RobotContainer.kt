@@ -1,10 +1,8 @@
 package frc.team6502.robot
 
-import edu.wpi.first.wpilibj.RobotBase
 import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.auto.Navigator
-import kyberlib.auto.pathing.Pathfinder
 import kyberlib.input.controller.KXboxController
 import kyberlib.sensors.gyros.KPigeon
 import kyberlib.simulation.Simulation
@@ -34,7 +32,6 @@ object RobotContainer {
         applyMovementRestrictions(Constants.velocity, Constants.acceleration)
         applyKinematics(Drivetrain.kinematics)
     }
-    val pathfinder = Pathfinder()
 
     init {
         // initialize subsystems here:

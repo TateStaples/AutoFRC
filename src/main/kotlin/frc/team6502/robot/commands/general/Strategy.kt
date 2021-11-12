@@ -50,11 +50,16 @@ object Strategy {
         println("collecting route: $foundBalls")
         val goals = RobotContainer.navigation.field.goals.filter { it.name == "ball" }
         val points = goals.map { it.position }
-        val route = TravelingSalesman(points.toMutableList()).bruteForce()
-        for (waypoint in route) {
-            val goal = goals.find { it.position == waypoint }!!
-            val command = goal.command
-            CommandManager.enqueue(command)
+        val route = TravelingSalesman(points.toMutableList(),
+            RobotContainer.navigation.position, goalPose.translation
+        ).bruteForce()
+        println(route)
+        for (waypoint in route.slice(IntRange(1, route.size-2))) {
+            val goal = goals.find { it.position == waypoint }
+            if (goal != null) {
+                val command = goal.command
+                CommandManager.enqueue(command)
+            }
         }
     }
 

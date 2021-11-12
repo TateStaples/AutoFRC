@@ -42,6 +42,7 @@ data class KEncoderConfig(val cpr: Int, val type: EncoderType, val reversed: Boo
  * A more advanced motor control with feedback control.
  */
 abstract class KMotorController : KBasicMotorController() {
+    // find a way to simulate brake mode
     // ----- configs ----- //
     /**
      * The multiplier to attach to the raw velocity. *This is not the recommended way to do this.* Try using gearRatio instead
@@ -429,6 +430,15 @@ abstract class KMotorController : KBasicMotorController() {
         get() = rotationToLinear(simPosition)
         set(value) { simPosition = linearToRotation(value) }
 
+    override fun initSendable(builder: SendableBuilder) {
+        super.initSendable(builder)
+        builder.addDoubleProperty("Angular Position (rad)", {linearPosition.meters}, { linearPosition = it.meters })
+        builder.addDoubleProperty("Angular Velocity (rad per s)", {linearVelocity.metersPerSecond}, { linearVelocity = it.metersPerSecond })
+        if (linearConfigured) {
+            builder.addDoubleProperty("Linear Position (m)", {linearPosition.meters}, { linearPosition = it.meters })
+            builder.addDoubleProperty("Linear Velocity (m per s)", {linearVelocity.metersPerSecond}, { linearVelocity = it.metersPerSecond })
+        }
+    }
     override fun debugValues(): Map<String, Any?> {
         val map = super.debugValues().toMutableMap()
         map.putAll(mapOf(

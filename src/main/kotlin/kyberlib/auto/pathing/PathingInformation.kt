@@ -2,6 +2,7 @@ package kyberlib.auto.pathing
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import kyberlib.command.Debug
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -12,7 +13,7 @@ import kotlin.math.sqrt
  * @param startPosition the start point of pathing
  * #
  */
-internal class PathingInformation(val startPosition: Translation2d, val endPosition: Translation2d){
+internal class PathingInformation(val startPosition: Translation2d, val endPosition: Translation2d) : Debug {
     /** The center of the two endpoints */
     val center: Translation2d = startPosition.plus(endPosition).div(2.0)  // average
     /** The distance between the two end nodes of the pathing*/
@@ -60,7 +61,11 @@ internal class PathingInformation(val startPosition: Translation2d, val endPosit
      * Print all the values for debugging purposes.
      * Should not be used during competition
      */
-    private fun debug() {
-        println("start: $startPosition, end: $endPosition, w: $width, h: $height center: $center, dis: $dis, rotation: $rotation")
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "start" to startPosition,
+            "end" to endPosition,
+            "best path" to currentPathLength
+        )
     }
 }

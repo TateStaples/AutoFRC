@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.auto.trajectory.KTrajectoryConfig
+import kyberlib.command.Debug
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
@@ -18,9 +19,8 @@ import kotlin.random.Random
 
 /**
  * Class that generates optimal pathes between various locations on a field
- * @param field KField2d that contains the dimensions of the field and is updated with the obstacles
  */
-open class Pathfinder {
+object Pathfinder : Debug {
     val field = KField2d
     internal val tree = Tree()
     private val random = Random(6)
@@ -28,14 +28,15 @@ open class Pathfinder {
 
     var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node
     var pathFound = false  // whether the Planner currently has a working path
-    var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
+        private set
+    private var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
     val path: ArrayList<Node>?   // the working path of points to get from robot position to target goal
         get() = endNode?.let { tree.trace(it) }
 
     /** how many nodes to create before giving up finding target */
-    private val explorationDepth = 5000
+    private const val explorationDepth = 5000
     /** how many nodes to dedicate to optimization */
-    private val optimizationDepth = 100
+    private const val optimizationDepth = 50
 
     /**
      * Generates a trajectory to get from current estimated pose to a separate target
@@ -169,7 +170,7 @@ open class Pathfinder {
      * Generates random point in the field
      * @return a valid position in the field
      */
-    fun randomPoint(): Translation2d {
+    internal fun randomPoint(): Translation2d {
         var x: Double
         var y: Double
         do {
@@ -192,7 +193,7 @@ open class Pathfinder {
     /**
      * Illustrate to tree of values
      */
-    fun drawTreePath() {
+    internal fun drawTreePath() {
         TreeIllustration(this).appear()
     }
 
@@ -202,6 +203,17 @@ open class Pathfinder {
     private fun reset() {
         tree.vertices.clear()
         path?.clear()
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        val map = mutableMapOf<String, Any?>(
+            "explored nodes" to tree.nodeCount,
+            "path" to path.toString()
+        )
+        if (this::information.isInitialized) {
+            map.putAll(information.debugValues())
+        }
+        return map.toMap()
     }
 }
 
@@ -216,26 +228,25 @@ object PathingTest {
     @JvmStatic
     fun main(args: Array<String>) {
         KTrajectory.generalConfig = KTrajectoryConfig(2.metersPerSecond, 1.metersPerSecond)
-        val PathPlanner = Pathfinder()
         // look @ informed RRT* and BIT*
         // current version in RRT
         start = Translation2d(0.meters, 0.meters)
         end = Translation2d(2.meters, 2.meters)
         for (i in 0..0) {
-            val p = PathPlanner.randomPoint()
+            val p = Pathfinder.randomPoint()
             val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
             if (o.contains(start) || o.contains(end)) continue
-            PathPlanner.field.obstacles.add(o)
+            Pathfinder.field.obstacles.add(o)
         }
 //        val testO = Obstacle(Pose2d(3.feet, 5.feet, 0.degrees), 1.feet.meters, 1.feet.meters)
-//        PathPlanner.field.obstacles.add(testO)
+//        _root_ide_package_.kyberlib.auto.pathing.Pathfinder.field.obstacles.add(testO)
         println("field setup")
-        PathPlanner.pathTo(Pose2d(start, 0.degrees), Pose2d(end, 0.degrees))
+        Pathfinder.pathTo(Pose2d(start, 0.degrees), Pose2d(end, 0.degrees))
         println("tree loaded")
-//        println(PathPlanner.path!!.size)
-        PathPlanner.drawTreePath()
-        println(PathPlanner.path)
-        println(PathPlanner.path!!.map { PathPlanner.field.inField(it.position)})
-        println(PathPlanner.field.obstacles)
+//        println(_root_ide_package_.kyberlib.auto.pathing.Pathfinder.path!!.size)
+        Pathfinder.drawTreePath()
+        println(Pathfinder.path)
+        println(Pathfinder.path!!.map { Pathfinder.field.inField(it.position)})
+        println(Pathfinder.field.obstacles)
     }
 }

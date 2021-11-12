@@ -10,15 +10,19 @@ import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpiutil.math.VecBuilder
 import frc.team6502.robot.Constants
+import frc.team6502.robot.RobotContainer
 import kyberlib.auto.Navigator
+import kyberlib.command.Debug
+import kyberlib.math.units.debugValues
 import kyberlib.math.units.extensions.k
 import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.metersPerSecond
 import kyberlib.motorcontrol.MotorType
 import kyberlib.motorcontrol.rev.KSparkMax
 import kyberlib.simulation.Simulatable
+import kotlin.math.absoluteValue
 
-object Drivetrain : SubsystemBase(), Simulatable {
+object Drivetrain : SubsystemBase(), Simulatable, Debug {
 
     /**
      * A forward projection of how much voltage to apply to get desired velocity and acceleration
@@ -113,10 +117,7 @@ object Drivetrain : SubsystemBase(), Simulatable {
 
     override fun periodic() {
         Navigator.instance!!.update(chassisSpeeds)
-        leftMaster.debugDashboard()
-        rightMaster.debugDashboard()
-        leftFollower.debugDashboard()
-        rightFollower.debugDashboard()
+        debugDashboard()
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
@@ -132,9 +133,13 @@ object Drivetrain : SubsystemBase(), Simulatable {
         )
     }
 
+    private fun roundLows(d: Double): Double = if (d.absoluteValue < 0.1) 0.0 else d
+
     override fun simUpdate(dt: Double) {
         // update the sim with new inputs
-        driveSim.setInputs(leftMaster.voltage, rightMaster.voltage)
+        val leftVolt = leftMaster.voltage
+        val rightVolt = rightMaster.voltage
+        driveSim.setInputs(roundLows(leftVolt), roundLows(rightVolt))
         driveSim.update(dt)
 
         // update the motors with what they should be
@@ -143,9 +148,16 @@ object Drivetrain : SubsystemBase(), Simulatable {
         rightMaster.simLinearPosition = driveSim.rightPositionMeters.meters
         rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
         Navigator.instance!!.heading = driveSim.heading.k
+    }
 
-        // log the values
-        leftMaster.debugDashboard()
-        rightMaster.debugDashboard()
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "pose" to RobotContainer.navigation.pose.debugValues,
+            "speed" to chassisSpeeds.debugValues,
+            "leftMaster" to leftMaster,
+            "rightMaster" to rightMaster,
+            "leftFollow" to leftFollower,
+            "rightFollow" to rightFollower
+        )
     }
 }

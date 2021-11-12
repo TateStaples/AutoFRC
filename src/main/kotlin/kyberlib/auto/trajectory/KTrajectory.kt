@@ -7,12 +7,13 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil
 import kyberlib.KyberlibConfig
+import kyberlib.command.Debug
 import java.io.File
 
 /**
  * Wrapper class of standard trajectory that allows for more generation options, saving / loading, and hashing
  */
-class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: KTrajectoryConfig?) : Trajectory(trajectory.states) {
+class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: KTrajectoryConfig?) : Trajectory(trajectory.states), Debug {
     constructor(name: String, waypoints: List<Pose2d>, config: KTrajectoryConfig? = null) : this(name, generateTrajectory(waypoints, config), config)
 
     constructor(name: String, startPose2d: Pose2d, waypoints: Collection<Translation2d>, config: KTrajectoryConfig? = null) : this(name, generateTrajectory(startPose2d, waypoints.toMutableList(), config), config)  // check if .toMutableList maintains order
@@ -131,5 +132,13 @@ class KTrajectory(private val name: String, trajectory: Trajectory, newConfig: K
      */
     override fun equals(other: Any?): Boolean {
         return hash == other.hashCode()
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "start Pose" to states.first().poseMeters,
+            "end Pose" to states.last().poseMeters,
+            "time" to states.last().timeSeconds
+        )
     }
 }
