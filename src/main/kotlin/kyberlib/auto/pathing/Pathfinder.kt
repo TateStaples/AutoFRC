@@ -79,20 +79,20 @@ open class Pathfinder {
      * @return a trajectory that follows the Tree recommended path
      */
     private fun treeToTrajectory(startPose2d: Pose2d, endPose2d: Pose2d): Trajectory {
-        if (!pathFound) return Trajectory()
+        if (!pathFound)
+            return KTrajectory("default", startPose2d, emptyList(), endPose2d)
         val smooth = smoothPath()
         smooth.removeFirst()
         smooth.removeLast()
-//        println("start: $startPose2d, through: $smooth, end: $endPose2d")
         return KTrajectory("Pathfinder path", startPose2d, smooth, endPose2d)  // test edit
     }
 
     private fun treeToTrajectory(startPose2d: Pose2d, endPosition: Translation2d): Trajectory {
-        if (!pathFound) return Trajectory()
+        if (!pathFound)
+            return KTrajectory("default", startPose2d, emptyList(), Pose2d(endPosition, startPose2d.translation.towards(endPosition)))
         val smooth = smoothPath()
         smooth.removeFirst()
         smooth.removeLast()
-//        println("start: $startPose2d, through: $smooth, end: $endPose2d")
         val endRotation = if(smooth.isEmpty()) startPose2d.translation.towards(endPosition) else smooth.last().towards(endPosition)
         return KTrajectory("Pathfinder path", startPose2d, smooth, Pose2d(endPosition, endRotation))  // test edit
     }

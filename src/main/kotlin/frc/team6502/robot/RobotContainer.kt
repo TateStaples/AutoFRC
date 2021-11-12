@@ -7,6 +7,7 @@ import kyberlib.auto.Navigator
 import kyberlib.auto.pathing.Pathfinder
 import kyberlib.input.controller.KXboxController
 import kyberlib.sensors.gyros.KPigeon
+import kyberlib.simulation.Simulation
 import kotlin.math.PI
 
 /**
@@ -38,7 +39,7 @@ object RobotContainer {
     init {
         // initialize subsystems here:
         Drivetrain
-        if (RobotBase.isReal()) Photon()
+        if (Simulation.real) Photon()
     }
 
 }
