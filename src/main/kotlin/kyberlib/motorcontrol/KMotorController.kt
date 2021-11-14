@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import kyberlib.math.filters.Differentiator
-import kyberlib.math.invertIf
 import kyberlib.math.units.extensions.*
 
 typealias GearRatio = Double
@@ -152,7 +151,7 @@ abstract class KMotorController : KBasicMotorController() {
         customControl = {
             when (controlMode) {
                 ControlMode.VELOCITY -> {
-                    val ff = feedforward.calculate(linearVelocitySetpoint.metersPerSecond)  // todo: implement acceleration - wasn't working in sims
+                    val ff = feedforward.calculate(linearVelocitySetpoint.metersPerSecond, linearAcceleration.metersPerSecond)
                     val pid = PID.calculate(linearVelocityError.metersPerSecond)
                     ff + pid
                 }
@@ -247,13 +246,9 @@ abstract class KMotorController : KBasicMotorController() {
 
     var velocity: AngularVelocity
         get() {
-            if (!real)  {
-                acceleration = accelerationCalculator.calculate(simVelocity.radiansPerSecond).radiansPerSecond
-                return simVelocity
-            }
-            assert(encoderConfigured)
-            val vel = rawVelocity * gearRatio
-            acceleration = accelerationCalculator.calculate(vel.radiansPerSecond).radiansPerSecond
+            assert(encoderConfigured) {"configure your motor before using"}
+            val vel = if (real) rawVelocity * gearRatio else simVelocity
+//            acceleration = accelerationCalculator.calculate(vel.radiansPerSecond).radiansPerSecond  // todo: acc doesnt work in sims - find workarounds
             return vel
         }
         set(value) {
@@ -375,6 +370,11 @@ abstract class KMotorController : KBasicMotorController() {
      * Does *not* move to angle, just changes the variable
      */
     abstract fun resetPosition(position: Angle = 0.rotations)
+
+    /**
+     * Resets where the encoder thinks it is.
+     * Does *not* move motor to that spot, just internal variable.
+     */
     fun resetPosition(position: Length) {
         resetPosition(linearToRotation(position))
     }
@@ -444,6 +444,7 @@ abstract class KMotorController : KBasicMotorController() {
         map.putAll(mapOf(
             "Angular Position (rad)" to position.radians,
             "Angular Velocity (rad per s)" to velocity.radiansPerSecond
+//            "Angular Acceleration (rad per s per s)" to acceleration.radiansPerSecond  // temporary (here for testing)
         ))
         if (linearConfigured)
             map.putAll(mapOf(
