@@ -1,29 +1,17 @@
 package kyberlib.motorcontrol
 
-import edu.wpi.first.wpilibj.controller.PIDController
-import kyberlib.math.invertIf
-import kyberlib.math.units.extensions.*
+import kyberlib.math.units.extensions.Angle
+import kyberlib.math.units.extensions.AngularVelocity
+import kyberlib.math.units.extensions.degrees
+import kyberlib.math.units.extensions.rpm
 
 /**
  * Raw simulated motor.
  */
-class KSimulatedESC(name: String) : KMotorController() {
-
-    private val posController = PIDController(0.0, 0.0, 0.0)
-    private val velController = PIDController(0.0, 0.0, 0.0)
-
+class KSimulatedESC(name: String) : KMotorController() {  // potentially remove this and make abstra
     override var rawPosition: Angle = 0.degrees
-        set(value) {
-            percent = posController.calculate(field.rotations, field.rotations)
-            field = value
-        }
 
     override var rawVelocity: AngularVelocity = 0.rpm
-        set(value) {
-            field = value
-            velController.calculate(field.rpm, field.rpm)
-        }
-
     override var currentLimit: Int = -1
 
     override fun configureEncoder(config: KEncoderConfig) = true
@@ -32,27 +20,15 @@ class KSimulatedESC(name: String) : KMotorController() {
 
     override var brakeMode: BrakeMode = false
 
-    override var reversed: Boolean = false
+    override var rawReversed: Boolean = false
 
     override var rawPercent: Double = 0.0
-        set(value) {
-            field =  value.invertIf { reversed && !isFollower }
-        }
 
-    override fun writePid(p: Double, i: Double, d: Double) {
-        println(posController)
-        posController.p = p
-        posController.i = i
-        posController.d = d
-    }
+    override fun writePid(p: Double, i: Double, d: Double) {}
 
-    override fun writeMultipler(mv: Double, mp: Double) {
+    override fun writeMultipler(mv: Double, mp: Double) {}
 
-    }
-
-    override fun resetPosition(position: Angle) {
-        this.position = position
-    }
+    override fun resetPosition(position: Angle) { this.position = position }
 
     override fun followTarget(kmc: KBasicMotorController) {
         kmc.followers.add(this)

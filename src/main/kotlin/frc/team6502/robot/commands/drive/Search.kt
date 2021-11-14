@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.simulation.field.KField2d
 
 /**
  * Shitty method to look for new balls.
@@ -20,7 +21,7 @@ object Search : CommandBase() {
 
     private var previousFoundBalls = 0
     private val foundBalls
-        get() = RobotContainer.navigation.field.goals.size
+        get() = KField2d.goals.size
 
     init {
         addRequirements(Drivetrain)

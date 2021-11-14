@@ -133,7 +133,7 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
         )
     }
 
-    private fun roundLows(d: Double): Double = if (d.absoluteValue < 0.1) 0.0 else d
+    private fun roundLows(d: Double): Double = if (d.absoluteValue < 0.05) 0.0 else d
 
     override fun simUpdate(dt: Double) {
         // update the sim with new inputs

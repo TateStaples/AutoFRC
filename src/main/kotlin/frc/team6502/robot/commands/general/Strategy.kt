@@ -9,6 +9,7 @@ import kyberlib.command.CommandManager
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
+import kyberlib.simulation.field.KField2d
 
 /**
  * Offers a high level strategy loop. Main Brain center of the robot.
@@ -17,7 +18,7 @@ import kyberlib.math.units.extensions.inches
 object Strategy {
     var collectedBalls = 0
     private val foundBalls
-        get() = RobotContainer.navigation.field.goals.filter { it.name == "ball" }.size
+        get() = KField2d.goals.filter { it.name == "ball" }.size
 
     private var goalPose = Pose2d(151.532.inches, 79.inches, 0.degrees)  // was 171.532
     /**
@@ -48,7 +49,7 @@ object Strategy {
      */
     private fun collectBalls() {
         println("collecting route: $foundBalls")
-        val goals = RobotContainer.navigation.field.goals.filter { it.name == "ball" }
+        val goals = KField2d.goals.filter { it.name == "ball" }
         val points = goals.map { it.position }
         val route = TravelingSalesman(points.toMutableList(),
             RobotContainer.navigation.position, goalPose.translation

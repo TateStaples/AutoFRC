@@ -19,12 +19,11 @@ abstract class KBasicMotorController : Sendable, Debug {
     /**
      * Determines if the motor should run in the opposite direction
      */
-    abstract var reversed: Boolean
+    var reversed: Boolean = false
+        get() = if (real) rawReversed else field
+        set(value) {if (real) rawReversed else field = value}
 
-    /**
-     * If enabled, the motor controller will print additional information to stdout.
-     */
-    var debug = false  // todo: deprecated
+    abstract var rawReversed: Boolean
 
     /**
      * The prefix used by this motor for logging of errors and debug information.

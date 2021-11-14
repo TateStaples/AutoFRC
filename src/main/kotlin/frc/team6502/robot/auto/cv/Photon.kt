@@ -14,6 +14,7 @@ import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.radians
 import kyberlib.math.units.transform
+import kyberlib.simulation.field.KField2d
 import org.photonvision.PhotonCamera
 
 /**
@@ -55,7 +56,7 @@ class Photon : SubsystemBase() {
             for (target in res.targets) {
                 val camToTargetTrans: Transform2d = target.cameraToTarget
                 val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
-                RobotContainer.navigation.field.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
+                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
             }
         }
     }

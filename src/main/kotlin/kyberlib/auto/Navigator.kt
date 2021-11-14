@@ -1,7 +1,6 @@
 package kyberlib.auto
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
-import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
@@ -17,12 +16,12 @@ import kyberlib.math.units.zeroPose
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.field.KField2d
 
-// todo: document
-class Navigator(val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
+/**
+ * Class to store and update robot navigation information
+ */
+class Navigator(private val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
     companion object { var instance: Navigator? = null }
     init { instance = this }
-
-    val field = KField2d
 
     /**
      * A probability calculator to guess where the robot is from odometer and vision updates
@@ -42,24 +41,6 @@ class Navigator(val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
     fun applyKinematics(kinematics: MecanumDriveKinematics) { pathingConfig.setKinematics(kinematics) }
     fun applyKinematics(kinematics: SwerveDriveKinematics) { pathingConfig.setKinematics(kinematics) }
 
-    /**
-     * Generate a through a list of positions
-     *
-     * @param waypoints list of Translation2d that the robot should go through
-     */
-    fun trajectory(waypoints: MutableList<Translation2d>): KTrajectory {  // todo: deprecated
-        return KTrajectory("auto ${pose.translation.string} -> ${waypoints.last().string}", pose, waypoints, pathingConfig)
-    }
-    /**
-     * Generate a through a list of positions
-     * @param waypoints list of Translation2d that the robot should go through
-     */
-    fun trajectory(vararg waypoints: Translation2d): KTrajectory = trajectory(waypoints.toMutableList())
-
-    init {
-        SmartDashboard.putData("Field", field)
-    }
-
     // ----- public variables ----- //
     // location
     var heading: Angle  // what direction the robot is facing
@@ -69,7 +50,7 @@ class Navigator(val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
         get() = poseEstimator.getEstimatedPosition()
         set(value) {
             poseEstimator.resetPosition(value, heading)
-            this.field.robotPose = value
+            KField2d.robotPose = value
         }
     val position: Translation2d  // the estimated location of the robot
         get() = pose.translation

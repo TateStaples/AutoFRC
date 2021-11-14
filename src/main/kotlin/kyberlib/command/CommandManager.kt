@@ -3,9 +3,8 @@ package kyberlib.command
 import edu.wpi.first.wpilibj2.command.*
 import frc.team6502.robot.commands.general.Strategy
 import frc.team6502.robot.subsystems.Drivetrain
-import frc.team6502.robot.subsystems.Shooter
 
-// todo: either rework entirely or delete and use normal scheduling
+
 /**
  * The main auto command manager.
  * Allows scheduling when to do what.
@@ -94,6 +93,8 @@ object CommandManager : Command, Debug {
      */
     fun sequence(vararg commands: Command) = SequentialCommandGroup(*commands)
 
+    fun functionToCommand(runnable: Runnable) = InstantCommand(runnable)
+
     /**
      * Get the list of indices that match a certain command type
      */
@@ -132,11 +133,7 @@ object CommandManager : Command, Debug {
      * All the requirements that the current command queue will use
      */
     override fun getRequirements(): MutableSet<Subsystem> {
-        val set = mutableSetOf<Subsystem>(Drivetrain, Shooter)  // todo: make not bad
-//        activeCommand?.let { set.addAll(it.requirements) }
-//        for (command in queue)
-//            set.addAll(command.requirements)
-        return set
+        return mutableSetOf()  // skuff
     }
 
     override fun debugValues(): Map<String, Any?> {
