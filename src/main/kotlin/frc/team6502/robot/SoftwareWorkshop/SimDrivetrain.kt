@@ -6,13 +6,17 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpiutil.math.VecBuilder
 import frc.team6502.robot.Constants
+import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.math.units.extensions.*
+import kyberlib.math.zeroIf
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.motorcontrol.KSimulatedESC
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.sensors.gyros.KPigeon
 import kyberlib.simulation.Simulatable
 import kyberlib.simulation.Simulation
+import kyberlib.simulation.field.KField2d
+import kotlin.math.absoluteValue
 
 abstract class SimDrivetrain : Simulatable {
     val trackWidth = 1.feet
@@ -52,6 +56,6 @@ abstract class SimDrivetrain : Simulatable {
         gyro.heading = driveSim.heading.k
 
         odometry.update(driveSim.heading, driveSim.leftPositionMeters, driveSim.rightPositionMeters)
-        Simulation.instance.field.robotPose = odometry.poseMeters
+        KField2d.robotPose = odometry.poseMeters
     }
 }

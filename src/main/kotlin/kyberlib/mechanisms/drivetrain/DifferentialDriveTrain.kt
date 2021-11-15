@@ -102,13 +102,6 @@ class DifferentialDriveTrain(private val leftMotors: Array<KMotorController>, pr
         rightMaster.simLinearPosition = driveSim.rightPositionMeters.meters
         rightMaster.simLinearVelocity = driveSim.rightVelocityMetersPerSecond.metersPerSecond
         gyro.heading = driveSim.heading.k
-
-        // log the values
-        leftMaster.debugDashboard()
-        rightMaster.debugDashboard()
-        SmartDashboard.putNumber("X", pose.x)
-        SmartDashboard.putNumber("Y", pose.y)
-        SmartDashboard.putNumber("THETA", pose.rotation.radians)
     }
 
     override fun debugValues(): Map<String, Any?> {
