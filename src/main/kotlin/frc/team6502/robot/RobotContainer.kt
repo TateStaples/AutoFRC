@@ -12,10 +12,10 @@ import kotlin.math.PI
  * Contains all Robot subsystems and sensors
  */
 object RobotContainer {
-    private val gyro = KPigeon(Constants.PIGEON_PORT)  // todo: figure out why KPigeon crash mac
+    private val gyro = KPigeon(Constants.PIGEON_PORT)  // todo: figure out why PigeonIMU crash mac
     val controller = KXboxController(0).apply {
         rightX.apply {
-            maxVal = -PI
+            maxVal = -2*PI
             expo = 73.0
             deadband = 0.1
         }

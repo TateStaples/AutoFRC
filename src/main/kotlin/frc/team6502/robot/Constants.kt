@@ -46,6 +46,6 @@ object Constants{
     const val RAMSETE_ZETA = 0.7
 
     // drive constraints
-    val acceleration = 2.metersPerSecond
-    val velocity = 1.5.metersPerSecond
+    val acceleration = 4.metersPerSecond
+    val velocity = 2.5.metersPerSecond
 }
