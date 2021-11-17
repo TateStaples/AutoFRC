@@ -58,13 +58,9 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
         get() = _spark!!.appliedOutput
         set(value) {_spark!!.set(value)}
 
-    // todo: change this setting to have internal call
-    override var reversed: Boolean = false
-        get() = if(real) _spark!!.inverted else field
-        set(value) {
-            _spark?.inverted = value
-            field = value
-        }
+    override var rawReversed: Boolean
+        get() = _spark!!.inverted
+        set(value) { _spark?.inverted = value }
 
     override var rawVelocity: AngularVelocity
         get() = _enc!!.velocity.rpm
@@ -83,6 +79,9 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
             _spark?.setSmartCurrentLimit(value)
             field = value
         }
+
+    val current
+        get() = _spark?.outputCurrent
 
     override fun configureEncoder(config: KEncoderConfig): Boolean {
         return when {

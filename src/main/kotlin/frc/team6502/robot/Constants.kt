@@ -1,22 +1,15 @@
 package frc.team6502.robot
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj.DriverStation
 import kyberlib.math.units.extensions.inches
-import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.extensions.metersPerSecond
 
 /**
  * This file holds all important constants throughout the project
  */
 object Constants{
-    const val DEBUG = true
-    var AUTO = false
-        set(value) {
-            field = value
-            SmartDashboard.putBoolean("AUTO", value)
-        }
-    const val MECANUM = false
-    const val VISION = true
+    val AUTO
+        get() = DriverStation.getInstance().isAutonomousEnabled
 
     // ------ PORTS ------ //
 
@@ -49,10 +42,10 @@ object Constants{
     val WHEEL_RADIUS = (3.25 / 2.0).inches
     const val DRIVE_GEAR_RATIO = 1.0 / 20.0
 
-    const val RAMSETE_BETA = 0.7
-    const val RAMSETE_ZETA = 0.1
+    const val RAMSETE_BETA = 2.0
+    const val RAMSETE_ZETA = 0.7
 
     // drive constraints
-    val acceleration = 1.metersPerSecond
-    val velocity = 1.5.metersPerSecond
+    val acceleration = 4.metersPerSecond
+    val velocity = 2.5.metersPerSecond
 }

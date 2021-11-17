@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.auto.pathing.Pathfinder
 import kyberlib.math.units.extensions.degrees
 import kyberlib.simulation.field.KField2d
 
@@ -38,8 +39,8 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
 
     override fun initialize() {
         if (!this::trajectory.isInitialized)
-            trajectory = if (rotationInvariant) RobotContainer.pathfinder.pathTo(RobotContainer.navigation.pose, targetPose.translation)
-                        else RobotContainer.pathfinder.pathTo(RobotContainer.navigation.pose, targetPose)
+            trajectory = if (rotationInvariant) Pathfinder.pathTo(RobotContainer.navigation.pose, targetPose.translation)
+                        else Pathfinder.pathTo(RobotContainer.navigation.pose, targetPose)
         KField2d.trajectory = trajectory
         timer.start()
     }
@@ -51,8 +52,7 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
     }
 
     override fun end(interrupted: Boolean) {
-        Drivetrain.leftMaster.voltage = 0.0
-        Drivetrain.rightMaster.voltage = 0.0
+        Drivetrain.stop()
     }
 
     override fun isFinished(): Boolean {

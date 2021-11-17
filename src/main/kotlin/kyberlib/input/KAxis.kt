@@ -1,6 +1,6 @@
 package kyberlib.input
 
-import kyberlib.command.Debuggable
+import kyberlib.command.Debug
 
 /**
  * Wrapper for a DoubleSuppler (that retrieves raw axis value) and applies some hyper-parameters to increase usability.
@@ -9,7 +9,7 @@ import kyberlib.command.Debuggable
  *
  * Graph: https://www.desmos.com/calculator/mxwvyq14yp
  */
-class KAxis(val raw: () -> Double) : Debuggable() {
+class KAxis(val raw: () -> Double) : Debug {
     var maxVal = 1.0  // the adjusted max val that the axis will output (rate in explination)
     var expo = 0.0  // increases
     var deadband = 0.01  // how much of the controller should default to 0

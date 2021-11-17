@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveOdometry
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveWheelSpeeds
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import kyberlib.command.Debug
+import kyberlib.math.units.debugValues
 import kyberlib.math.units.extensions.KRotation
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.metersPerSecond
@@ -19,7 +21,7 @@ import kyberlib.sensors.gyros.KGyro
  * @param packages pairs of <wheelPosition, wheel motor> (currently requires 4 motors in frontLeft, frontRight, backLeft, backRight order)
  * @param gyro a KGyro that will provide heading information
  */
-class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, private val gyro: KGyro) : KDrivetrain, SubsystemBase() {
+class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, private val gyro: KGyro) : KDrivetrain, SubsystemBase(), Debug {
     init {
         assert(packages.size == 4) { "the pre-made drivetrain only accepts 4 wheel mecanum drives" }
     }
@@ -46,6 +48,8 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
     override var heading
         get() = gyro.heading
         set(value) {gyro.heading = value}
+    override val chassisSpeeds: ChassisSpeeds
+        get() = kinematics.toChassisSpeeds(mecanumDriveWheelSpeeds)
 
     // drive functions
     override fun drive(speeds: ChassisSpeeds) {
@@ -74,7 +78,14 @@ class MecanumDrivetrain(vararg packages: Pair<Translation2d, KMotorController>, 
         odometry.update(gyro.heading, mecanumDriveWheelSpeeds)
     }
 
-    override fun debug() {
-        println(motors.map { it.linearVelocity }.toString())
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "pose" to pose.debugValues,
+            "speed" to chassisSpeeds,
+            "Front Left" to frontLeft,
+            "Front Right" to frontRight,
+            "Back Left" to backRight,
+            "Back Right" to backLeft,
+        )
     }
 }

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.system.plant.DCMotor
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId
 import edu.wpi.first.wpiutil.math.VecBuilder
 import edu.wpi.first.wpiutil.math.numbers.N1
+import kyberlib.command.Debug
 import kyberlib.math.units.extensions.AngularVelocity
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.radiansPerSecond
@@ -15,12 +16,13 @@ import kyberlib.math.units.extensions.radiansPerSecond
  * Pre-made Flywheel Subsystem. Also a demo of StateSpace control from WPILIB. Control using velocity variable.
  * @param motor the controlling motor of the flywheel. If other motors are involves, make them follow this
  */
-class Flywheel(private val motor: KMotorController) {
+class Flywheel(private val motor: KMotorController,
+               private val kFlywheelMomentOfInertia: Double = 0.00032, // kg * m^2
+               private val timeDelay: Double = 0.02
+               ) : Debug {
     // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/state-space/state-space-flywheel-walkthrough.html
 
-    private val kFlywheelMomentOfInertia = 0.00032 // kg * m^2
     private val kFlywheelGearing = motor.gearRatio
-    private val timeDelay = 0.02
 
     /**
      * The plant holds a state-space model of our flywheel. This system has the following properties:
@@ -68,11 +70,13 @@ class Flywheel(private val motor: KMotorController) {
             loop.predict(timeDelay)  // math
             val nextVoltage = loop.getU(0)  // input
             nextVoltage
-        }
+        }  // todo: this wont update frequently enough, add notifier
     }
 
     var velocity: AngularVelocity
         get() = motor.velocity
         set(value) {motor.velocity = value}
+
+    override fun debugValues(): Map<String, Any?> = motor.debugValues()
 
 }

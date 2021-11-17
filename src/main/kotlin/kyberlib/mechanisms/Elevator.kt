@@ -1,9 +1,11 @@
 package kyberlib.mechanisms
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import kyberlib.command.Debug
 import kyberlib.motorcontrol.KMotorController
 import kyberlib.math.units.extensions.Length
 import kyberlib.math.units.extensions.feet
+import kyberlib.math.units.extensions.meters
 
 /**
  * Simple pre-made system that will control an elevator. Control by setting the position.
@@ -11,7 +13,8 @@ import kyberlib.math.units.extensions.feet
  * @param radius the radius of the wheel that moves the elevator. Alternatively rotationToVelocityConversionFactor/2π
  * @param initialPosition optional value of where the elevator starts
  */
-class Elevator(vararg val motors: KMotorController, radius: Length, initialPosition: Length = 0.feet) : SubsystemBase() {
+class Elevator(vararg val motors: KMotorController, radius: Length, initialPosition: Length = 0.feet) : SubsystemBase(),
+    Debug {
     private val master = motors[0].apply {
         this.radius = radius
         resetPosition(initialPosition)
@@ -31,4 +34,7 @@ class Elevator(vararg val motors: KMotorController, radius: Length, initialPosit
             master.linearPosition = value
         }
 
+    override fun debugValues(): Map<String, Any?> {
+        return master.debugValues()
+    }
 }

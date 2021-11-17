@@ -21,7 +21,7 @@ class KVictorSPX(val canId: CANId) : KBasicMotorController() {
             _victor.setNeutralMode(mode)
         }
 
-    override var reversed: Boolean
+    override var rawReversed: Boolean
         get() = _victor.inverted
         set(value) {_victor.inverted = value}
 

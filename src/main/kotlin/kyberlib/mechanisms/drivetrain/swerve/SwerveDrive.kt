@@ -2,6 +2,7 @@ package kyberlib.mechanisms.drivetrain.swerve
 
 import edu.wpi.first.wpilibj.controller.PIDController
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController
+import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry
@@ -10,8 +11,12 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand
+import kyberlib.command.Debug
+import kyberlib.math.units.debugValues
+import kyberlib.math.units.extensions.KRotation
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feetPerSecond
+import kyberlib.mechanisms.drivetrain.KDrivetrain
 import kyberlib.sensors.gyros.KGyro
 
 /**
@@ -23,7 +28,7 @@ import kyberlib.sensors.gyros.KGyro
 class SwerveDrive(private val gyro: KGyro,
                   private vararg val swerveModules: SwerveModule,
                   private val constraints: TrapezoidProfile.Constraints = TrapezoidProfile.Constraints(10.feetPerSecond.value, 10.feetPerSecond.value)
-                        ) : SubsystemBase() {
+                        ) : SubsystemBase(), KDrivetrain, Debug {
     // controls
     private val kinematics = SwerveDriveKinematics(*swerveModules.map { it.location }.toTypedArray())
     private val odometry = SwerveDriveOdometry(kinematics, 0.degrees)
@@ -35,8 +40,18 @@ class SwerveDrive(private val gyro: KGyro,
         get() = swerveModules.map { it.state }
         set(value) {swerveModules.zip(value).forEach { it.first.state = it.second }}
 
-    val speed: ChassisSpeeds
+    override val chassisSpeeds: ChassisSpeeds
         get() =  kinematics.toChassisSpeeds(*states.toTypedArray())
+    override var heading: KRotation
+        get() = gyro.heading
+        set(value) { gyro.heading = value }
+    override var pose: Pose2d
+        get() = odometry.poseMeters
+        set(value) { odometry.resetPosition(value, heading) }
+
+    override fun drive(speeds: ChassisSpeeds) {
+        drive(speeds, true)
+    }
 
     /**
      * Drive the robot is given directions
@@ -92,6 +107,15 @@ class SwerveDrive(private val gyro: KGyro,
             this::drive,
             this
         )
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        val map = mutableMapOf<String, Any>(
+            "pose" to pose.debugValues,
+            "speed" to chassisSpeeds.debugValues,
+        )
+        swerveModules.forEachIndexed { index, swerveModule -> map["swerve Module #$index"] = swerveModule }
+        return map.toMap()
     }
 
 }

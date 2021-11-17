@@ -15,8 +15,8 @@ class Differentiator : Filter() {
      * Return the rate of change of value in units per second
      */
     override fun calculate(d: Double): Double {
-        value = if (lastValue != null) (value - lastValue!!) / dt else 0.0
-        lastValue = value
+        value = if (lastValue != null) (d - lastValue!!) / dt else 0.0
+        lastValue = d
         prevTime = time
         return value
     }

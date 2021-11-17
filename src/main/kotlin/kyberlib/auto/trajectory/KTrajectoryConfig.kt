@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kyberlib.command.Debug
 import kyberlib.math.units.extensions.LinearVelocity
 import kyberlib.math.units.extensions.feetPerSecond
 import kyberlib.math.units.extensions.metersPerSecond
@@ -18,8 +19,10 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
                              constraints: List<TrajectoryConstraint> = listOf(),
                              initialVelocity: LinearVelocity = 0.feetPerSecond, finalVelocity: LinearVelocity = 0.feetPerSecond,
                              reversed: Boolean = false
-                        ) : TrajectoryConfig(maxVelocity.metersPerSecond, maxAcceleration.metersPerSecond) {
+                        ) : TrajectoryConfig(maxVelocity.metersPerSecond, maxAcceleration.metersPerSecond), Debug {
     private val data = TrajectoryConfigData(maxVelocity.metersPerSecond, maxAcceleration.metersPerSecond, initialVelocity.metersPerSecond, finalVelocity.metersPerSecond, reversed)
+
+    private constructor(data: TrajectoryConfigData) : this(data.maxVelocity.metersPerSecond, data.maxAcceleration.metersPerSecond, emptyList(), data.initialVelocity.metersPerSecond, data.finalVelocity.metersPerSecond, data.reversed)
 
     init {
         isReversed = reversed
@@ -35,6 +38,8 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
         file.writeText(Json.encodeToString(data))
     }
 
+    fun copy(): KTrajectoryConfig = KTrajectoryConfig(data)
+
     companion object {
         /**
          * Loads config from JSON file.
@@ -44,6 +49,17 @@ class KTrajectoryConfig(maxVelocity: LinearVelocity, maxAcceleration: LinearVelo
             val data = Json.decodeFromString<TrajectoryConfigData>(file.readText())
             return KTrajectoryConfig(data.maxVelocity.metersPerSecond, data.maxAcceleration.metersPerSecond, listOf(), data.initialVelocity.metersPerSecond, data.finalVelocity.metersPerSecond, data.reversed)
         }
+    }
+
+    override fun debugValues(): Map<String, Any?> {
+        return mapOf(
+            "max Vel" to data.maxVelocity.metersPerSecond,
+            "max Acc" to data.maxAcceleration.metersPerSecond,
+            "constraints" to constraints,
+            "init vel" to data.initialVelocity.metersPerSecond,
+            "final vel" to data.finalVelocity.metersPerSecond,
+            "reversed" to data.reversed
+        )
     }
 }
 

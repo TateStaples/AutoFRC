@@ -9,6 +9,7 @@ import kyberlib.command.CommandManager
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
+import kyberlib.simulation.field.KField2d
 
 /**
  * Offers a high level strategy loop. Main Brain center of the robot.
@@ -17,14 +18,13 @@ import kyberlib.math.units.extensions.inches
 object Strategy {
     var collectedBalls = 0
     private val foundBalls
-        get() = RobotContainer.navigation.field.goals.filter { it.name == "ball" }.size
+        get() = KField2d.goals.filter { it.name == "ball" }.size
 
     private var goalPose = Pose2d(151.532.inches, 79.inches, 0.degrees)  // was 171.532
     /**
      * When all the queued commands are done, it requests here what to do next
      */
     fun plan() {
-        println("collected balled: $collectedBalls, found balls: $foundBalls")
         if (collectedBalls > 0) shoot()
         else if (foundBalls > 0) collectBalls()
         else searchForBalls()
@@ -49,15 +49,18 @@ object Strategy {
      */
     private fun collectBalls() {
         println("collecting route: $foundBalls")
-        val goals = RobotContainer.navigation.field.goals.filter { it.name == "ball" }
+        val goals = KField2d.goals.filter { it.name == "ball" }
         val points = goals.map { it.position }
-        val route = TravelingSalesman(points.toMutableList()).bruteForce()
-        println("collection route: $route, points: $points")
-        for (waypoint in route) {
-            println(waypoint)
-            val goal = goals.find { it.position == waypoint }!!
-            val command = goal.command
-            CommandManager.enqueue(command)
+        val route = TravelingSalesman(points.toMutableList(),
+            RobotContainer.navigation.position, goalPose.translation
+        ).bruteForce()
+        println(route)
+        for (waypoint in route.slice(IntRange(1, route.size-2))) {
+            val goal = goals.find { it.position == waypoint }
+            if (goal != null) {
+                val command = goal.command
+                CommandManager.enqueue(command)
+            }
         }
     }
 
