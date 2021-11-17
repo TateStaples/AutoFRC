@@ -51,7 +51,18 @@ class SlamBridge : SubsystemBase() {
         }
     }
 
+    var index = 0
+    fun save_image() {
+        val mat = Mat()
+        CameraServer.getInstance().video.grabFrame(mat)
+        Imgcodecs.imwrite("./UcoSlam/calibration/image$index.jpg", mat)
+        println("here to images/image$index.jpg")
+        index++
+    }
+
     override fun periodic() {
+        save_image()
+        return
         // read to SLAM output
         var deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
         if (lastUpdate != deserialized.outputImgTime) {
