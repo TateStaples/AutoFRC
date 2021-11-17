@@ -1,5 +1,6 @@
 package frc.team6502.robot.auto.cv
 
+import edu.wpi.cscore.HttpCamera
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
@@ -27,6 +28,10 @@ import java.io.File
  * @throws crash should not be intialized on real robot, only simulation
  */
 class SlamBridge : SubsystemBase() {
+    init {
+        val url = "http://10.65.2.2:1181/?action=stream"
+        CameraServer.getInstance().startAutomaticCapture(HttpCamera("USB Camera 0", url, HttpCamera.HttpCameraKind.kMJPGStreamer))
+    }
     private val tableInstance = NetworkTableInstance.getDefault()
     private val table = tableInstance.getTable("SLAM")
     private var lastUpdate = 0.0

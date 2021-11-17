@@ -1,6 +1,7 @@
 package frc.team6502.robot.auto.cv
 
 import edu.wpi.cscore.HttpCamera
+import edu.wpi.cscore.VideoMode
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.Timer
@@ -22,9 +23,9 @@ import org.photonvision.PhotonCamera
  */
 class Photon : SubsystemBase() {
     // camera setups
-    private val url = "http://10.65.2.11"
-    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
-    private val camera = PhotonCamera("$url:5800")
+//    private val url = "http://url10.65.2.11"
+//    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
+//    private val camera = PhotonCamera("$url:5800")
     private val cameraOffset = Pose2d(3.inches, 0.inches, 0.degrees)
 
     // Network Tables Info
@@ -38,7 +39,8 @@ class Photon : SubsystemBase() {
     private var unitConversion = 1.0  // TODO: figure out how to tune it
 
     init {
-        CameraServer.getInstance().startAutomaticCapture(video)
+        val video = CameraServer.getInstance().startAutomaticCapture()
+        video.videoMode = VideoMode(video.videoMode.pixelFormat, 640, 480, 30)
     }
 
     override fun periodic() {
@@ -50,17 +52,17 @@ class Photon : SubsystemBase() {
      * Uses the Limelight's HSV thresholding to detect yellow balls
      */
     private fun targetUpdate() {
-        val res = camera.latestResult
-        if (res.hasTargets()) {
-            val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
-            for (target in res.targets) {
-                val camToTargetTrans: Transform2d = target.cameraToTarget
-                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
-                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
-            }
-        }
+//        val res = camera.latestResult
+//        if (res.hasTargets()) {
+//            val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
+//            for (target in res.targets) {
+//                val camToTargetTrans: Transform2d = target.cameraToTarget
+//                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
+//                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
+//            }
+//        }
     }
-
+//
     /**
      * Checks the output of the UcoSlam in Network Tables.
      * Then it applies those results to the pose estimator
