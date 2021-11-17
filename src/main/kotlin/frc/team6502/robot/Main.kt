@@ -12,7 +12,7 @@ class Main() {
          */
         @JvmStatic
         fun main(args: Array<String>) {
-            VisionRobotTestbed().initialize()
+            Robot().initialize()
         }
     }
 }

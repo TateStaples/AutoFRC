@@ -21,7 +21,11 @@ abstract class KBasicMotorController : Sendable, Debug {
      */
     var reversed: Boolean = false
         get() = if (real) rawReversed else field
-        set(value) {if (real) rawReversed else field = value}
+        set(value) {
+            if (real)
+                rawReversed = value
+            else field = value
+        }
 
     abstract var rawReversed: Boolean
 
@@ -49,7 +53,7 @@ abstract class KBasicMotorController : Sendable, Debug {
      * What percent output is currently being applied?
      */
     var percent: Double = 0.0
-        get() = if (real) rawPercent.invertIf { reversed } else field
+        get() = if (real) rawPercent else field
         set(value) {
             val adjusted = value
             controlMode = ControlMode.VOLTAGE
@@ -68,7 +72,7 @@ abstract class KBasicMotorController : Sendable, Debug {
     var voltage: Double
         get() = percent * vbus
         set(value) {
-            value.coerceIn(0.0 , vbus)
+            value.coerceIn(-vbus , vbus)
             percent = (value / vbus)
         }
 
