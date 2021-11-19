@@ -116,7 +116,7 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
     }
 
     override fun periodic() {
-        Navigator.instance!!.update(chassisSpeeds)
+        RobotContainer.navigation.update(chassisSpeeds)
         debugDashboard()
     }
 

@@ -13,9 +13,10 @@ cam = cv2.VideoCapture(0)
 (w, h) = (int(cam.get(4)), int(cam.get(3)))
 
 images = glob.glob('*.jpg')
-
 for filename in images:
     frame = cv2.imread(filename)
+    if frame is None:
+        continue
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
 
