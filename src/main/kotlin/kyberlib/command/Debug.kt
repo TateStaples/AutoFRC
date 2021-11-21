@@ -3,7 +3,14 @@ package kyberlib.command
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Sendable
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import frc.team6502.robot.subsystems.Drivetrain
 
+/**
+ * Types of ways to print to the output (driverstation)
+ * - Print = normal print statement. Will typically remain in console and white
+ * - Warn = yellow font and shows in the small outputs
+ * - Error = Bright red letters and will show as error
+ */
 enum class LogMode {
     PRINT, WARN, ERROR
 }
@@ -14,18 +21,13 @@ interface Debug {
     companion object {
         var debugging = true
 
-        /**
-         * Sends message to console as warning
-         */
-        fun logWarning(identifier:String, text: String, stacktrace: Boolean = false) {
-            DriverStation.reportWarning("[$identifier] $text", stacktrace)
-        }
-
-        /**
-         * Logs an error to the driver station window
-         */
-        fun logError(identifier:String, text: String, stacktrace: Boolean = false) {
-            DriverStation.reportError("[$identifier] $text", stacktrace)
+        fun log(identifier:String, text: String, mode: LogMode = LogMode.PRINT, stacktrace: Boolean = false) {
+            val output = "[$identifier] $text"
+            when (mode) {
+                LogMode.PRINT -> println(output)
+                LogMode.WARN -> DriverStation.reportWarning(output, stacktrace)
+                LogMode.ERROR -> DriverStation.reportError(output, stacktrace)
+            }
         }
     }
 
@@ -55,12 +57,12 @@ interface Debug {
 
     /**
      * Prints out all the values in a neat way
+     * @param message the output that will be sent to console
+     * @param logMode the way the message should appear
+     * @see LogMode
      */
-    fun debugPrint(logMode: LogMode = LogMode.PRINT) {
-        if (!debugging) return
-        if (logMode == LogMode.PRINT) println(debugString)
-        else if (logMode == LogMode.WARN) logWarning(debugString)
-        if (logMode == LogMode.ERROR) logError(debugString)
+    fun log(message: String = debugString, logMode: LogMode = LogMode.PRINT) {
+        Companion.log(identifier, message, logMode, stacktrace = false)
     }
 
     private val debugString: String
@@ -75,21 +77,13 @@ interface Debug {
             return stringBuilder.toString()
         }
 
-    fun logError(text: String = debugString, stacktrace: Boolean = false) {
-        Companion.logError(identifier, text, stacktrace)
-    }
-
-    fun logWarning(text: String = debugString, stacktrace: Boolean = false) {
-        Companion.logWarning(identifier, text, stacktrace)
-    }
-
     /**
      * The name of the group of values.
      * Defaults to the name of the calling class
      */
     var identifier: String
         get() = javaClass.simpleName
-        set(value) = logError("override me, don't set. Interfaces be wack")
+        set(value) = log("override me, don't set. Interfaces be wack", LogMode.ERROR)
 
     /**
      * Function that retrieves the values that need to be debugged

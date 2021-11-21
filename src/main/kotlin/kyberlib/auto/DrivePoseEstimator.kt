@@ -6,18 +6,18 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics
-import edu.wpi.first.wpilibj.kinematics.MecanumDriveWheelSpeeds
-import edu.wpi.first.wpilibj.math.Discretization
-import edu.wpi.first.wpilibj.math.StateSpaceUtil
-import edu.wpi.first.wpiutil.WPIUtilJNI
 import edu.wpi.first.wpiutil.math.MatBuilder
 import edu.wpi.first.wpiutil.math.Matrix
-import edu.wpi.first.wpiutil.math.Nat
-import edu.wpi.first.wpiutil.math.VecBuilder
 import edu.wpi.first.wpiutil.math.numbers.N1
 import edu.wpi.first.wpiutil.math.numbers.N3
 import kyberlib.math.units.zeroPose
 
+/**
+ * A generalized skuffed version of the WPI's Drive pose estimators.
+ * Works for all types of chassis.
+ * Needs to be replaced
+ * @see MecanumDrivePoseEstimator
+ */
 class DrivePoseEstimator(
     gyroAngle: Rotation2d,
     initialPoseMeters: Pose2d = zeroPose,

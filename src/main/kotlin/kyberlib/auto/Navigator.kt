@@ -6,12 +6,12 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.auto.trajectory.KTrajectoryConfig
 import kyberlib.command.Debug
-import kyberlib.math.units.extensions.*
-import kyberlib.math.units.string
+import kyberlib.math.units.extensions.Angle
+import kyberlib.math.units.extensions.LinearVelocity
+import kyberlib.math.units.extensions.metersPerSecond
 import kyberlib.math.units.zeroPose
 import kyberlib.sensors.gyros.KGyro
 import kyberlib.simulation.field.KField2d
@@ -33,10 +33,17 @@ class Navigator(private val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
      */
     private var pathingConfig = KTrajectoryConfig(1000.metersPerSecond, 1000.metersPerSecond).apply { KTrajectory.generalConfig = this }
 
+    /**
+     * Change the max vel and acc that trajectories will use in generation
+     */
     fun applyMovementRestrictions(velocity: LinearVelocity, maxAcceleration: LinearVelocity) {
         pathingConfig = KTrajectoryConfig(velocity, maxAcceleration).apply { addConstraints(pathingConfig.constraints) }
         KTrajectory.generalConfig = pathingConfig
     }
+
+    /**
+     * Applies kinematic models to trajectory generation
+     */
     fun applyKinematics(kinematics: DifferentialDriveKinematics) { pathingConfig.setKinematics(kinematics) }
     fun applyKinematics(kinematics: MecanumDriveKinematics) { pathingConfig.setKinematics(kinematics) }
     fun applyKinematics(kinematics: SwerveDriveKinematics) { pathingConfig.setKinematics(kinematics) }
@@ -68,7 +75,6 @@ class Navigator(private val gyro: KGyro, startPose: Pose2d = zeroPose) : Debug {
      * @param time the time of the detection
      */
     fun update(globalPosition: Pose2d, time: Double) {  // apply global position update
-        SmartDashboard.putString("global pose", globalPosition.string)
         poseEstimator.addVisionMeasurement(globalPosition, time)
     }
 

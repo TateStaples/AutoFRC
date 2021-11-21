@@ -96,7 +96,7 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
      * Drive the robot in a specific direction
      * @param speeds the velocity you want the robot to start moving
      */
-    fun drive (speeds: ChassisSpeeds) {
+    fun drive(speeds: ChassisSpeeds) {
         drive(kinematics.toWheelSpeeds(speeds))
     }
 

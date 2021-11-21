@@ -5,6 +5,7 @@ import com.revrobotics.CANPIDController
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel.MotorType
 import com.revrobotics.ControlType
+import kyberlib.command.LogMode
 import kyberlib.motorcontrol.EncoderType
 import kyberlib.motorcontrol.KEncoderConfig
 import kyberlib.motorcontrol.KMotorController
@@ -122,7 +123,7 @@ class KSparkMax(val canId: CANId, val motorType: kyberlib.motorcontrol.MotorType
 
     override fun resetPosition(position: Angle) {
         if (!encoderConfigured) {
-            return logError("Cannot reset encoder position without configured encoder")
+            return log("Cannot reset encoder position without configured encoder", LogMode.ERROR)
         }
         _enc?.position = position.rotations
     }
