@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team6502.robot.Constants
-import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
+import kyberlib.auto.Navigator
 import kyberlib.auto.pathing.Pathfinder
 import kyberlib.math.units.extensions.degrees
 import kyberlib.simulation.field.KField2d
@@ -39,14 +39,14 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
 
     override fun initialize() {
         if (!this::trajectory.isInitialized)
-            trajectory = if (rotationInvariant) Pathfinder.pathTo(RobotContainer.navigation.pose, targetPose.translation)
-                        else Pathfinder.pathTo(RobotContainer.navigation.pose, targetPose)
+            trajectory = if (rotationInvariant) Pathfinder.pathTo(Navigator.instance!!.pose, targetPose.translation)
+                        else Pathfinder.pathTo(Navigator.instance!!.pose, targetPose)
         KField2d.trajectory = trajectory
         timer.start()
     }
 
     override fun execute() {
-        val targetSpeed = calculator.calculate(RobotContainer.navigation.pose, trajectory.sample(timer.get()))
+        val targetSpeed = calculator.calculate(Navigator.instance!!.pose, trajectory.sample(timer.get()))
         Drivetrain.drive(targetSpeed)
 //        trajectory = PathPlanner.updateTrajectory(trajectory) - this should be necesary until moving obstabcles
     }

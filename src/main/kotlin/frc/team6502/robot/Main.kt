@@ -1,6 +1,7 @@
 package frc.team6502.robot
 
 import frc.team6502.robot.tests.VisionRobotTestbed
+import kyberlib.simulation.Simulation
 
 /**
  * Entry point. DO NOT TOUCH THIS FILE.
@@ -12,7 +13,8 @@ class Main() {
          */
         @JvmStatic
         fun main(args: Array<String>) {
-            Robot().initialize()
+            if(Simulation.real) Robot().initialize()
+            else VisionRobotTestbed().initialize()
         }
     }
 }

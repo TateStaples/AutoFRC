@@ -29,6 +29,7 @@ class Robot : KRobot() {
     override fun teleopInit() {
         CommandManager.clear()
         KField2d.trajectory = null
+        CommandManager.debugDashboard()
         CommandManager.enqueue(DefaultDrive)
     }
 

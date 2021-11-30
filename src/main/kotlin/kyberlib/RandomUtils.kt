@@ -11,13 +11,16 @@ import java.io.IOException
  */
 fun String.runCommand(workingDir: File) {
     try {
+        println("here")
         val parts = this.split("\\s".toRegex())
+        println("parts: $parts")
         val proc = ProcessBuilder(*parts.toTypedArray()).apply {
             directory(workingDir)
             redirectOutput(ProcessBuilder.Redirect.PIPE)
             redirectError(ProcessBuilder.Redirect.PIPE)
         }
         proc.start()
+        proc.redirectOutput(File("out.txt"))
     }
     catch(e: IOException) {
         e.printStackTrace()

@@ -68,8 +68,11 @@ class Photon : SubsystemBase() {
      * Then it applies those results to the pose estimator
      */
     private fun slamUpdate() {
+
         val updateTime = outputTimeEntry.getDouble(0.0)
         if (updateTime != lastUpdate && lastUpdate != 0.0) {
+            println("using slam output")
+            return
             val x  = (xEntry.getDouble(0.0) * unitConversion).meters
             val y  = (yEntry.getDouble(0.0) * unitConversion).meters
             val theta  = thetaEntry.getDouble(0.0).radians
