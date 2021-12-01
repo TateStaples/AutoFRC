@@ -21,16 +21,22 @@ import kotlin.random.Random
  * Class that generates optimal pathes between various locations on a field
  */
 object Pathfinder : Debug {
-    val field = KField2d
+    /** Tree storing the connections between locations */
     internal val tree = Tree()
+    /** Random number generator for point sampling. Seed isn't important. */
     private val random = Random(6)
+    /** Data class to store optimization information */
     internal lateinit var information: PathingInformation
 
-    var minGoalDistance = 0.2.feet.value  // margin of error for pathfinding node
-    var pathFound = false  // whether the Planner currently has a working path
+    /** Margin of error for a point to be considered at the goal */
+    var minGoalDistance = 0.2.feet.value
+    /** Whether the goal has been found */
+    var pathFound = false
         private set
-    private var endNode: Node? = null  // the node the represents the end goal [robot position] (think about changing to growing 2 seperate trees)
-    val path: ArrayList<Node>?   // the working path of points to get from robot position to target goal
+    /** The node at the goal */
+    private var endNode: Node? = null
+    /** The series of nodes going from start to end */
+    val path: ArrayList<Node>?
         get() = endNode?.let { tree.trace(it) }
 
     /** how many nodes to create before giving up finding target */
@@ -49,14 +55,22 @@ object Pathfinder : Debug {
         return treeToTrajectory(startPose2d, endPose2d)
     }
 
+    /**
+     * Generate a trajectory to a seperation position
+     * @param startPose2d the initial pose of the robot
+     * @param endPosition where the robot should end up
+     * @return trajectory that takes the robto from startPose2d to endPosition
+     */
     fun pathTo(startPose2d: Pose2d, endPosition: Translation2d): Trajectory {
         resetTree(startPose2d.translation, endPosition)
         return treeToTrajectory(startPose2d, endPosition)
     }
 
+    /**
+     * Resets the tree to path-find a new route.
+     */
     private fun resetTree(startPosition: Translation2d, endPosition: Translation2d) {
         if (tree.nodeCount > 0 && endPosition != information.endPosition) {
-            println("resetting tree")
             reset()
             tree.pruneInformed()
         }
@@ -98,6 +112,9 @@ object Pathfinder : Debug {
         return KTrajectory("Pathfinder path", startPose2d, smooth, Pose2d(endPosition, endRotation))  // test edit
     }
 
+    /**
+     * Removes unnecesary nodes from path so that the robot can more smoothly interpolate between fewer points
+     */
     private fun smoothPath(): ArrayList<Translation2d> {
         val points = path!!.map { it.position }.reversed()
         var improvement = true
@@ -151,7 +168,7 @@ object Pathfinder : Debug {
             delta = delta.times(tree.maxBranchLength/magnitude)  // resize the vector
         }
         val new = nearest.position.plus(delta)
-        if (!field.inField(new, nearest.position)) {
+        if (!KField2d.inField(new, nearest.position)) {
             return
         }
         val node = Node(new, parent = nearest, informed = pathFound)
@@ -161,8 +178,7 @@ object Pathfinder : Debug {
         if (endDis < minGoalDistance && !(pathFound && endDis < path!!.first().pathLengthFromRoot)) {
             pathFound = true
             endNode = node
-            println("path found = $path")
-            information.update(path!!.last().pathLengthFromRoot)
+            information.update(path!!.first().pathLengthFromRoot)
         }
     }
 
@@ -174,9 +190,9 @@ object Pathfinder : Debug {
         var x: Double
         var y: Double
         do {
-            x = random.nextDouble(field.width.meters)
-            y = random.nextDouble(field.width.meters)
-        } while(!field.inField(x, y))  // the convertions here might cause issues
+            x = random.nextDouble(KField2d.width.meters)
+            y = random.nextDouble(KField2d.width.meters)
+        } while(!KField2d.inField(x, y))  // the convertions here might cause issues
         return Translation2d(x, y)
     }
 
@@ -228,25 +244,18 @@ object PathingTest {
     @JvmStatic
     fun main(args: Array<String>) {
         KTrajectory.generalConfig = KTrajectoryConfig(2.metersPerSecond, 1.metersPerSecond)
-        // look @ informed RRT* and BIT*
-        // current version in RRT
+        // look @ BIT*
+        // current version is informed RRT*
         start = Translation2d(0.meters, 0.meters)
         end = Translation2d(2.meters, 2.meters)
-        for (i in 0..0) {
+        for (i in 0..5) {
             val p = Pathfinder.randomPoint()
             val o = Obstacle(Pose2d(p, 0.degrees), 0.2, 0.2)
             if (o.contains(start) || o.contains(end)) continue
-            Pathfinder.field.obstacles.add(o)
+           KField2d.obstacles.add(o)
         }
-//        val testO = Obstacle(Pose2d(3.feet, 5.feet, 0.degrees), 1.feet.meters, 1.feet.meters)
-//        _root_ide_package_.kyberlib.auto.pathing.Pathfinder.field.obstacles.add(testO)
-        println("field setup")
         Pathfinder.pathTo(Pose2d(start, 0.degrees), Pose2d(end, 0.degrees))
-        println("tree loaded")
-//        println(_root_ide_package_.kyberlib.auto.pathing.Pathfinder.path!!.size)
         Pathfinder.drawTreePath()
         println(Pathfinder.path)
-        println(Pathfinder.path!!.map { Pathfinder.field.inField(it.position)})
-        println(Pathfinder.field.obstacles)
     }
 }

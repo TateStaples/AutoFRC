@@ -133,7 +133,8 @@ abstract class KBasicMotorController : Sendable, Debug {
      */
     override fun initSendable(builder: SendableBuilder) {
         builder.setSmartDashboardType("Encoder")
-        builder.addDoubleProperty("Voltage", this::voltage) { this.voltage = it }
+        builder.addDoubleProperty("Voltage", this::voltage, this::voltage::set)
+        builder.addDoubleProperty("Percent", this::percent, this::percent::set)
         builder.addBooleanProperty("brake mode", this::brakeMode, this::brakeMode::set)
         builder.addBooleanProperty("reversed", this::reversed, this::reversed::set)
     }
@@ -141,6 +142,7 @@ abstract class KBasicMotorController : Sendable, Debug {
     override fun debugValues(): Map<String, Any?> {
         return mapOf(
             "Voltage" to voltage,
+            "Percent" to percent,
             "brake mode" to brakeMode,
             "reversed" to reversed
         )

@@ -7,6 +7,10 @@ import edu.wpi.first.wpilibj.TimedRobot
 import edu.wpi.first.wpilibj.livewindow.LiveWindow
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 
+/**
+ * Root class for all kyberlib robots.
+ * Wraps a timed robot loop and handles a lot of default features
+ */
 open class KRobot(private val period: Double = 0.02) {
     var enabled = false
         private set

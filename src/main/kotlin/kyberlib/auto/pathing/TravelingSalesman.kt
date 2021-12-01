@@ -41,8 +41,9 @@ class TravelingSalesman(
         // Note: doesn't work with required end point
         // New route with start as Stoke
         val availableCities = waypoints.toMutableList()
-        val route = Route()
         val first = startPosition ?: availableCities.removeFirst()
+        val route = Route()
+        route.add(first)
         while (route.size < this.waypoints.size) {
             val currentCity = route.last()
             val nearestCity = availableCities.minByOrNull { it.getDistance(currentCity) }
@@ -91,6 +92,7 @@ class TravelingSalesman(
         return Pair(bestRoute, shortestPath)
     }
 
+    // random algorithms I haven't gotten to yet
     fun simulatedAnnealing() {}
     fun localSearch() {}
     fun genetic() {}
@@ -98,8 +100,12 @@ class TravelingSalesman(
         // https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms
     }
 
+    /**
+     * A fancy, fast way to optimally solve TSP
+     *
+     * Source:  https://en.wikipedia.org/wiki/Christofides_algorithm
+     */
     fun christofides(): Route {
-        // https://en.wikipedia.org/wiki/Christofides_algorithm
 
         // 1) create Minimal Spanning Tree
         val MST = prim(waypoints)
@@ -163,8 +169,8 @@ class TravelingSalesman(
     /**
      * Generates all permutations in lexicographic order
      *
-     * @param r: optional starting route, defaults to empty
-     * @param isBruteForce: whether to try all options or only better options, defaults to false
+     * @param r optional starting route, defaults to empty
+     * @param isBruteForce whether to try all options or only better options, defaults to false
      */
     private fun permute(r: Route = if (startPosition != null) Route(listOf(startPosition)) else Route(),
                         isBruteForce: Boolean = false) {
@@ -225,10 +231,6 @@ class TravelingSalesman(
         return sum
     }
 }
-
-internal class MinimalSpanningTree(verts: ArrayList<Waypoint>) {
-}
-
 
 
 /**

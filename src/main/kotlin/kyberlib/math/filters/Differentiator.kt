@@ -21,5 +21,8 @@ class Differentiator : Filter() {
         return value
     }
 
+    /**
+     * Get the last value without updating
+     */
     override fun get(): Double = value
 }
