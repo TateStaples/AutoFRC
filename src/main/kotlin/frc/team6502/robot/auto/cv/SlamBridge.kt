@@ -28,10 +28,21 @@ import java.io.File
  *
  * @throws crash should not be intialized on real robot, only simulation
  */
-class SlamBridge : SubsystemBase() {
+class SlamBridge {
     init {
         val url = "http://10.65.2.2:1181/?action=stream"
-        CameraServer.getInstance().startAutomaticCapture(HttpCamera("USB Camera 0", url, HttpCamera.HttpCameraKind.kMJPGStreamer))
+//        CameraServer.getInstance().startAutomaticCapture(HttpCamera("USB Camera 0", url, HttpCamera.HttpCameraKind.kMJPGStreamer))
+    }
+
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val s = SlamBridge()
+            while (true) {
+                s.periodic()
+            }
+        }
     }
     private val tableInstance = NetworkTableInstance.getDefault()
     private val table = tableInstance.getTable("SLAM")
@@ -40,6 +51,11 @@ class SlamBridge : SubsystemBase() {
     private val yEntry = table.getEntry("Y")
     private val zEntry = table.getEntry("Z")
     private val outputTimeEntry = table.getEntry("OUTPUT TIME")
+
+    init {
+        tableInstance.startClientTeam(6502);  // where TEAM=190, 294, etc, or use inst.startClient("hostname") or similar
+        tableInstance.startDSClient();  // recommended if running on DS computer; this gets the robot IP from the DS
+    }
 
     private val slamValues = File("./UcoSlam/slamValues.json")
 
@@ -56,10 +72,10 @@ class SlamBridge : SubsystemBase() {
             slamValues.writeText(Json.encodeToString(deserialized))
 
         }
-        ".\\UcoSlam\\frc_monocular.exe -debug 2".runCommand(File(".\\UcoSlam"))
+//        ".\\UcoSlam\\frc_monocular.exe -debug 2".runCommand(File(".\\UcoSlam"))
     }
 
-    override fun periodic() {
+    fun periodic() {
         // read to SLAM output
         try {
             var deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
