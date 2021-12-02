@@ -108,9 +108,8 @@ class SlamBridge {
 
 @Serializable
 data class SlamValues (
-    var Z: Double,
-    var X:Double, var Y: Double, var outputImgTime: Double,
-    var newImageTime: Double, var running: Int) : Debug {
+    var X:Double, var Y: Double, var Z: Double,
+    var outputImgTime: Double, var newImageTime: Double, var running: Int) : Debug {
 
     override fun debugValues(): Map<String, Any> {
         return mapOf(
