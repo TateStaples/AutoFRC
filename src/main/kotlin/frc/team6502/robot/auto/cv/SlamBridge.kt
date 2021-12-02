@@ -1,21 +1,13 @@
 package frc.team6502.robot.auto.cv
 
-import edu.wpi.cscore.HttpCamera
-import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj2.command.SubsystemBase
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kyberlib.command.Debug
-import kyberlib.runCommand
-import org.opencv.calib3d.Calib3d
-import org.opencv.core.*
-import org.opencv.imgcodecs.Imgcodecs
-import org.opencv.imgproc.Imgproc
 import java.io.File
+import java.util.*
 
 
 /**
@@ -52,6 +44,8 @@ class SlamBridge {
     private val zEntry = table.getEntry("Z")
     private val outputTimeEntry = table.getEntry("OUTPUT TIME")
 
+    private val startTime = System.currentTimeMillis()
+
     init {
         tableInstance.startClientTeam(6502);  // where TEAM=190, 294, etc, or use inst.startClient("hostname") or similar
         tableInstance.startDSClient();  // recommended if running on DS computer; this gets the robot IP from the DS
@@ -60,9 +54,8 @@ class SlamBridge {
     private val slamValues = File("./UcoSlam/slamValues.json")
 
     init {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME)
         if (!slamValues.exists()) {
-            val defaultVals = SlamValues(0.0, 0.0, 0.0, 0.0,0.0, 1)
+            val defaultVals = SlamValues(0.0, 0.0, 0.0, 0.0, 1)
             val jsonString = Json.encodeToString(defaultVals)
             slamValues.writeText(jsonString)
         }
@@ -72,36 +65,29 @@ class SlamBridge {
             slamValues.writeText(Json.encodeToString(deserialized))
 
         }
+
 //        ".\\UcoSlam\\frc_monocular.exe -debug 2".runCommand(File(".\\UcoSlam"))
     }
 
     fun periodic() {
         // read to SLAM output
+            // todo: prevent initial write
         try {
-            var deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
-            if (lastUpdate != deserialized.outputImgTime) {
+            val deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
+            if (lastUpdate != deserialized.X && lastUpdate != 0.0) {
                 println("writing!")
-                lastUpdate = deserialized.outputImgTime
                 xEntry.setNumber(deserialized.X)
                 yEntry.setNumber(deserialized.Y)
                 zEntry.setNumber(deserialized.Z)
                 outputTimeEntry.setNumber(deserialized.outputImgTime)
-                slamValues.writeText(Json.encodeToString(deserialized))
             }
-
-            // write the SLAM input
-            val mat = Mat()
-            CameraServer.getInstance().video.grabFrame(mat)
-            deserialized = Json.decodeFromString(slamValues.readText())
-            if (!mat.empty()) {
-                Imgcodecs.imwrite("./UcoSlam/slamImage.jpg", mat)
-                deserialized.newImageTime = Timer.getFPGATimestamp()
-                slamValues.writeText(Json.encodeToString(deserialized))
-            }
-            deserialized.debugDashboard()
+            lastUpdate = deserialized.X
         } catch (e: Exception) {
-            println(e.stackTrace.toString())
+            println("error")
         }
+
+
+//            deserialized.debugDashboard()
     }
 }
 
@@ -109,7 +95,7 @@ class SlamBridge {
 @Serializable
 data class SlamValues (
     var X:Double, var Y: Double, var Z: Double,
-    var outputImgTime: Double, var newImageTime: Double, var running: Int) : Debug {
+    var outputImgTime: Double, var running: Int) : Debug {
 
     override fun debugValues(): Map<String, Any> {
         return mapOf(
@@ -117,7 +103,6 @@ data class SlamValues (
             "y" to Y,
             "z" to Z,
             "out" to outputImgTime,
-            "new" to newImageTime,
             "running" to running,
         )
     }

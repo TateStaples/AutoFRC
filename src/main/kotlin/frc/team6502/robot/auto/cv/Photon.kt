@@ -1,35 +1,33 @@
 package frc.team6502.robot.auto.cv
 
-import edu.wpi.cscore.HttpCamera
 import edu.wpi.cscore.VideoMode
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
+import edu.wpi.first.wpilibj.MedianFilter
 import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.geometry.Transform2d
+import edu.wpi.first.wpilibj.geometry.Translation2d
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.RobotContainer
-import frc.team6502.robot.commands.balls.Intake
 import kyberlib.auto.Navigator
-import kyberlib.math.units.Pose2d
-import kyberlib.math.units.extensions.degrees
+import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
-import kyberlib.math.units.extensions.radians
-import kyberlib.math.units.transform
-import kyberlib.simulation.field.KField2d
-import org.photonvision.PhotonCamera
 
 /**
  * Camera that sends images back to robot for global position updates and HSV thresholding
  */
-class Photon : SubsystemBase() {
+object Photon : SubsystemBase() {
     // camera setups
 //    private val url = "http://url10.65.2.11"
 //    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
 //    private val camera = PhotonCamera("$url:5800")
 
+    val xFilter = MedianFilter(5)
+    val yFilter = MedianFilter(5)
+
     // this should be initiated on the first update
-    private val cameraOffset = Pose2d(3.inches, 0.inches, 0.degrees)
+    var cameraOffset: Translation2d? = null
 
     // Network Tables Info
     private val tableInstance = NetworkTableInstance.getDefault()
@@ -39,7 +37,6 @@ class Photon : SubsystemBase() {
     private val yEntry = table.getEntry("Y")
     private val zEntry = table.getEntry("Z")
     private val outputTimeEntry = table.getEntry("OUTPUT TIME")
-    private var unitConversion = 1.0  // TODO: figure out how to tune it
 
     init {
         val video = CameraServer.getInstance().startAutomaticCapture()
@@ -67,9 +64,11 @@ class Photon : SubsystemBase() {
     }
 //
 
-    // todo: tune these
-    val xHat = doubleArrayOf(0.0, 0.0, 0.0)
-    val yHat = doubleArrayOf(0.0, 0.0, 0.0)
+    // todo: find this automatically
+    private val xScale = 110.inches.meters
+    private val yScale = 117.inches.meters
+    private val xHat = doubleArrayOf(15/xScale, -729/xScale, -181/xScale)
+    private val yHat = doubleArrayOf(309/yScale, -450/yScale, 127/yScale)
     /**
      * Checks the output of the UcoSlam in Network Tables.
      * Then it applies those results to the pose estimator
@@ -78,14 +77,24 @@ class Photon : SubsystemBase() {
         val updateTime = outputTimeEntry.getDouble(0.0)
         // todo: update initial pose
         if (updateTime != lastUpdate && lastUpdate != 0.0) {
-            println("using slam output")
-            return
             val cameraVector = doubleArrayOf(xEntry.getDouble(0.0), yEntry.getDouble(0.0), zEntry.getDouble(0.0))
-            val x  = dot(cameraVector, xHat).meters
-            val y  = dot(cameraVector, yHat).meters
-            val slamPose = Pose2d(x, y, Navigator.instance!!.heading)
-            val adjustedPose = slamPose.transformBy(cameraOffset.transform)
-            RobotContainer.navigation.update(adjustedPose, updateTime)
+            val x  = dot(cameraVector, xHat)
+            val y  = dot(cameraVector, yHat)
+            if (cameraOffset == null)
+                cameraOffset = Translation2d(x, y)
+
+            val slamPos = Translation2d(x, y)
+            val adjustedPos = slamPos - cameraOffset
+
+            val filteredX = xFilter.calculate(x)
+            val filteredY = yFilter.calculate(y)
+            val filteredPos = Translation2d(filteredX, filteredY)
+
+            SmartDashboard.putNumber("globalPos/x", x)
+            SmartDashboard.putNumber("globalPos/y", y)
+
+            if (filteredPos.getDistance(slamPos) < 2.0)  // prevent wild values from corrupting results
+                RobotContainer.navigation.update(edu.wpi.first.wpilibj.geometry.Pose2d(adjustedPos, Navigator.instance!!.heading), Timer.getFPGATimestamp() - 0.2)
         }
         lastUpdate = updateTime
     }

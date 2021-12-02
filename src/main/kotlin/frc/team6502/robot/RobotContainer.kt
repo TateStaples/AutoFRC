@@ -1,6 +1,8 @@
 package frc.team6502.robot
 
 import frc.team6502.robot.auto.cv.Photon
+import frc.team6502.robot.commands.balls.Intake
+import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.auto.Navigator
 import kyberlib.input.controller.KXboxController
@@ -26,6 +28,10 @@ object RobotContainer {
             expo = 20.0
             deadband = 0.2
         }
+
+        leftBumper.whileActiveOnce(Shoot())
+        rightBumper.whileActiveOnce(Intake())
+
     }
 
     val navigation = Navigator(gyro).apply {
@@ -36,7 +42,7 @@ object RobotContainer {
     init {
         // initialize subsystems here:
         Drivetrain
-        if (Simulation.real) Photon()
+        if (Simulation.real) Photon
     }
 
 }

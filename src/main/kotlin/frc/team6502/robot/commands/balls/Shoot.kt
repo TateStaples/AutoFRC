@@ -28,7 +28,7 @@ class Shoot : CommandBase() {
     }
 
     override fun end(interrupted: Boolean) {
-        Shooter.intake.voltage = 0.0
+        Shooter.shooterMotor.voltage = 0.0
         timer.reset()
         Strategy.collectedBalls = 0
     }

@@ -2,6 +2,7 @@ package frc.team6502.robot
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
+import frc.team6502.robot.auto.cv.Photon
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.drive.DefaultDrive
 import frc.team6502.robot.commands.general.Strategy
@@ -9,6 +10,7 @@ import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.command.CommandManager
 import kyberlib.command.KRobot
 import kyberlib.math.units.extensions.degrees
+import kyberlib.math.units.zeroPose
 import kyberlib.simulation.Simulation
 import kyberlib.simulation.field.KField2d
 
@@ -22,14 +24,19 @@ class Robot : KRobot() {
     }
 
     override fun disabledInit() {
-//        CommandManager.clear()
+        CommandManager.clear()
         Drivetrain.stop()
+    }
+
+    override fun enabledInit() {
+        CommandManager.schedule(false)
+        Photon.cameraOffset = null  // zero position
+        RobotContainer.navigation.pose = zeroPose
     }
 
     override fun teleopInit() {
         CommandManager.clear()
         KField2d.trajectory = null
-        CommandManager.debugDashboard()
         CommandManager.enqueue(DefaultDrive)
     }
 
