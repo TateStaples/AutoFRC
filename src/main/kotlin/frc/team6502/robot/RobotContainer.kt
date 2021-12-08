@@ -15,9 +15,13 @@ import kotlin.math.PI
  */
 object RobotContainer {
     private val gyro = KPigeon(Constants.PIGEON_PORT)  // todo: figure out why PigeonIMU crash mac
+    val navigation = Navigator(gyro).apply {
+        applyMovementRestrictions(Constants.velocity, Constants.acceleration)
+        applyKinematics(Drivetrain.kinematics)
+    }
     val controller = KXboxController(0).apply {
         rightX.apply {
-            maxVal = -2*PI
+            maxVal = -2 * PI
             expo = 73.0
             deadband = 0.1
         }
@@ -32,11 +36,6 @@ object RobotContainer {
         leftBumper.whileActiveOnce(Shoot())
         rightBumper.whileActiveOnce(Intake())
 
-    }
-
-    val navigation = Navigator(gyro).apply {
-        applyMovementRestrictions(Constants.velocity, Constants.acceleration)
-        applyKinematics(Drivetrain.kinematics)
     }
 
     init {

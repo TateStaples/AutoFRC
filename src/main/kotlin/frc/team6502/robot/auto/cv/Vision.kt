@@ -18,15 +18,16 @@ import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
 import kyberlib.simulation.field.KField2d
 import org.photonvision.PhotonCamera
+import org.photonvision.targeting.PhotonPipelineResult
 
 /**
  * Camera that sends images back to robot for global position updates and HSV thresholding
  */
 object Vision : SubsystemBase(), Debug {
     // camera setups
-    private val url = "http://url10.65.2.11"
+    private val url = "http://10.65.2.11"
 //    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
-    private val camera = PhotonCamera("$url:5800")
+    private val camera = PhotonCamera("gloworm")
 
     val xFilter = MedianFilter(5)
     val yFilter = MedianFilter(5)
@@ -55,22 +56,7 @@ object Vision : SubsystemBase(), Debug {
 //        targetUpdate()
     }
 
-    /**
-     * Uses the Limelight's HSV thresholding to detect yellow balls
-     */
-    private fun targetUpdate() {
-        val res = camera.latestResult
-        if (res.hasTargets()) {
-            val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
-            for (target in res.targets) {
-                val camToTargetTrans: Transform2d = target.cameraToTarget
-                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
-                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
-            }
-        }
-    }
-
-    val targetResult
+    val targetResult: PhotonPipelineResult
         get() = camera.latestResult
 
     // todo: find this automatically
@@ -129,6 +115,15 @@ object Vision : SubsystemBase(), Debug {
                     )
                 )
             }
+            val photonTrackedTarget = res.bestTarget
+            map.putAll(
+                mapOf(
+                    "bestTarget/pitch" to photonTrackedTarget.pitch,
+                    "bestTarget/yaw" to photonTrackedTarget.yaw,
+                    "bestTarget/skew" to photonTrackedTarget.skew,
+                    "bestTarget/area" to photonTrackedTarget.area,
+                )
+            )
         }
         return map.toMap()
     }
