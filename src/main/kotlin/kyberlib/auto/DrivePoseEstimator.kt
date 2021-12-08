@@ -21,7 +21,7 @@ import kyberlib.math.units.zeroPose
 class DrivePoseEstimator(
     gyroAngle: Rotation2d,
     initialPoseMeters: Pose2d = zeroPose,
-    stateStdDevs: Matrix<N3, N1> = MatBuilder(N3.instance, N1.instance).fill(0.02, 0.02, 0.01),
+    stateStdDevs: Matrix<N3, N1> = MatBuilder(N3.instance, N1.instance).fill(1.02, 1.02, 0.01),
     localMeasurementStdDevs: Matrix<N1, N1> = MatBuilder(N1.instance, N1.instance).fill(0.02),
     visionMeasurementStdDevs: Matrix<N3, N1> = MatBuilder(N3.instance, N1.instance).fill(0.1, 0.1, 0.01)
 ) {

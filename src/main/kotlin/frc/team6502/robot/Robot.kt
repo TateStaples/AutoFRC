@@ -2,7 +2,7 @@ package frc.team6502.robot
 
 import edu.wpi.first.wpilibj.geometry.Pose2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import frc.team6502.robot.auto.cv.Photon
+import frc.team6502.robot.auto.cv.Vision
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.drive.DefaultDrive
 import frc.team6502.robot.commands.general.Strategy
@@ -30,7 +30,7 @@ class Robot : KRobot() {
 
     override fun enabledInit() {
         CommandManager.schedule(false)
-        Photon.cameraOffset = null  // zero position
+        Vision.cameraOffset = null  // zero position
         RobotContainer.navigation.pose = zeroPose
     }
 

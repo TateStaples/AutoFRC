@@ -5,10 +5,12 @@ import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.commands.drive.AutoDrive
 import frc.team6502.robot.commands.drive.Search
 import kyberlib.auto.pathing.TravelingSalesman
+import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.command.CommandManager
 import kyberlib.math.units.Pose2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
+import kyberlib.math.units.extensions.meters
 import kyberlib.simulation.field.KField2d
 
 /**
@@ -25,6 +27,13 @@ object Strategy {
      * When all the queued commands are done, it requests here what to do next
      */
     fun plan() {
+        CommandManager.enqueue(AutoDrive(KTrajectory("test route", listOf(
+            Pose2d(1.meters, 0.meters, 0.degrees),
+            Pose2d(1.meters, 1.meters, 90.degrees),
+            Pose2d(0.meters, 1.meters, 180.degrees),
+            Pose2d(0.meters, 0.meters, 270.degrees),
+        ))))
+        return
         if (collectedBalls > 0) shoot()
         else if (foundBalls > 0) collectBalls()
         else searchForBalls()

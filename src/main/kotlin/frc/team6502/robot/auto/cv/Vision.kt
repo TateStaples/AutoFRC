@@ -5,26 +5,32 @@ import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.MedianFilter
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.geometry.Transform2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team6502.robot.RobotContainer
+import frc.team6502.robot.commands.balls.Intake
 import kyberlib.auto.Navigator
+import kyberlib.command.Debug
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.inches
 import kyberlib.math.units.extensions.meters
+import kyberlib.simulation.field.KField2d
+import org.photonvision.PhotonCamera
 
 /**
  * Camera that sends images back to robot for global position updates and HSV thresholding
  */
-object Photon : SubsystemBase() {
+object Vision : SubsystemBase(), Debug {
     // camera setups
-//    private val url = "http://url10.65.2.11"
+    private val url = "http://url10.65.2.11"
 //    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
-//    private val camera = PhotonCamera("$url:5800")
+    private val camera = PhotonCamera("$url:5800")
 
     val xFilter = MedianFilter(5)
     val yFilter = MedianFilter(5)
+    var lastPos = Translation2d()
 
     // this should be initiated on the first update
     var cameraOffset: Translation2d? = null
@@ -44,25 +50,28 @@ object Photon : SubsystemBase() {
     }
 
     override fun periodic() {
+        debugDashboard()
         slamUpdate()
-        targetUpdate()
+//        targetUpdate()
     }
 
     /**
      * Uses the Limelight's HSV thresholding to detect yellow balls
      */
     private fun targetUpdate() {
-//        val res = camera.latestResult
-//        if (res.hasTargets()) {
-//            val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
-//            for (target in res.targets) {
-//                val camToTargetTrans: Transform2d = target.cameraToTarget
-//                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
-//                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
-//            }
-//        }
+        val res = camera.latestResult
+        if (res.hasTargets()) {
+            val imageCaptureTime = Timer.getFPGATimestamp() - res.latencyMillis
+            for (target in res.targets) {
+                val camToTargetTrans: Transform2d = target.cameraToTarget
+                val estimatedPosition = RobotContainer.navigation.pose.plus(camToTargetTrans)
+                KField2d.addGoal(estimatedPosition.translation, imageCaptureTime, "ball", Intake())
+            }
+        }
     }
-//
+
+    val targetResult
+        get() = camera.latestResult
 
     // todo: find this automatically
     private val xScale = 110.inches.meters
@@ -89,9 +98,7 @@ object Photon : SubsystemBase() {
             val filteredX = xFilter.calculate(x)
             val filteredY = yFilter.calculate(y)
             val filteredPos = Translation2d(filteredX, filteredY)
-
-            SmartDashboard.putNumber("globalPos/x", x)
-            SmartDashboard.putNumber("globalPos/y", y)
+            lastPos = adjustedPos
 
             if (filteredPos.getDistance(slamPos) < 2.0)  // prevent wild values from corrupting results
                 RobotContainer.navigation.update(edu.wpi.first.wpilibj.geometry.Pose2d(adjustedPos, Navigator.instance!!.heading), Timer.getFPGATimestamp() - 0.2)
@@ -104,4 +111,25 @@ object Photon : SubsystemBase() {
         .apply { require(v1.size == v2.size) }
         .zip(v2)
         .sumByDouble { (a, b) -> a * b }
+
+    override fun debugValues(): Map<String, Any?> {
+        val map = mutableMapOf<String, Double>(
+            "global/x" to lastPos.x,
+            "global/y" to lastPos.y
+        )
+        val res = targetResult
+        if (res.hasTargets()) {
+            res.targets.forEachIndexed { index, photonTrackedTarget ->
+                map.putAll(
+                    mapOf(
+                        "target$index/pitch" to photonTrackedTarget.pitch,
+                        "target$index/yaw" to photonTrackedTarget.yaw,
+                        "target$index/skew" to photonTrackedTarget.skew,
+                        "target$index/area" to photonTrackedTarget.area,
+                    )
+                )
+            }
+        }
+        return map.toMap()
+    }
 }

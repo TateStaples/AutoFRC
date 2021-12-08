@@ -1,6 +1,6 @@
 package frc.team6502.robot
 
-import frc.team6502.robot.auto.cv.Photon
+import frc.team6502.robot.auto.cv.Vision
 import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.subsystems.Drivetrain
@@ -42,7 +42,7 @@ object RobotContainer {
     init {
         // initialize subsystems here:
         Drivetrain
-        if (Simulation.real) Photon
+        if (Simulation.real) Vision
     }
 
 }
