@@ -1,6 +1,7 @@
 package frc.team6502.robot.subsystems
 
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
+import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds
@@ -13,6 +14,7 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import kyberlib.auto.Navigator
 import kyberlib.command.Debug
+import kyberlib.math.filters.Differentiator
 import kyberlib.math.units.debugValues
 import kyberlib.math.units.extensions.k
 import kyberlib.math.units.extensions.meters
@@ -118,6 +120,12 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
     override fun periodic() {
         RobotContainer.navigation.update(chassisSpeeds)
         debugDashboard()
+    }
+
+    fun faceDirection(rotation2d: Rotation2d) {
+        val rotSpeed = chassisSpeeds.omegaRadiansPerSecond
+        val rot = Navigator.instance!!.heading
+        drive(ChassisSpeeds(0.0, 0.0, (rotation2d - rot).radians))
     }
 
     private lateinit var driveSim: DifferentialDrivetrainSim
