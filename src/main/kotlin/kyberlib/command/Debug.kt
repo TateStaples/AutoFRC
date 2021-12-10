@@ -11,7 +11,7 @@ import frc.team6502.robot.subsystems.Drivetrain
  * - Warn = yellow font and shows in the small outputs
  * - Error = Bright red letters and will show as error
  */
-enum class LogMode {
+enum class LogMode {  // todo: add types (ie important, default, all)
     PRINT, WARN, ERROR
 }
 /**

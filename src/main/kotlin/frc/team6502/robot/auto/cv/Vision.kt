@@ -84,25 +84,21 @@ object Vision : SubsystemBase(), Debug {
     private val distance
         get() = cameraHeight * tan(pitch.radians.absoluteValue)
     fun ballSearch() {
-        val res = targetResult
+        val res = camera.latestResult
         if (res.hasTargets() && res.bestTarget.pitch > 0) {
-            println("pitch: ${pitch.degrees}")
             if (pitch.degrees > 0.0) return
             val currentPose = RobotContainer.navigation.pose
             val estimatedBallPose = currentPose.transformBy(Pose2d(cos(distance.meters), sin(distance.meters), yaw).transform)
             val time =  Timer.getFPGATimestamp() - res.latencyMillis
-            println("object : $distance")
-            println("estimated pose: $estimatedBallPose, currentPose: $currentPose")
+            Debug.log("ball searching", "object : $distance")
+            Debug.log("ball searching", "estimated pose: $estimatedBallPose, currentPose: $currentPose")
             if (distance.meters > 3.0) {
-                println("object to far away")
+                Debug.log("ball searching", "object to far away")
                 return
             }
             KField2d.addGoal(estimatedBallPose.translation, time, "ball", Intake())
         }
     }
-
-    val targetResult: PhotonPipelineResult
-        get() = camera.latestResult
 
     // todo: find this automatically
     private val xScale = 110.inches.meters
@@ -148,7 +144,7 @@ object Vision : SubsystemBase(), Debug {
             "global/x" to lastPos.x,
             "global/y" to lastPos.y
         )
-        val res = targetResult
+        val res = camera.latestResult
         if (res.hasTargets()) {
             res.targets.forEachIndexed { index, photonTrackedTarget ->
                 map.putAll(
