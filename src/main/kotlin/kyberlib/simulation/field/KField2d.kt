@@ -89,8 +89,10 @@ object KField2d : Field2d() {
      */
     fun addGoal(estimatedPosition: Translation2d, time: Double, name: String, uponArrival: Command? = null) {
         val similarGoals = goals.filter { it.name == name }
-        if (similarGoals.any { it.position.getDistance(estimatedPosition) < sameDistance.value })  // TODO: this bad
+        similarGoals.filter { it.position.getDistance(estimatedPosition) < 1.0}.forEach {   // TODO: this bad
+            it.updatePosition(estimatedPosition)
             return
+        }
         Goal(name, estimatedPosition, uponArrival)
     }
 }

@@ -12,7 +12,6 @@ import java.sql.Statement
  * Intake new balls
  */
 class Intake : CommandBase() {
-    val maxTime = 3.seconds
     private val timer = Timer()
 
     init {
@@ -35,6 +34,6 @@ class Intake : CommandBase() {
     }
 
     override fun isFinished(): Boolean {
-        return Constants.AUTO && timer.get().seconds < maxTime
+        return Constants.AUTO && timer.hasElapsed(3.0)
     }
 }

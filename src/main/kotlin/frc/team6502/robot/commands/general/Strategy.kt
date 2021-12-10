@@ -3,7 +3,7 @@ package frc.team6502.robot.commands.general
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.commands.drive.AutoDrive
-import frc.team6502.robot.commands.drive.BallHunter
+import frc.team6502.robot.commands.drive.Search
 import kyberlib.auto.pathing.TravelingSalesman
 import kyberlib.command.CommandManager
 import kyberlib.math.units.Pose2d
@@ -17,7 +17,7 @@ import kyberlib.simulation.field.KField2d
  */
 object Strategy {
     var collectedBalls = 0
-    private val foundBalls
+    val foundBalls
         get() = KField2d.goals.filter { it.name == "ball" }.size
 
     private var goalPose = Pose2d(151.532.inches, 79.inches, 0.degrees)  // was 171.532
@@ -69,6 +69,6 @@ object Strategy {
      */
     private fun searchForBalls() {
         println("searching")
-        CommandManager.enqueue(BallHunter())
+        CommandManager.enqueue(Search())
     }
 }

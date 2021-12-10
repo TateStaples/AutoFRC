@@ -46,7 +46,7 @@ class Robot : KRobot() {
     }
 
     override fun robotPeriodic() {
-        KField2d.robotPose = RobotContainer.navigation.pose
+//        KField2d.robotPose = RobotContainer.navigation.pose
     }
 
     override fun simulationInit() {

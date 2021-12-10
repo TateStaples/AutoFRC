@@ -7,9 +7,11 @@ import edu.wpi.first.wpilibj.geometry.Translation2d
 import edu.wpi.first.wpilibj.trajectory.Trajectory
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team6502.robot.Constants
+import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.auto.Navigator
 import kyberlib.auto.pathing.Pathfinder
+import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.math.units.extensions.degrees
 import kyberlib.simulation.field.KField2d
 
@@ -18,6 +20,7 @@ import kyberlib.simulation.field.KField2d
  * @param targetPose the pose to drive to
  */
 class AutoDrive(var targetPose: Pose2d) : CommandBase() {
+    val simple = true
     constructor(position: Translation2d) : this(Pose2d(position, 0.degrees)) {
         rotationInvariant = true
     }
@@ -39,7 +42,8 @@ class AutoDrive(var targetPose: Pose2d) : CommandBase() {
 
     override fun initialize() {
         if (!this::trajectory.isInitialized)
-            trajectory = if (rotationInvariant) Pathfinder.pathTo(Navigator.instance!!.pose, targetPose.translation)
+            trajectory = if (simple) KTrajectory("simpleTraj", listOf(Navigator.instance!!.pose, targetPose))
+                        else if (rotationInvariant) Pathfinder.pathTo(Navigator.instance!!.pose, targetPose.translation)
                         else Pathfinder.pathTo(Navigator.instance!!.pose, targetPose)
         KField2d.trajectory = trajectory
         timer.start()
