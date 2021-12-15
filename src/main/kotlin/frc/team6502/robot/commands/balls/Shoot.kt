@@ -6,6 +6,7 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.commands.general.Strategy
 import frc.team6502.robot.subsystems.Shooter
 import kyberlib.math.units.extensions.seconds
+import kyberlib.simulation.field.KField2d
 
 /**
  * Dumps all stored balls
@@ -31,9 +32,10 @@ class Shoot : CommandBase() {
         Shooter.shooterMotor.voltage = 0.0
         timer.reset()
         Strategy.collectedBalls = 0
+        KField2d.goals.clear()
     }
 
     override fun isFinished(): Boolean {
-        return Constants.AUTO && timer.get().seconds < maxTime
+        return Constants.AUTO && timer.hasElapsed(2.0)
     }
 }

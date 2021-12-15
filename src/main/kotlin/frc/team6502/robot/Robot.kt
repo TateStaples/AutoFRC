@@ -26,6 +26,10 @@ class Robot : KRobot() {
     override fun disabledInit() {
         CommandManager.clear()
         Drivetrain.stop()
+        if (Simulation.real) {
+            KField2d.goals.clear()
+        }
+        Strategy.collectedBalls = 0
     }
 
     override fun enabledInit() {
@@ -46,7 +50,7 @@ class Robot : KRobot() {
     }
 
     override fun robotPeriodic() {
-//        KField2d.robotPose = RobotContainer.navigation.pose
+        KField2d.robotPose = RobotContainer.navigation.pose
     }
 
     override fun simulationInit() {

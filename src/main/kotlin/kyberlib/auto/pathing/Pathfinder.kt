@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory
 import kyberlib.auto.trajectory.KTrajectory
 import kyberlib.auto.trajectory.KTrajectoryConfig
 import kyberlib.command.Debug
+import kyberlib.command.DebugLevel
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.feet
@@ -220,6 +221,10 @@ object Pathfinder : Debug {
         tree.vertices.clear()
         path?.clear()
     }
+
+    override var priority: DebugLevel
+        get() = DebugLevel.LowPriority
+        set(value) {}
 
     override fun debugValues(): Map<String, Any?> {
         val map = mutableMapOf<String, Any?>(

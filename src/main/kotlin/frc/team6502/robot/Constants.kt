@@ -47,5 +47,5 @@ object Constants{
 
     // drive constraints
     val acceleration = 0.5.metersPerSecond  // 4
-    val velocity = 0.3.metersPerSecond  // 2
+    val velocity = 0.5.metersPerSecond  // 2
 }

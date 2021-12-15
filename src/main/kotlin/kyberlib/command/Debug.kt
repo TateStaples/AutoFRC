@@ -14,14 +14,20 @@ import frc.team6502.robot.subsystems.Drivetrain
 enum class LogMode {  // todo: add types (ie important, default, all)
     PRINT, WARN, ERROR
 }
+
+enum class DebugLevel {
+    LowPriority, NORMAL, HighPriority, MaxPriority
+}
 /**
  * Inheritable class that grants multiple types of debugging
  */
 interface Debug {
     companion object {
         var debugging = true
+        var loggingLevel = DebugLevel.NORMAL
 
-        fun log(identifier:String, text: String, mode: LogMode = LogMode.PRINT, stacktrace: Boolean = false) {
+        fun log(identifier:String, text: String, mode: LogMode = LogMode.PRINT, level: DebugLevel = DebugLevel.NORMAL, stacktrace: Boolean = false) {
+            if (level < loggingLevel) return
             val output = "[$identifier] $text"
             when (mode) {
                 LogMode.PRINT -> println(output)
@@ -35,7 +41,7 @@ interface Debug {
      * Debugs all the values into a group in the SmartDashboard
      */
     fun debugDashboard(previousPath: String = "", id: String = identifier) {
-        if (!debugging) return
+        if (!debugging || loggingLevel < priority) return
         val map = debugValues()
         sendMapToDashboard(map, "$previousPath/$id")
     }
@@ -62,7 +68,7 @@ interface Debug {
      * @see LogMode
      */
     fun log(message: String = debugString, logMode: LogMode = LogMode.PRINT) {
-        Companion.log(identifier, message, logMode, stacktrace = false)
+        Companion.log(identifier, message, logMode, priority, stacktrace = false)
     }
 
     private val debugString: String
@@ -83,6 +89,10 @@ interface Debug {
      */
     var identifier: String
         get() = javaClass.simpleName
+        set(value) = log("override me, don't set. Interfaces be wack", LogMode.ERROR)
+
+    var priority: DebugLevel
+        get() = DebugLevel.NORMAL
         set(value) = log("override me, don't set. Interfaces be wack", LogMode.ERROR)
 
     /**

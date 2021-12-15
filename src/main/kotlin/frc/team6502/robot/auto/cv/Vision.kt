@@ -15,6 +15,7 @@ import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.balls.Intake
 import kyberlib.auto.Navigator
 import kyberlib.command.Debug
+import kyberlib.command.DebugLevel
 import kyberlib.math.units.Translation2d
 import kyberlib.math.units.extensions.KRotation
 import kyberlib.math.units.extensions.degrees
@@ -86,14 +87,14 @@ object Vision : SubsystemBase(), Debug {
     fun ballSearch() {
         val res = camera.latestResult
         if (res.hasTargets() && res.bestTarget.pitch > 0) {
-            if (pitch.degrees > 0.0) return
+            if (pitch.degrees > -10.0) return
             val currentPose = RobotContainer.navigation.pose
             val estimatedBallPose = currentPose.transformBy(Pose2d(cos(distance.meters), sin(distance.meters), yaw).transform)
             val time =  Timer.getFPGATimestamp() - res.latencyMillis
-            Debug.log("ball searching", "object : $distance")
-            Debug.log("ball searching", "estimated pose: $estimatedBallPose, currentPose: $currentPose")
+            log( "object : $distance")
+            log("estimated pose: $estimatedBallPose, currentPose: $currentPose")
             if (distance.meters > 3.0) {
-                Debug.log("ball searching", "object to far away")
+                log("object to far away")
                 return
             }
             KField2d.addGoal(estimatedBallPose.translation, time, "ball", Intake())
@@ -138,6 +139,9 @@ object Vision : SubsystemBase(), Debug {
         .apply { require(v1.size == v2.size) }
         .zip(v2)
         .sumByDouble { (a, b) -> a * b }
+
+    override var priority: DebugLevel = DebugLevel.LowPriority
+        get() = DebugLevel.LowPriority
 
     override fun debugValues(): Map<String, Any?> {
         val map = mutableMapOf<String, Double>(

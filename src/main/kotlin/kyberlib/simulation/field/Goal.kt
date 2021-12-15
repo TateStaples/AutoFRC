@@ -12,7 +12,7 @@ import kyberlib.math.units.extensions.degrees
 /**
  * A custom field object that has a position and linked command
  */
-class Goal(val name: String, var position: Translation2d, private val uponArrival: Command? = null) {
+class Goal(val name: String, var position: Translation2d, val uponArrival: Command? = null) {
     private val fieldObject: FieldObject2d
         get() = KField2d.getObject(name)
 
@@ -43,8 +43,8 @@ class Goal(val name: String, var position: Translation2d, private val uponArriva
     val command: Command
         get() {
             val pathCommand = AutoDrive(position)
-            if (uponArrival != null) return pathCommand.andThen(uponArrival).andThen(this::remove, Drivetrain)  // todo: remove dependency
-            return pathCommand.andThen(this::remove, Drivetrain)
+            if (uponArrival != null) return pathCommand.andThen(uponArrival).andThen(this::remove)
+            return pathCommand.andThen(this::remove)
         }
 
 }

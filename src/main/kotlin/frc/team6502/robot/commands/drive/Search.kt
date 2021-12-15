@@ -7,7 +7,7 @@ import frc.team6502.robot.subsystems.Drivetrain
 
 class Search: CommandBase() {
     override fun execute() {
-        Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.0))
+        Drivetrain.drive(ChassisSpeeds(0.0, 0.0, 0.5))
     }
 
     override fun isFinished(): Boolean {
