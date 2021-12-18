@@ -19,7 +19,7 @@ class KSpeedController(private val m_speedController: SpeedController) : KBasicM
     override var rawReversed: Boolean
         get() = m_speedController.inverted
         set(value) {m_speedController.inverted = value}
-    override var identifier: String = "KSpeedController #$myId"
+    override val identifier: String = "KSpeedController #$myId"
     override var rawPercent: Double
         get() = m_speedController.get()
         set(value) {m_speedController.set(value)}

@@ -5,6 +5,7 @@ import frc.team6502.robot.commands.balls.Intake
 import frc.team6502.robot.commands.balls.Shoot
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.auto.Navigator
+import kyberlib.command.Game
 import kyberlib.input.controller.KXboxController
 import kyberlib.sensors.gyros.KPigeon
 import kyberlib.simulation.Simulation
@@ -14,7 +15,7 @@ import kotlin.math.PI
  * Contains all Robot subsystems and sensors
  */
 object RobotContainer {
-    private val gyro = KPigeon(Constants.PIGEON_PORT)  // todo: figure out why PigeonIMU crash mac
+    private val gyro = KPigeon(Constants.PIGEON_PORT)
     val navigation = Navigator(gyro).apply {
         applyMovementRestrictions(Constants.velocity, Constants.acceleration)
         applyKinematics(Drivetrain.kinematics)
@@ -41,7 +42,7 @@ object RobotContainer {
     init {
         // initialize subsystems here:
         Drivetrain
-        if (Simulation.real) Vision
+        if (Game.real) Vision
     }
 
 }

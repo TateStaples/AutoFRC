@@ -1,5 +1,6 @@
 package kyberlib.mechanisms
 
+import edu.wpi.first.wpilibj.Notifier
 import edu.wpi.first.wpilibj.controller.LinearQuadraticRegulator
 import edu.wpi.first.wpilibj.estimator.KalmanFilter
 import edu.wpi.first.wpilibj.system.LinearSystemLoop
@@ -70,7 +71,10 @@ class Flywheel(private val motor: KMotorController,
             loop.predict(timeDelay)  // math
             val nextVoltage = loop.getU(0)  // input
             nextVoltage
-        }  // todo: this wont update frequently enough, add notifier
+        }
+        Notifier {
+            motor.updateVoltage()
+        }.startPeriodic(0.02)
     }
 
     var velocity: AngularVelocity

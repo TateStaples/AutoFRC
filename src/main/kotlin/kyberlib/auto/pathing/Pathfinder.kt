@@ -222,9 +222,7 @@ object Pathfinder : Debug {
         path?.clear()
     }
 
-    override var priority: DebugLevel
-        get() = DebugLevel.LowPriority
-        set(value) {}
+    override val priority = DebugLevel.LowPriority
 
     override fun debugValues(): Map<String, Any?> {
         val map = mutableMapOf<String, Any?>(

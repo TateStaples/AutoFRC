@@ -79,8 +79,7 @@ object KField2d : Field2d() {
      */
     private fun inBoundaries(point: Translation2d) = point.x in 0.0..width.meters && point.y in 0.0..height.meters
 
-    private val sameDistance = 0.5.feet
-
+    private val sameDistance = 0.5.meters
     /**
      * Adds a goal to the field. Checks to prevent duplicates
      * @param estimatedPosition the position that the goal is locates
@@ -89,7 +88,7 @@ object KField2d : Field2d() {
      */
     fun addGoal(estimatedPosition: Translation2d, time: Double, name: String, uponArrival: Command? = null) {
         val similarGoals = goals.filter { it.name == name }
-        similarGoals.filter { it.position.getDistance(estimatedPosition) < 1.0}.forEach {   // TODO: this bad
+        similarGoals.filter { it.position.getDistance(estimatedPosition) < sameDistance.meters}.forEach {
             it.updatePosition(estimatedPosition)
             return
         }

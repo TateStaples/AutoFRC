@@ -9,7 +9,7 @@ import java.io.IOException
  * Executes string as command in terminal
  * @param workingDir the directory the terminal will be located
  */
-fun String.runCommand(workingDir: File) {
+fun String.runCommand(workingDir: File) {  // this doesn't work
     try {
         println("here")
         val parts = this.split("\\s".toRegex())

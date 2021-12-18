@@ -8,16 +8,18 @@ import frc.team6502.robot.commands.drive.DefaultDrive
 import frc.team6502.robot.commands.general.Strategy
 import frc.team6502.robot.subsystems.Drivetrain
 import kyberlib.command.CommandManager
+import kyberlib.command.Game
 import kyberlib.command.KRobot
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.zeroPose
+import kyberlib.motorcontrol.KBasicMotorController
 import kyberlib.simulation.Simulation
 import kyberlib.simulation.field.KField2d
 
 class Robot : KRobot() {
     init {
         Drivetrain
-        if (!Simulation.real) {
+        if (Game.sim) {
             Simulation.instance.include(Drivetrain)
             Drivetrain.setupSim()
         }
@@ -26,7 +28,7 @@ class Robot : KRobot() {
     override fun disabledInit() {
         CommandManager.clear()
         Drivetrain.stop()
-        if (Simulation.real) {
+        if (Game.real) {
             KField2d.goals.clear()
         }
         Strategy.collectedBalls = 0
@@ -34,7 +36,7 @@ class Robot : KRobot() {
 
     override fun enabledInit() {
         CommandManager.schedule(false)
-        Vision.cameraOffset = null  // zero position
+        if (Game.real) Vision.cameraOffset = null  // zero position
         RobotContainer.navigation.pose = zeroPose
     }
 

@@ -84,7 +84,7 @@ dependencies {
     // Add cscore-java
     compile "edu.wpi.first.cscore:cscore-java:2021.2.2"
     compile "edu.wpi.first.cameraserver:cameraserver-java:2021.2.2"
-    compile name: 'opencv-347'
+//    compile name: 'opencv-347'
 
     // Add wpiutil-java
     compile "edu.wpi.first.wpiutil:wpiutil-java:2021.2.2"

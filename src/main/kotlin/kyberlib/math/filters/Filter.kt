@@ -1,6 +1,6 @@
 package kyberlib.math.filters
 
-import edu.wpi.first.wpilibj.Timer
+import kyberlib.command.Game
 
 /**
  * Class that manipulates a incoming steam of doubles
@@ -10,7 +10,7 @@ abstract class Filter {
      * The current time of the robot
      */
     protected val time: Double
-        get() = Timer.getFPGATimestamp()
+        get() = Game.time.toDouble()
 
     /**
      * Takes a new piece of data and outputs how it affected the filter

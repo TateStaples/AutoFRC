@@ -71,11 +71,9 @@ class SlamBridge {
 
     fun periodic() {
         // read to SLAM output
-            // todo: prevent initial write
         try {
             val deserialized = Json.decodeFromString<SlamValues>(slamValues.readText())
             if (lastUpdate != deserialized.X && lastUpdate != 0.0) {
-                println("writing!")
                 xEntry.setNumber(deserialized.X)
                 yEntry.setNumber(deserialized.Y)
                 zEntry.setNumber(deserialized.Z)

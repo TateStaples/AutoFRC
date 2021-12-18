@@ -1,5 +1,6 @@
 package frc.team6502.robot.subsystems
 
+import edu.wpi.first.wpilibj.SlewRateLimiter
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj.geometry.Rotation2d
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds
@@ -14,6 +15,7 @@ import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import kyberlib.auto.Navigator
 import kyberlib.command.Debug
+import kyberlib.command.Game
 import kyberlib.math.filters.Differentiator
 import kyberlib.math.units.debugValues
 import kyberlib.math.units.extensions.k
@@ -22,6 +24,7 @@ import kyberlib.math.units.extensions.metersPerSecond
 import kyberlib.motorcontrol.MotorType
 import kyberlib.motorcontrol.rev.KSparkMax
 import kyberlib.simulation.Simulatable
+import kyberlib.simulation.Simulation
 import kotlin.math.absoluteValue
 
 object Drivetrain : SubsystemBase(), Simulatable, Debug {
@@ -63,7 +66,6 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
      * Configure all the encoders with proper gear ratios
      */
     init {
-//        defaultCommand = CommandManager
         for (motor in motors) {
             motor.apply {
                 brakeMode = true
@@ -78,6 +80,7 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
                 addFeedforward(feedforward)
             }
         }
+        if (Game.sim) Simulation.instance.chassisFF = feedforward
     }
 
     /**
@@ -89,10 +92,10 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
      */
     var wheelSpeeds: DifferentialDriveWheelSpeeds
         get() = DifferentialDriveWheelSpeeds(leftMaster.linearVelocity.metersPerSecond, rightMaster.linearVelocity.metersPerSecond)
-        set(value) {drive(value)}
+        set(value) = drive(value)
     var chassisSpeeds: ChassisSpeeds
         get() = kinematics.toChassisSpeeds(wheelSpeeds)
-        set(value) {drive(value)}
+        set(value) = drive(value)
 
     /**
      * Drive the robot in a specific direction
@@ -122,16 +125,10 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
         debugDashboard()
     }
 
-    fun faceDirection(rotation2d: Rotation2d) {
-        val rotSpeed = chassisSpeeds.omegaRadiansPerSecond
-        val rot = Navigator.instance!!.heading
-        drive(ChassisSpeeds(0.0, 0.0, (rotation2d - rot).radians))
-    }
-
     private lateinit var driveSim: DifferentialDrivetrainSim
-    fun setupSim(KvAngular: Double = 5.5, KaAngular: Double = 0.5, KvLinear: Double = Constants.DRIVE_KV, KaLinear: Double = Constants.DRIVE_KA,) {
+    fun setupSim(KvAngular: Double = 5.5, KaAngular: Double = 0.5) {
         driveSim = DifferentialDrivetrainSim( // Create a linear system from our characterization gains.
-            LinearSystemId.identifyDrivetrainSystem(KvLinear, KaLinear, KvAngular, KaAngular),
+            LinearSystemId.identifyDrivetrainSystem(Simulation.instance.chassisFF.kv, Simulation.instance.chassisFF.ka, KvAngular, KaAngular),
             DCMotor.getNEO(2),  // 2 NEO motors on each side of the drivetrain.
             leftMaster.gearRatio,  // gearing reduction
             kinematics.trackWidthMeters,  // The track width
@@ -141,7 +138,7 @@ object Drivetrain : SubsystemBase(), Simulatable, Debug {
         )
     }
 
-    private fun roundLows(d: Double): Double = if (d.absoluteValue < 0.05) 0.0 else d
+    private fun roundLows(d: Double): Double = if (d.absoluteValue < 0.2) 0.0 else d
 
     override fun simUpdate(dt: Double) {
         // update the sim with new inputs

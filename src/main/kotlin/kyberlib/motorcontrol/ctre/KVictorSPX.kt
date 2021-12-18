@@ -11,8 +11,7 @@ import kyberlib.motorcontrol.*
 class KVictorSPX(val canId: CANId) : KBasicMotorController() {
     private val _victor = VictorSPX(canId)
 
-    override var identifier = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
-
+    override val identifier = CANRegistry.filterValues { it == canId }.keys.firstOrNull() ?: "can$canId"
 
     override var brakeMode: BrakeMode = false
         set(value) {

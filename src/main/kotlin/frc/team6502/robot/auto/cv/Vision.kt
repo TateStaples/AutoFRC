@@ -4,19 +4,15 @@ import edu.wpi.cscore.VideoMode
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.MedianFilter
-import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.geometry.Pose2d
-import edu.wpi.first.wpilibj.geometry.Transform2d
 import edu.wpi.first.wpilibj.geometry.Translation2d
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import frc.team6502.robot.Constants
 import frc.team6502.robot.RobotContainer
 import frc.team6502.robot.commands.balls.Intake
 import kyberlib.auto.Navigator
 import kyberlib.command.Debug
 import kyberlib.command.DebugLevel
-import kyberlib.math.units.Translation2d
+import kyberlib.command.Game
 import kyberlib.math.units.extensions.KRotation
 import kyberlib.math.units.extensions.degrees
 import kyberlib.math.units.extensions.inches
@@ -24,7 +20,6 @@ import kyberlib.math.units.extensions.meters
 import kyberlib.math.units.transform
 import kyberlib.simulation.field.KField2d
 import org.photonvision.PhotonCamera
-import org.photonvision.targeting.PhotonPipelineResult
 import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
@@ -36,7 +31,6 @@ import kotlin.math.tan
 object Vision : SubsystemBase(), Debug {
     // camera setups
     private val url = "http://10.65.2.11"
-//    private val video = HttpCamera("raw", "$url:1182/stream.mjpg", HttpCamera.HttpCameraKind.kMJPGStreamer)
     private val camera = PhotonCamera("gloworm")
 
     val xFilter = MedianFilter(5)
@@ -90,7 +84,7 @@ object Vision : SubsystemBase(), Debug {
             if (pitch.degrees > -10.0) return
             val currentPose = RobotContainer.navigation.pose
             val estimatedBallPose = currentPose.transformBy(Pose2d(cos(distance.meters), sin(distance.meters), yaw).transform)
-            val time =  Timer.getFPGATimestamp() - res.latencyMillis
+            val time =  Game.time - res.latencyMillis
             log( "object : $distance")
             log("estimated pose: $estimatedBallPose, currentPose: $currentPose")
             if (distance.meters > 3.0) {
@@ -112,7 +106,6 @@ object Vision : SubsystemBase(), Debug {
      */
     private fun slamUpdate() {
         val updateTime = outputTimeEntry.getDouble(0.0)
-        // todo: update initial pose
         if (updateTime != lastUpdate && lastUpdate != 0.0) {
             val cameraVector = doubleArrayOf(xEntry.getDouble(0.0), yEntry.getDouble(0.0), zEntry.getDouble(0.0))
             val x  = dot(cameraVector, xHat)
@@ -129,7 +122,7 @@ object Vision : SubsystemBase(), Debug {
             lastPos = adjustedPos
 
             if (filteredPos.getDistance(slamPos) < 2.0)  // prevent wild values from corrupting results
-                RobotContainer.navigation.update(edu.wpi.first.wpilibj.geometry.Pose2d(adjustedPos, Navigator.instance!!.heading), Timer.getFPGATimestamp() - 0.2)
+                RobotContainer.navigation.update(Pose2d(adjustedPos, Navigator.instance!!.heading), Game.time - 0.2)
         }
         lastUpdate = updateTime
     }

@@ -32,7 +32,7 @@ abstract class KBasicMotorController : Sendable, Debug {
     /**
      * The prefix used by this motor for logging of errors and debug information.
      */
-    abstract override var identifier: String
+    abstract override val identifier: String
 
     /**
      * Whether the motor is connected to a real Robot
